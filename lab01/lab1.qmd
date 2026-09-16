@@ -1,0 +1,58 @@
+---
+title: "Lab 1"
+author: "Cheyenne Trujillo"
+date: "2026-09-16"
+format: html
+---
+
+<!-- Spoiler tag template:
+::: {.callout-note collapse="true" title="Title"}
+content
+:::
+-->
+
+## Hardware
+
+### Board Assembly and FPGA Programming
+
+### Seven-Segment Display (0x0–0xF, all digits unique)
+
+### DIP Switch Arrangement
+
+### LED Logic
+
+### Current-Limiting Resistors
+
+## Verilog Structure and Style
+
+### Top-Level Module
+
+### Seven-Segment Module
+
+### Counter Module
+
+## Simulation
+
+### Seven-Segment Simulation
+
+![QuestaSim waveform for `seven_segment_tb`: all 16 test vectors pass with 0 errors](lab01-ss/waveform.png){width=100%}
+
+## Schematic and Block Diagram
+
+### Schematic
+
+### Block Diagram
+
+## Calculations
+
+### Segment Current
+
+### LED Blink Frequency
+
+## Conclusion
+
+### Requirements Met
+
+### AI Prototype Reflection
+
+### Hours Spent

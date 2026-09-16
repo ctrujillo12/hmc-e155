@@ -7,7 +7,6 @@ module lab01_ct(
 
     logic int_osc;
 
-    // Internal 24 MHz oscillator
     HSOSC #(.CLKHF_DIV(2'b01))
         hf_osc (
             .CLKHFPU(1'b1),
@@ -15,13 +14,11 @@ module lab01_ct(
             .CLKHF(int_osc)
         );
 
-    // Switch-to-LED combinational logic
-    assign led[0] = s[1] ^ s[0];
-    assign led[1] = s[2] & s[3];
+    assign led[0] = s[1] ^ s[0]; // on when exactly one of switches 0 and 1 is on
+    assign led[1] = s[2] & s[3]; // on when exactly both switches 2 and 3 are on
 
-    // Blinking LED counter
     counter #(
-        .MAX_COUNT(5_000_000)
+        .MAX_COUNT(10_000_000)
     ) blink_counter (
         .clk(int_osc),
         .reset(reset),
@@ -29,7 +26,7 @@ module lab01_ct(
         .blink(led[2])
     );
 
-    // 7-segment decoder
+    // decoder
     seven_segment display_decoder (
         .s(s),
         .segment(segment)
