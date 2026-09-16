@@ -1,6 +1,5 @@
 module seven_segment_tb();
 
-    // Testbench signals
     logic clk, reset;
     logic [3:0] s;
     logic [6:0] segment, segment_expected;
@@ -8,19 +7,18 @@ module seven_segment_tb();
     logic [31:0] vectornum, errors;
     logic [10:0] testvectors[10000:0];
 
-    // Instantiate device under test
     seven_segment dut (
         .s(s),
         .segment(segment)
     );
 
-    // Clock generation: 10 ns period
+    // clk 10 ns period
     always begin
         clk = 1; #5;
         clk = 0; #5;
     end
 
-    // Load test vectors and initialize
+    // get tv
     initial begin
         $readmemb("seven_segment_tb.tv", testvectors);
 
@@ -32,13 +30,11 @@ module seven_segment_tb();
         reset = 0;
     end
 
-    // Apply test vectors
     always @(posedge clk) begin
         #1;
         {s, segment_expected} = testvectors[vectornum];
     end
 
-    // Check output
     always @(negedge clk) begin
         if (~reset) begin
 
@@ -55,7 +51,6 @@ module seven_segment_tb();
 
             vectornum = vectornum + 1;
 
-            // Stop when test vectors run out
             if (testvectors[vectornum] === 11'bx) begin
                 $display(
                     "%d tests completed with %d errors",
