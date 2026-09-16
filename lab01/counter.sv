@@ -1,5 +1,5 @@
 module counter #(
-    parameter int unsigned MAX_COUNT = 5_000_000
+    parameter int unsigned MAX_COUNT = 10_000_000
 )(
     input  logic clk,
     input  logic reset,
