@@ -1,58 +1,81 @@
 ---
-title: "Lab 1"
+title: "HMC E155 — Lab 1: FPGA and MCU Setup and Testing"
 author: "Cheyenne Trujillo"
 date: "2026-09-16"
-format: html
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
 ---
 
-<!-- Spoiler tag template:
-::: {.callout-note collapse="true" title="Title"}
-content
-:::
--->
+# Introduction
 
-## Hardware
+In this lab, I assembled and tested the E155 development board, wrote Verilog code to control LEDS and designed a 7-segment display driver on the UPduino FPGA. The goal is to create a module that can take a 4-bit binary input from the DIP switches and display the corresponding hexadecimal digit (0-9 and A-F) on a seven-segment display. I also implemented a counter that increments the input value every second, allowing me to observe the output on the display. Then I simulated my design in QuestaSim, programmed the FPGA with it, and tested on the physical hardware.
 
-### Board Assembly and FPGA Programming
+# Design and Testing Methodology
 
-### Seven-Segment Display (0x0–0xF, all digits unique)
+## Overall Design
 
-### DIP Switch Arrangement
+I organized the design into separate modules for the counter and the seven segment display and the top level logic. the top level module connects x y z.
 
-### LED Logic
+lab01_ct.sv: top level module, connects everything
+seven_Segment.sv: goes from switch input s[3:0] to segment display output segment[6:0]
+counter.sv: generates blinking signal
 
-### Current-Limiting Resistors
+testbenches...
 
-## Verilog Structure and Style
+## Seven-Segment Decoder
 
-### Top-Level Module
+## LED Logic
 
-### Seven-Segment Module
+## Counter and Clock Divider
 
-### Counter Module
+## Testing Methodology
 
-## Simulation
+# Technical Documentation
 
-### Seven-Segment Simulation
+## Verilog Source Code
+
+## Pin Assignments
+
+## Block Diagram
+
+## Hardware Schematic
+
+## Current-Limiting Resistor Calculation
+
+## Blink Frequency Calculation
+
+# Simulation Results
+
+## Seven-Segment Decoder Test
 
 ![QuestaSim waveform for `seven_segment_tb`: all 16 test vectors pass with 0 errors](lab01-ss/waveform.png){width=100%}
 
-## Schematic and Block Diagram
+## Counter Test
 
-### Schematic
+## Top-Level Test
 
-### Block Diagram
+# Hardware Results and Discussion
 
-## Calculations
+## Seven-Segment Display
 
-### Segment Current
+## LED Outputs
 
-### LED Blink Frequency
+## Blink Frequency
 
-## Conclusion
+## Synthesis and FPGA Testing
 
-### Requirements Met
+## Issues and Debugging
 
-### AI Prototype Reflection
+# Requirements Checklist
 
-### Hours Spent
+# Conclusion
+
+# AI Prototype and Reflection
+
+## AI Prototype
+
+## Reflection

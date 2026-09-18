@@ -88,11 +88,12 @@ ul.task-list li input[type="checkbox"] {
 content
 :::
 -->
+<section id="introduction" class="level2">
+<h2 class="anchored" data-anchor-id="introduction">Introduction</h2>
+<p>In this lab, I designed a 7-segment display driver using SystemVerilog. The goal is to create a module that can take a 4-bit binary input from the and display the corresponding hexadecimal digit (0-9, A-F) on a seven-segment display. We will also implement a counter that increments the input value every second, allowing us to observe the output on the display.</p>
+</section>
 <section id="hardware" class="level2">
 <h2 class="anchored" data-anchor-id="hardware">Hardware</h2>
-<section id="board-assembly-and-fpga-programming" class="level3">
-<h3 class="anchored" data-anchor-id="board-assembly-and-fpga-programming">Board Assembly and FPGA Programming</h3>
-</section>
 <section id="seven-segment-display-0x00xf-all-digits-unique" class="level3">
 <h3 class="anchored" data-anchor-id="seven-segment-display-0x00xf-all-digits-unique">Seven-Segment Display (0x0–0xF, all digits unique)</h3>
 </section>
@@ -122,6 +123,12 @@ content
 <h2 class="anchored" data-anchor-id="simulation">Simulation</h2>
 <section id="seven-segment-simulation" class="level3">
 <h3 class="anchored" data-anchor-id="seven-segment-simulation">Seven-Segment Simulation</h3>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lab01-ss/waveform.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>QuestaSim waveform for <code>seven_segment_tb</code>: all 16 test vectors pass with 0 errors</figcaption>
+</figure>
+</div>
 </section>
 </section>
 <section id="schematic-and-block-diagram" class="level2">
