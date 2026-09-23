@@ -1,0 +1,1025 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Cheyenne Trujillo">
+<meta name="dcterms.date" content="2026-09-16">
+
+<title>HMC E155 — Lab 1: FPGA and MCU Setup and Testing</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="lab1_files/libs/clipboard/clipboard.min.js"></script>
+<script src="lab1_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="lab1_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="lab1_files/libs/quarto-html/popper.min.js"></script>
+<script src="lab1_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="lab1_files/libs/quarto-html/anchor.min.js"></script>
+<link href="lab1_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="lab1_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="lab1_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="lab1_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="lab1_files/libs/bootstrap/bootstrap-215b371544c282197b31c8aa00ce3677.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#design-and-testing-methodology" id="toc-design-and-testing-methodology" class="nav-link" data-scroll-target="#design-and-testing-methodology"><span class="header-section-number">2</span> Design and Testing Methodology</a>
+  <ul class="collapse">
+  <li><a href="#overall-design" id="toc-overall-design" class="nav-link" data-scroll-target="#overall-design"><span class="header-section-number">2.1</span> Overall Design</a></li>
+  <li><a href="#seven-segment-decoder" id="toc-seven-segment-decoder" class="nav-link" data-scroll-target="#seven-segment-decoder"><span class="header-section-number">2.2</span> Seven-Segment Decoder</a></li>
+  <li><a href="#led-logic" id="toc-led-logic" class="nav-link" data-scroll-target="#led-logic"><span class="header-section-number">2.3</span> LED Logic</a></li>
+  <li><a href="#counter-and-clock-divider" id="toc-counter-and-clock-divider" class="nav-link" data-scroll-target="#counter-and-clock-divider"><span class="header-section-number">2.4</span> Counter and Clock Divider</a></li>
+  <li><a href="#testing-methodology" id="toc-testing-methodology" class="nav-link" data-scroll-target="#testing-methodology"><span class="header-section-number">2.5</span> Testing Methodology</a></li>
+  </ul></li>
+  <li><a href="#technical-documentation" id="toc-technical-documentation" class="nav-link" data-scroll-target="#technical-documentation"><span class="header-section-number">3</span> Technical Documentation</a>
+  <ul class="collapse">
+  <li><a href="#verilog-source-code" id="toc-verilog-source-code" class="nav-link" data-scroll-target="#verilog-source-code"><span class="header-section-number">3.1</span> Verilog Source Code</a></li>
+  <li><a href="#pin-assignments" id="toc-pin-assignments" class="nav-link" data-scroll-target="#pin-assignments"><span class="header-section-number">3.2</span> Pin Assignments</a></li>
+  <li><a href="#block-diagram" id="toc-block-diagram" class="nav-link" data-scroll-target="#block-diagram"><span class="header-section-number">3.3</span> Block Diagram</a></li>
+  <li><a href="#hardware-schematic" id="toc-hardware-schematic" class="nav-link" data-scroll-target="#hardware-schematic"><span class="header-section-number">3.4</span> Hardware Schematic</a></li>
+  <li><a href="#current-limiting-resistor-calculation" id="toc-current-limiting-resistor-calculation" class="nav-link" data-scroll-target="#current-limiting-resistor-calculation"><span class="header-section-number">3.5</span> Current-Limiting Resistor Calculation</a></li>
+  <li><a href="#blink-frequency-calculation" id="toc-blink-frequency-calculation" class="nav-link" data-scroll-target="#blink-frequency-calculation"><span class="header-section-number">3.6</span> Blink Frequency Calculation</a></li>
+  </ul></li>
+  <li><a href="#simulation-results" id="toc-simulation-results" class="nav-link" data-scroll-target="#simulation-results"><span class="header-section-number">4</span> Simulation Results</a>
+  <ul class="collapse">
+  <li><a href="#seven-segment-decoder-test" id="toc-seven-segment-decoder-test" class="nav-link" data-scroll-target="#seven-segment-decoder-test"><span class="header-section-number">4.1</span> Seven-Segment Decoder Test</a></li>
+  <li><a href="#counter-test" id="toc-counter-test" class="nav-link" data-scroll-target="#counter-test"><span class="header-section-number">4.2</span> Counter Test</a></li>
+  <li><a href="#top-level-test" id="toc-top-level-test" class="nav-link" data-scroll-target="#top-level-test"><span class="header-section-number">4.3</span> Top-Level Test</a></li>
+  <li><a href="#seven-segment-display" id="toc-seven-segment-display" class="nav-link" data-scroll-target="#seven-segment-display"><span class="header-section-number">4.4</span> Seven-Segment Display</a></li>
+  <li><a href="#led-outputs" id="toc-led-outputs" class="nav-link" data-scroll-target="#led-outputs"><span class="header-section-number">4.5</span> LED Outputs</a></li>
+  <li><a href="#issues-and-debugging" id="toc-issues-and-debugging" class="nav-link" data-scroll-target="#issues-and-debugging"><span class="header-section-number">4.6</span> Issues and Debugging</a></li>
+  </ul></li>
+  <li><a href="#requirements-checklist" id="toc-requirements-checklist" class="nav-link" data-scroll-target="#requirements-checklist"><span class="header-section-number">5</span> Requirements Checklist</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">6</span> Conclusion</a></li>
+  <li><a href="#ai-prototype-and-reflection" id="toc-ai-prototype-and-reflection" class="nav-link" data-scroll-target="#ai-prototype-and-reflection"><span class="header-section-number">7</span> AI Prototype and Reflection</a>
+  <ul class="collapse">
+  <li><a href="#ai-prototype" id="toc-ai-prototype" class="nav-link" data-scroll-target="#ai-prototype"><span class="header-section-number">7.1</span> AI Prototype</a></li>
+  <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection"><span class="header-section-number">7.2</span> Reflection</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">HMC E155 — Lab 1: FPGA and MCU Setup and Testing</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Cheyenne Trujillo </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">September 16, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>In this lab, I assembled and tested the E155 development board, wrote Verilog code to control LEDS and designed a 7-segment display driver on the UPduino FPGA. The goal is to create a module that can take a 4-bit binary input from the DIP switches and display the corresponding hexadecimal digit (0-9 and A-F) on a seven-segment display. I also implemented a counter that increments the input value every second, allowing me to observe the output on the display. Then I simulated my design in QuestaSim, programmed the FPGA with it, and tested on the physical hardware.</p>
+</section>
+<section id="design-and-testing-methodology" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Design and Testing Methodology</h1>
+<section id="overall-design" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="overall-design"><span class="header-section-number">2.1</span> Overall Design</h2>
+<p>I organized the design into separate modules for the counter and the seven segment display and the top level logic. the top level module connects x y z.</p>
+<ul>
+<li><a href="#lab01_ct-sv"><code>lab01_ct.sv</code></a>: top level module, connects everything</li>
+<li><a href="#seven_segment-sv"><code>seven_segment.sv</code></a>: goes from switch input s[3:0] to segment display output segment[6:0]</li>
+<li><a href="#counter-sv"><code>counter.sv</code></a>: generates blinking signal</li>
+</ul>
+<p>I created a testbench (<a href="#seven_segment_tb-sv"><code>seven_segment_tb.sv</code></a>), driven by test vectors in <a href="#seven_segment-tv"><code>seven_segment.tv</code></a>, for the seven segment display to verify that the output segments correspond correctly to the 4-bit binary input.</p>
+</section>
+<section id="seven-segment-decoder" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="seven-segment-decoder"><span class="header-section-number">2.2</span> Seven-Segment Decoder</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="segment-orientation.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>the hdsp-511a segment pinout</figcaption>
+</figure>
+</div>
+<p>I mapped the 4 switch inputs to the corresponding segments of the seven-segment display. The mapping is as follows: segment[6:0] = {a, b, c, d, e, f, g}, where each letter corresponds to a segment of the display. This is implemented with a case statement in <a href="#seven_segment-sv"><code>seven_segment.sv</code></a>. The truth table for the seven-segment decoder is as follows:</p>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Switch Input (s[3:0])</th>
+<th>Segment Output (segment[6:0])</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>0</td>
+<td>1 1 1 1 1 1 0</td>
+</tr>
+<tr class="even">
+<td>1</td>
+<td>0 1 1 0 0 0 0</td>
+</tr>
+<tr class="odd">
+<td>2</td>
+<td>1 1 0 1 1 0 1</td>
+</tr>
+<tr class="even">
+<td>3</td>
+<td>1 1 1 1 0 0 1</td>
+</tr>
+<tr class="odd">
+<td>4</td>
+<td>0 1 1 0 0 1 1</td>
+</tr>
+<tr class="even">
+<td>5</td>
+<td>1 0 1 1 0 1 1</td>
+</tr>
+<tr class="odd">
+<td>6</td>
+<td>1 0 1 1 1 1 1</td>
+</tr>
+<tr class="even">
+<td>7</td>
+<td>1 1 1 0 0 0 0</td>
+</tr>
+<tr class="odd">
+<td>8</td>
+<td>1 1 1 1 1 1 1</td>
+</tr>
+<tr class="even">
+<td>9</td>
+<td>1 1 1 1 0 1 1</td>
+</tr>
+<tr class="odd">
+<td>A</td>
+<td>1 1 1 0 1 1 1</td>
+</tr>
+<tr class="even">
+<td>b</td>
+<td>1 1 1 1 1 1 1</td>
+</tr>
+<tr class="odd">
+<td>C</td>
+<td>1 0 0 1 1 1 0</td>
+</tr>
+<tr class="even">
+<td>d</td>
+<td>1 1 1 1 0 1 1</td>
+</tr>
+<tr class="odd">
+<td>E</td>
+<td>1 0 0 1 1 1 1</td>
+</tr>
+<tr class="even">
+<td>F</td>
+<td>1 0 0 0 1 1 1</td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="led-logic" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="led-logic"><span class="header-section-number">2.3</span> LED Logic</h2>
+<p>i made the leds to correspond with the 4 switch inputs so that led[0] is an xor gate of s[0] and s[1], and led[1] is an and gate of s[2] and s[3]. These are implemented as <code>assign</code> statements in <a href="#lab01_ct-sv"><code>lab01_ct.sv</code></a>.</p>
+</section>
+<section id="counter-and-clock-divider" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="counter-and-clock-divider"><span class="header-section-number">2.4</span> Counter and Clock Divider</h2>
+<p>The fpga is at 48 hz, we want led[2] to blink at 2.4 hz. T = 1/2.4 = 0.4167 seconds. 0.4167/2 = 0.2083 seconds. N = 48<em>10^6 </em> 0.2083 = 10000000. The clock divider will divide the 48 Hz clock by 20 to achieve a 2.4 Hz blinking frequency for led[2]. The counter increments the input value every second, allowing us to observe the output on the display. This is implemented in <a href="#counter-sv"><code>counter.sv</code></a>.</p>
+</section>
+<section id="testing-methodology" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="testing-methodology"><span class="header-section-number">2.5</span> Testing Methodology</h2>
+<p>i made a testbench (<a href="#seven_segment_tb-sv"><code>seven_segment_tb.sv</code></a>) for the seven segment display to verify that the output segments correspond correctly to the 4-bit binary input, using the test vectors in <a href="#seven_segment-tv"><code>seven_segment.tv</code></a>.</p>
+</section>
+</section>
+<section id="technical-documentation" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Technical Documentation</h1>
+<section id="verilog-source-code" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="verilog-source-code"><span class="header-section-number">3.1</span> Verilog Source Code</h2>
+<details id="lab01_ct-sv">
+<summary>
+lab01_ct.sv: top level module, connects everything
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> lab01_ct(</span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>       reset,</span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] <span class="kw">s</span>,</span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">2</span>:<span class="dv">0</span>] led,</span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">6</span>:<span class="dv">0</span>] segment</span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> int_osc;</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// instatiate the fpga's internal oscillator </span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>    HSOSC #<span class="dt">(.CLKHF_DIV</span>(<span class="bn">2'b01</span>))</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>        hf_osc (</span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>            .CLKHFPU(<span class="bn">1'b1</span>),</span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>            .CLKHFEN(<span class="bn">1'b1</span>),</span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>            .CLKHF(int_osc)</span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>        );</span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">assign</span> led[<span class="dv">0</span>] = <span class="kw">s</span>[<span class="dv">1</span>] ^ <span class="kw">s</span>[<span class="dv">0</span>]; <span class="co">// on when exactly one of switches 0 and 1 is on</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">assign</span> led[<span class="dv">1</span>] = <span class="kw">s</span>[<span class="dv">2</span>] &amp; <span class="kw">s</span>[<span class="dv">3</span>]; <span class="co">// on when exactly both switches 2 and 3 are on</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a>    counter #(</span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>        .MAX_COUNT(<span class="dv">10</span>_000_000)</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    ) blink_counter (</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>        .clk(int_osc),</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>        .reset(reset),</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>        .enable(<span class="bn">1'b1</span>),</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>        .blink(led[<span class="dv">2</span>])</span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="co">// decoder</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    seven_segment display_decoder (</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>        .<span class="kw">s</span>(<span class="kw">s</span>),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>        .segment(segment)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="counter-sv">
+<summary>
+counter.sv: generates blinking signal
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> counter #(</span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">parameter</span> <span class="kw">int</span> <span class="kw">unsigned</span> MAX_COUNT = <span class="dv">10</span>_000_000</span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a>)(</span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> clk,</span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> reset,</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> enable,</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> blink</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">localparam</span> <span class="kw">int</span> COUNT_WIDTH = <span class="kw">$clog2</span>(MAX_COUNT);</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [COUNT_WIDTH<span class="dv">-1</span>:<span class="dv">0</span>] count; <span class="co">// count to 9999999</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always_ff</span> @(<span class="kw">posedge</span> clk, <span class="kw">negedge</span> reset) <span class="kw">begin</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (!reset) <span class="kw">begin</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>            count &lt;= <span class="dv">0</span>;</span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>            blink &lt;= <span class="dv">0</span>;</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span> <span class="kw">if</span> (enable) <span class="kw">begin</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> (count == MAX_COUNT - <span class="dv">1</span>) <span class="kw">begin</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>                count &lt;= <span class="dv">0</span>;</span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                blink &lt;= ~blink; <span class="co">// toggle led</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>            <span class="kw">else</span> <span class="kw">begin</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>                count &lt;= count + <span class="dv">1</span>;</span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="seven_segment-sv">
+<summary>
+seven_segment.sv: goes from switch input s[3:0] to segment display output segment[6:0]
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> seven_segment(</span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] <span class="kw">s</span>,</span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">6</span>:<span class="dv">0</span>] segment</span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always_comb</span> <span class="kw">begin</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">case</span> (<span class="kw">s</span>)</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h0</span>: segment = <span class="bn">7'b1000000</span>;</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h1</span>: segment = <span class="bn">7'b1111001</span>;</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h2</span>: segment = <span class="bn">7'b0100100</span>;</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h3</span>: segment = <span class="bn">7'b0110000</span>;</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h4</span>: segment = <span class="bn">7'b0011001</span>;</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h5</span>: segment = <span class="bn">7'b0010010</span>;</span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h6</span>: segment = <span class="bn">7'b0000010</span>;</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h7</span>: segment = <span class="bn">7'b1111000</span>;</span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h8</span>: segment = <span class="bn">7'b0000000</span>;</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h9</span>: segment = <span class="bn">7'b0010000</span>;</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hA</span>: segment = <span class="bn">7'b0001000</span>;</span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hB</span>: segment = <span class="bn">7'b0000011</span>;</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hC</span>: segment = <span class="bn">7'b1000110</span>;</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hD</span>: segment = <span class="bn">7'b0100001</span>;</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hE</span>: segment = <span class="bn">7'b0000110</span>;</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hF</span>: segment = <span class="bn">7'b0001110</span>;</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>            <span class="kw">default</span>: segment = <span class="bn">7'b1111111</span>;</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        <span class="kw">endcase</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="seven_segment_tb-sv">
+<summary>
+seven_segment_tb.sv: testbench for seven segment display
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> seven_segment_tb();</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> clk, reset;</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] <span class="kw">s</span>;</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">6</span>:<span class="dv">0</span>] segment, segment_expected;</span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">31</span>:<span class="dv">0</span>] vectornum, errors;</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">10</span>:<span class="dv">0</span>] testvectors[<span class="dv">10000</span>:<span class="dv">0</span>];</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>    seven_segment dut (</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>        .<span class="kw">s</span>(<span class="kw">s</span>),</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>        .segment(segment)</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// clk 10 ns period</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always</span> <span class="kw">begin</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">1</span>; <span class="bn">#5</span>;</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">0</span>; <span class="bn">#5</span>;</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="co">// get tv</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">initial</span> <span class="kw">begin</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$readmemb</span>(<span class="st">"seven_segment_tb.tv"</span>, testvectors);</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        vectornum = <span class="dv">0</span>;</span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>        errors = <span class="dv">0</span>;</span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>        reset = <span class="dv">1</span>;</span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#22</span>;</span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a>        reset = <span class="dv">0</span>;</span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always</span> @(<span class="kw">posedge</span> clk) <span class="kw">begin</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#1</span>;</span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a>        {<span class="kw">s</span>, segment_expected} = testvectors[vectornum];</span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always</span> @(<span class="kw">negedge</span> clk) <span class="kw">begin</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (~reset) <span class="kw">begin</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> (segment !== segment_expected) <span class="kw">begin</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>                <span class="kw">$display</span>(<span class="st">"Error: inputs = %b"</span>, <span class="kw">s</span>);</span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a>                <span class="kw">$display</span>(</span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"outputs = %b (%b expected)"</span>,</span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a>                    segment,</span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>                    segment_expected</span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>                );</span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>                errors = errors + <span class="dv">1</span>;</span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a>            vectornum = vectornum + <span class="dv">1</span>;</span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> (testvectors[vectornum] === <span class="bn">11'bx</span>) <span class="kw">begin</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>                <span class="kw">$display</span>(</span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>                    <span class="st">"%d tests completed with %d errors"</span>,</span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>                    vectornum,</span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>                    errors</span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>                );</span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>                <span class="kw">$stop</span>;</span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="seven_segment-tv">
+<summary>
+seven_segment.tv: test vector for seven segment display
+</summary>
+<pre class="text"><code>00001000000
+00011111001
+00100100100
+00110110000
+01000011001
+01010010010
+01100000010
+01111111000
+10000000000
+10010010000
+10100001000
+10110000011
+11001000110
+11010100001
+11100000110
+11110001110</code></pre>
+</details>
+</section>
+<section id="pin-assignments" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="pin-assignments"><span class="header-section-number">3.2</span> Pin Assignments</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="pins-dce.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Pin assignments as configured in Lattice Radiant’s Device Constraint Editor</figcaption>
+</figure>
+</div>
+<details>
+<summary>
+pins.pdc
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode tcl code-with-copy"><code class="sourceCode tcl"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">34</span><span class="kw">}</span> <span class="kw">[</span>get_ports reset<span class="kw">]</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">32</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>s<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">35</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>s<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">31</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>s<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">37</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>s<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">28</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>led<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">46</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">45</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">3</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">44</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">12</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">4</span><span class="kw">]}]</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">18</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">5</span><span class="kw">]}]</span></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">13</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">6</span><span class="kw">]}]</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">42</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>led<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">38</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>led<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</section>
+<section id="block-diagram" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="block-diagram"><span class="header-section-number">3.3</span> Block Diagram</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="netlist.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Synthesized RTL netlist showing the top-level connections between the HSOSC, blink counter, and seven-segment decoder</figcaption>
+</figure>
+</div>
+</section>
+<section id="hardware-schematic" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="hardware-schematic"><span class="header-section-number">3.4</span> Hardware Schematic</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="SCHEMATIC.jpeg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Hand-drawn schematic of the seven-segment display wiring, including current-limiting resistors between the FPGA and the HDSP-511A display</figcaption>
+</figure>
+</div>
+</section>
+<section id="current-limiting-resistor-calculation" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="current-limiting-resistor-calculation"><span class="header-section-number">3.5</span> Current-Limiting Resistor Calculation</h2>
+<p>Segment current (from AlGaAs Red, HDSP-511A datasheet) Supply V_CC = 3.3 V. Datasheet forward voltage: V_F = 1.85 V typ, 2.00 V max at I_F = 20 mA. Absolute max continuous current per segment: 15 mA (at 25°C).</p>
+<p>Target I_F = 5 mA: R = (3.3 V − 1.85 V) / 5 mA ≈ 290 Ω, so I chose the next standard value up, 330 Ω.</p>
+<p>Actual current: I_F = (3.3 V − 1.85 V) / 330 Ω ≈ 4.4 mA. Using the max V_F of 2.00 V gives ≈ 3.9 mA.</p>
+<p>Far below the 15 mA limit!</p>
+</section>
+<section id="blink-frequency-calculation" class="level2" data-number="3.6">
+<h2 data-number="3.6" class="anchored" data-anchor-id="blink-frequency-calculation"><span class="header-section-number">3.6</span> Blink Frequency Calculation</h2>
+<p>Given: FPGA clock (HSOSC) f_clk = 48 MHz, target blink rate f_LED = 2.4 Hz.</p>
+<p>Blink period: T = 1 / 2.4 Hz = 0.4167 s The LED toggles twice per period, so the half-period is 0.4167 s / 2 = 0.2083 s Cycles per toggle: N = 48×10⁶ Hz × 0.2083 s ≈ 10,000,000 cycles</p>
+<p>To check: f_LED = 48 MHz / (2 × 10,000,000) = 2.4 Hz !</p>
+</section>
+</section>
+<section id="simulation-results" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Simulation Results</h1>
+<section id="seven-segment-decoder-test" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="seven-segment-decoder-test"><span class="header-section-number">4.1</span> Seven-Segment Decoder Test</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="good-waveforms.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>QuestaSim waveform for <code>seven_segment_tb</code>: all 16 test vectors pass with 0 errors</figcaption>
+</figure>
+</div>
+</section>
+<section id="counter-test" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="counter-test"><span class="header-section-number">4.2</span> Counter Test</h2>
+<p>N/A</p>
+</section>
+<section id="top-level-test" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="top-level-test"><span class="header-section-number">4.3</span> Top-Level Test</h2>
+<p>N/A</p>
+</section>
+<section id="seven-segment-display" class="level2" data-number="4.4">
+<h2 data-number="4.4" class="anchored" data-anchor-id="seven-segment-display"><span class="header-section-number">4.4</span> Seven-Segment Display</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ex-segment-display.jpeg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>The seven-segment display wired to the development board, correctly displaying the digit 2</figcaption>
+</figure>
+</div>
+</section>
+<section id="led-outputs" class="level2" data-number="4.5">
+<h2 data-number="4.5" class="anchored" data-anchor-id="led-outputs"><span class="header-section-number">4.5</span> LED Outputs</h2>
+<p>I tested all four combinations of s[0] and s[1] and confirmed led[0] only lit up when exactly one of the two was high, matching the XOR truth table. I did the same for s[2] and s[3] against led[1], which only lit up when both were high, matching the AND truth table. Both LEDs matched their expected truth tables for all input combinations.</p>
+</section>
+<section id="issues-and-debugging" class="level2" data-number="4.6">
+<h2 data-number="4.6" class="anchored" data-anchor-id="issues-and-debugging"><span class="header-section-number">4.6</span> Issues and Debugging</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="waveform.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>QuestaSim transcript showing an earlier failed run (2 errors against the expected outputs) followed by the corrected run passing all 16 tests with 0 errors</figcaption>
+</figure>
+</div>
+</section>
+</section>
+<section id="requirements-checklist" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Requirements Checklist</h1>
+<p>This design meets all Proficiency specifications and all Excellence specifications, except that I did not write QuestaSim testbenches for the counter module or the top-level module. I only created an automatic testbench for the seven-segment decoder; the counter and top-level behavior were verified on hardware but not simulated.</p>
+</section>
+<section id="conclusion" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Conclusion</h1>
+<p>Met all proficiency and most excellence specifications. Spent ~15 hours on this lab.</p>
+</section>
+<section id="ai-prototype-and-reflection" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> AI Prototype and Reflection</h1>
+<section id="ai-prototype" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="ai-prototype"><span class="header-section-number">7.1</span> AI Prototype</h2>
+<p>I was able to synthesze the design from Claude but Radiant programmer wasnt working idk. there was one major hiccup and it was cause the original prompt didnt specify that we were using lattice radiant. It took me 6 prompts to get successfuly .sv and .pdc files that synthesized.</p>
+<p>Claude used the wrong library for the oscillator primitive, which caused a synthesis error. The code instantiated an unknown <code>SB_HFOSC</code> instead of the Lattice-recognized oscillator <code>HSOSC</code>. This was corrected in later prompts.</p>
+<p>Also it used the wrong set pin syntax for the .pdc file. it tried to use set_io_location instead of ldc_set_location. This was also corrected in later prompts.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ai-prototype-errors.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Lattice Radiant synthesis error caused by an AI-generated module instantiating an unknown <code>SB_HFOSC</code> primitive instead of the Lattice-recognized oscillator primitive</figcaption>
+</figure>
+</div>
+</section>
+<section id="reflection" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="reflection"><span class="header-section-number">7.2</span> Reflection</h2>
+<p><strong>How would you rate the quality of the output and why?</strong></p>
+<p>I would say that the quality is decent. the main problem for me is that it used some syntax I wasn’t familiar with and had to look up. I do appreciate the diligence of the comments but it does make things feel a little more overwhelming and more complicated than it might actually be.</p>
+<p><strong>What SystemVerilog constructs/syntax did the LLM generated that were new to you?</strong></p>
+<p>I had never seen int’((real’(…))) before.</p>
+<p><strong>Did the LLM-generated code synthesize the first time around? If not, what were the issues?</strong> <strong>What error or warning messages did Radiant output?</strong></p>
+<p>No it took 6 prompts.</p>
+<p><strong>What would you do differently the next time you use an LLM in your workflow?</strong></p>
+<p>I would probably give it a lot more context and maybe even examples of the syntax I wanted it to use. I would also try to be more specific about the tools I was using and the requirements of the project.</p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
