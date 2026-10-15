@@ -1,0 +1,1409 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Cheyenne Trujillo">
+<meta name="dcterms.date" content="2026-10-14">
+
+<title>Lab 6: The Internet of Things and SPI</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="lab6_files/libs/clipboard/clipboard.min.js"></script>
+<script src="lab6_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="lab6_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="lab6_files/libs/quarto-html/popper.min.js"></script>
+<script src="lab6_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="lab6_files/libs/quarto-html/anchor.min.js"></script>
+<link href="lab6_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="lab6_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="lab6_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="lab6_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="lab6_files/libs/bootstrap/bootstrap-917079515d91bccb85b543faf8aa8bb6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a>
+  <ul class="collapse">
+  <li><a href="#overall-design" id="toc-overall-design" class="nav-link" data-scroll-target="#overall-design"><span class="header-section-number">1.1</span> Overall Design</a></li>
+  <li><a href="#spi-driver" id="toc-spi-driver" class="nav-link" data-scroll-target="#spi-driver"><span class="header-section-number">1.2</span> SPI Driver</a></li>
+  <li><a href="#ds1722-driver" id="toc-ds1722-driver" class="nav-link" data-scroll-target="#ds1722-driver"><span class="header-section-number">1.3</span> DS1722 Driver</a></li>
+  <li><a href="#webpage" id="toc-webpage" class="nav-link" data-scroll-target="#webpage"><span class="header-section-number">1.4</span> Webpage</a></li>
+  <li><a href="#testing" id="toc-testing" class="nav-link" data-scroll-target="#testing"><span class="header-section-number">1.5</span> Testing</a></li>
+  </ul></li>
+  <li><a href="#technical-documentation" id="toc-technical-documentation" class="nav-link" data-scroll-target="#technical-documentation"><span class="header-section-number">2</span> Technical Documentation</a>
+  <ul class="collapse">
+  <li><a href="#code" id="toc-code" class="nav-link" data-scroll-target="#code"><span class="header-section-number">2.1</span> Code</a></li>
+  <li><a href="#pin-assignments" id="toc-pin-assignments" class="nav-link" data-scroll-target="#pin-assignments"><span class="header-section-number">2.2</span> Pin Assignments</a></li>
+  <li><a href="#hardware-schematic" id="toc-hardware-schematic" class="nav-link" data-scroll-target="#hardware-schematic"><span class="header-section-number">2.3</span> Hardware Schematic</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">3</span> Results</a>
+  <ul class="collapse">
+  <li><a href="#logic-analyzer" id="toc-logic-analyzer" class="nav-link" data-scroll-target="#logic-analyzer"><span class="header-section-number">3.1</span> Logic Analyzer</a></li>
+  <li><a href="#spi-timing-vs.-datasheet" id="toc-spi-timing-vs.-datasheet" class="nav-link" data-scroll-target="#spi-timing-vs.-datasheet"><span class="header-section-number">3.2</span> SPI Timing vs.&nbsp;Datasheet</a></li>
+  <li><a href="#webpage-1" id="toc-webpage-1" class="nav-link" data-scroll-target="#webpage-1"><span class="header-section-number">3.3</span> Webpage</a></li>
+  <li><a href="#resolution-and-temperature-range" id="toc-resolution-and-temperature-range" class="nav-link" data-scroll-target="#resolution-and-temperature-range"><span class="header-section-number">3.4</span> Resolution and Temperature Range</a></li>
+  <li><a href="#issues-and-debugging" id="toc-issues-and-debugging" class="nav-link" data-scroll-target="#issues-and-debugging"><span class="header-section-number">3.5</span> Issues and Debugging</a></li>
+  </ul></li>
+  <li><a href="#requirements-checklist" id="toc-requirements-checklist" class="nav-link" data-scroll-target="#requirements-checklist"><span class="header-section-number">4</span> Requirements Checklist</a></li>
+  <li><a href="#ai-prototype-and-reflection" id="toc-ai-prototype-and-reflection" class="nav-link" data-scroll-target="#ai-prototype-and-reflection"><span class="header-section-number">5</span> AI Prototype and Reflection</a>
+  <ul class="collapse">
+  <li><a href="#ai-prototype" id="toc-ai-prototype" class="nav-link" data-scroll-target="#ai-prototype"><span class="header-section-number">5.1</span> AI Prototype</a></li>
+  <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection"><span class="header-section-number">5.2</span> Reflection</a></li>
+  </ul></li>
+  <li><a href="#hours-spent" id="toc-hours-spent" class="nav-link" data-scroll-target="#hours-spent"><span class="header-section-number">6</span> Hours Spent</a></li>
+  <li><a href="#comments-and-suggestions" id="toc-comments-and-suggestions" class="nav-link" data-scroll-target="#comments-and-suggestions"><span class="header-section-number">7</span> Comments and Suggestions</a></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">Lab 6: The Internet of Things and SPI</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Cheyenne Trujillo </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">October 14, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>In this lab, I built an IoT device using the STM32L432KC MCU, a DS1722 digital temperature sensor, and an ESP8266 Wi-Fi module. I wrote an SPI driver using the CMSIS device templates and a DS1722 driver on top of it. The MCU reads the temperature over SPI and serves a webpage (through the ESP8266 over UART) that shows the current temperature, lets the user pick the sensor resolution (8 to 12 bits), and shows and toggles the on-board LED.</p>
+<section id="overall-design" class="level2" data-number="1.1">
+<h2 data-number="1.1" class="anchored" data-anchor-id="overall-design"><span class="header-section-number">1.1</span> Overall Design</h2>
+<!-- TODO: block diagram / short description of how MCU, DS1722, and ESP8266 connect -->
+<ul>
+<li><code>main.c</code>: receives requests from the ESP8266 over USART1, updates LED and resolution, reads the temperature, and sends back the webpage</li>
+<li><code>STM32L432KC_SPI.c/.h</code>: SPI1 master driver</li>
+<li><code>DS1722.c/.h</code>: DS1722 driver</li>
+</ul>
+</section>
+<section id="spi-driver" class="level2" data-number="1.2">
+<h2 data-number="1.2" class="anchored" data-anchor-id="spi-driver"><span class="header-section-number">1.2</span> SPI Driver</h2>
+<p>SPI1 is configured as master, 8-bit data, MSB first, full duplex, with software slave management. CE is driven manually on PA8 as a GPIO since the DS1722’s CE is active high.</p>
+<ul>
+<li>Baud rate: <code>BR = 0b111</code> (f<sub>PCLK</sub>/256 = 80 MHz / 256 ≈ 312.5 kHz) <!-- TODO: confirm APB2 prescaler is 1 --></li>
+<li>CPOL = 0, CPHA = 1 (the DS1722 latches data on the falling edge in this mode)</li>
+</ul>
+<p><code>spiSendReceive()</code> waits for TXE, writes one byte to <code>DR</code>, waits for RXNE, reads the received byte, then waits for BSY to clear so CE isn’t dropped mid-transfer.</p>
+</section>
+<section id="ds1722-driver" class="level2" data-number="1.3">
+<h2 data-number="1.3" class="anchored" data-anchor-id="ds1722-driver"><span class="header-section-number">1.3</span> DS1722 Driver</h2>
+<!-- TODO: explain config register (111 1SHOT R2 R1 R0 SD), continuous mode, burst read 0x01 -> 0x02 -->
+<p>The temperature is read in one transaction: address <code>0x01</code>, then two dummy bytes to clock out the LSB and MSB. The two bytes form a 16-bit two’s complement value with 8 fractional bits, so the temperature in °C is the signed value divided by 256.</p>
+<p>After a resolution change, the driver waits the max conversion time for that resolution (75 / 150 / 300 / 600 / 1200 ms for 8–12 bits) before reading.</p>
+</section>
+<section id="webpage" class="level2" data-number="1.4">
+<h2 data-number="1.4" class="anchored" data-anchor-id="webpage"><span class="header-section-number">1.4</span> Webpage</h2>
+<!-- TODO: describe request parsing (ledon/ledoff, 8bit..12bit) and webpage contents -->
+</section>
+<section id="testing" class="level2" data-number="1.5">
+<h2 data-number="1.5" class="anchored" data-anchor-id="testing"><span class="header-section-number">1.5</span> Testing</h2>
+<!-- TODO: how you tested (config register readback, logic analyzer, comparing against room temp / touching sensor, etc.) -->
+</section>
+</section>
+<section id="technical-documentation" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Technical Documentation</h1>
+<section id="code" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="code"><span class="header-section-number">2.1</span> Code</h2>
+<!-- TODO: link to GitHub repo -->
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-1-contents" aria-controls="callout-1" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>SPI driver header (<code>STM32L432KC_SPI.h</code>)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-1" class="callout-1-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// STM32L432KC_SPI.h</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="al">TODO</span><span class="co">: &lt;YOUR NAME&gt;</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="al">TODO</span><span class="co">: &lt;YOUR EMAIL&gt;</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="al">TODO</span><span class="co">: &lt;DATE&gt;</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// </span><span class="al">TODO</span><span class="co">: &lt;SHORT DESCRIPTION OF WHAT THIS FILE DOES&gt;</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef STM32L4_SPI_H</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STM32L4_SPI_H</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdint.h&gt;</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stm32l432xx.h&gt;</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a><span class="co">///////////////////////////////////////////////////////////////////////////////</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a><span class="co">// Function prototypes</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a><span class="co">///////////////////////////////////////////////////////////////////////////////</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a><span class="co">/* Enables the SPI peripheral and intializes its clock speed (baud rate), polarity, and phase.</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a><span class="co"> *    -- br: (0b000 - 0b111). The SPI clk will be the master clock / 2^(BR+1).</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="co"> *    -- cpol: clock polarity (0: inactive state is logical 0, 1: inactive state is logical 1).</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a><span class="co"> *    -- cpha: clock phase (0: data captured on leading edge of clk and changed on next edge, </span></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="co"> *          1: data changed on leading edge of clk and captured on next edge)</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a><span class="co"> * Refer to the datasheet for more low-level details. */</span> </span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initSPI<span class="op">(</span><span class="dt">int</span> br<span class="op">,</span> <span class="dt">int</span> cpol<span class="op">,</span> <span class="dt">int</span> cpha<span class="op">);</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a><span class="co">/* Transmits a character (1 byte) over SPI and returns the received character.</span></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a><span class="co"> *    -- send: the character to send over SPI</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a><span class="co"> *    -- return: the character received over SPI */</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> spiSendReceive<span class="op">(</span><span class="dt">char</span> send<span class="op">);</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-2-contents" aria-controls="callout-2" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>SPI driver (<code>STM32L432KC_SPI.c</code>)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-2" class="callout-2-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// STM32L432KC_SPI.c</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// SPI1 master driver for STM32L432KC (matches the course-provided STM32L432KC_SPI.h)</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"STM32L432KC_SPI.h"</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initSPI<span class="op">(</span><span class="dt">int</span> br<span class="op">,</span> <span class="dt">int</span> cpol<span class="op">,</span> <span class="dt">int</span> cpha<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Make sure the SPI1 peripheral clock is on (APB2ENR.SPI1EN)</span></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    RCC<span class="op">-&gt;</span>APB2ENR <span class="op">|=</span> RCC_APB2ENR_SPI1EN<span class="op">;</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Disable SPI and start from a clean slate so re-init is safe</span></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR1 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR2 <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a>    <span class="co">// CR2: 8-bit data size, RXNE fires at 8 bits, Motorola frame format (FRF=0),</span></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="co">// no hardware NSS output (SSOE=0), no NSS pulse (NSSP=0)</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR2 <span class="op">=</span> _VAL2FLD<span class="op">(</span>SPI_CR2_DS<span class="op">,</span> <span class="bn">0b0111</span><span class="op">)</span> <span class="op">|</span> SPI_CR2_FRXTH<span class="op">;</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>    <span class="co">// CR1: baud rate, polarity, phase</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR1 <span class="op">|=</span> _VAL2FLD<span class="op">(</span>SPI_CR1_BR<span class="op">,</span> br <span class="op">&amp;</span> <span class="bn">0x7</span><span class="op">);</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR1 <span class="op">|=</span> _VAL2FLD<span class="op">(</span>SPI_CR1_CPOL<span class="op">,</span> cpol <span class="op">&amp;</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR1 <span class="op">|=</span> _VAL2FLD<span class="op">(</span>SPI_CR1_CPHA<span class="op">,</span> cpha <span class="op">&amp;</span> <span class="dv">1</span><span class="op">);</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>    <span class="co">// MSB first, full duplex, 2-line (LSBFIRST, RXONLY, BIDIMODE already 0 from reset above)</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Software slave management: internal NSS held high so master mode isn't faulted</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR1 <span class="op">|=</span> SPI_CR1_SSM <span class="op">|</span> SPI_CR1_SSI<span class="op">;</span></span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Master mode (after SSI is set)</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR1 <span class="op">|=</span> SPI_CR1_MSTR<span class="op">;</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Enable last</span></span>
+<span id="cb2-32"><a href="#cb2-32" aria-hidden="true" tabindex="-1"></a>    SPI1<span class="op">-&gt;</span>CR1 <span class="op">|=</span> SPI_CR1_SPE<span class="op">;</span></span>
+<span id="cb2-33"><a href="#cb2-33" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb2-34"><a href="#cb2-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-35"><a href="#cb2-35" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span> spiSendReceive<span class="op">(</span><span class="dt">char</span> send<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb2-36"><a href="#cb2-36" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(!(</span>SPI1<span class="op">-&gt;</span>SR <span class="op">&amp;</span> SPI_SR_TXE<span class="op">));</span>                       <span class="co">// wait until TX buffer empty</span></span>
+<span id="cb2-37"><a href="#cb2-37" aria-hidden="true" tabindex="-1"></a>    <span class="op">*(</span><span class="dt">volatile</span> <span class="dt">uint8_t</span> <span class="op">*)&amp;</span>SPI1<span class="op">-&gt;</span>DR <span class="op">=</span> <span class="op">(</span><span class="dt">uint8_t</span><span class="op">)</span>send<span class="op">;</span>         <span class="co">// 8-bit write: one byte into the FIFO</span></span>
+<span id="cb2-38"><a href="#cb2-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(!(</span>SPI1<span class="op">-&gt;</span>SR <span class="op">&amp;</span> SPI_SR_RXNE<span class="op">));</span>                      <span class="co">// wait for received byte</span></span>
+<span id="cb2-39"><a href="#cb2-39" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span> rx <span class="op">=</span> <span class="op">*(</span><span class="dt">volatile</span> <span class="dt">uint8_t</span> <span class="op">*)&amp;</span>SPI1<span class="op">-&gt;</span>DR<span class="op">;</span>            <span class="co">// 8-bit read</span></span>
+<span id="cb2-40"><a href="#cb2-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span>SPI1<span class="op">-&gt;</span>SR <span class="op">&amp;</span> SPI_SR_BSY<span class="op">);</span>                          <span class="co">// bus idle before caller drops CE</span></span>
+<span id="cb2-41"><a href="#cb2-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">(</span><span class="dt">char</span><span class="op">)</span>rx<span class="op">;</span></span>
+<span id="cb2-42"><a href="#cb2-42" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-3-contents" aria-controls="callout-3" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>DS1722 driver header (<code>DS1722.h</code>)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-3" class="callout-3-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// DS1722.h</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">// DS1722 digital thermometer driver (SPI mode, CE active high on PA8)</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef DS1722_H</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_H</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdint.h&gt;</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"STM32L432KC.h"</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_CE_PIN PA8</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a><span class="co">// Config bytes: 111 1SHOT R2 R1 R0 SD, with SD=0 (continuous), 1SHOT=0</span></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_CFG_8BIT   </span><span class="bn">0xE0</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_CFG_9BIT   </span><span class="bn">0xE2</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_CFG_10BIT  </span><span class="bn">0xE4</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_CFG_11BIT  </span><span class="bn">0xE6</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_CFG_12BIT  </span><span class="bn">0xE8</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">// Sets continuous conversion at 12-bit and waits for the first conversion.</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initTempSensor<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a><span class="co">// Writes a config byte (0xE0..0xE8) and waits one full conversion time.</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a><span class="co">// Ignores bytes that aren't a valid resolution config (e.g. 0).</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> writeToTempSensor<span class="op">(</span><span class="dt">uint8_t</span> cfg<span class="op">);</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="co">// Reads the config register (for checking the SPI link; expect what you wrote).</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a><span class="dt">uint8_t</span> readConfigFromTempSensor<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a><span class="co">// Reads temperature registers and returns degrees C.</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="dt">double</span> readFromTempSensor<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">// Converts raw {MSB, LSB} to degrees C (16-bit two's complement, /256).</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="dt">double</span> calc_temp<span class="op">(</span><span class="dt">uint8_t</span> hi<span class="op">,</span> <span class="dt">uint8_t</span> lo<span class="op">);</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-4-contents" aria-controls="callout-4" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>DS1722 driver (<code>DS1722.c</code>)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-4" class="callout-4-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// DS1722.c</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">// DS1722 digital thermometer driver over SPI (CE active high on PA8)</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"DS1722.h"</span></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_ADDR_CFG_READ   </span><span class="bn">0x00</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_ADDR_CFG_WRITE  </span><span class="bn">0x80</span></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DS1722_ADDR_TEMP_LSB   </span><span class="bn">0x01</span><span class="pp">   </span><span class="co">// MSB at 0x02; burst read auto-advances 01h -&gt; 02h</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">void</span> ceHigh<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span> digitalWrite<span class="op">(</span>DS1722_CE_PIN<span class="op">,</span> <span class="dv">1</span><span class="op">);</span> <span class="op">}</span></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">void</span> ceLow<span class="op">(</span><span class="dt">void</span><span class="op">)</span>  <span class="op">{</span> digitalWrite<span class="op">(</span>DS1722_CE_PIN<span class="op">,</span> <span class="dv">0</span><span class="op">);</span> <span class="op">}</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">// Max conversion time in ms for a given config byte (datasheet Table 5)</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">uint32_t</span> conversionMs<span class="op">(</span><span class="dt">uint8_t</span> cfg<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>cfg <span class="op">&amp;</span> <span class="bn">0x08</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">1200</span><span class="op">;</span>                 <span class="co">// R2=1 -&gt; 12-bit</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>    <span class="cf">switch</span> <span class="op">((</span>cfg <span class="op">&gt;&gt;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&amp;</span> <span class="bn">0x3</span><span class="op">)</span> <span class="op">{</span>                  <span class="co">// R1:R0</span></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="dv">0</span><span class="op">:</span>  <span class="cf">return</span> <span class="dv">75</span><span class="op">;</span>                      <span class="co">// 8-bit</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="dv">1</span><span class="op">:</span>  <span class="cf">return</span> <span class="dv">150</span><span class="op">;</span>                     <span class="co">// 9-bit</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>        <span class="cf">case</span> <span class="dv">2</span><span class="op">:</span>  <span class="cf">return</span> <span class="dv">300</span><span class="op">;</span>                     <span class="co">// 10-bit</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>        <span class="cf">default</span><span class="op">:</span> <span class="cf">return</span> <span class="dv">600</span><span class="op">;</span>                     <span class="co">// 11-bit</span></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">void</span> writeConfig<span class="op">(</span><span class="dt">uint8_t</span> cfg<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>    ceHigh<span class="op">();</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    spiSendReceive<span class="op">(</span>DS1722_ADDR_CFG_WRITE<span class="op">);</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a>    spiSendReceive<span class="op">(</span>cfg<span class="op">);</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a>    ceLow<span class="op">();</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initTempSensor<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a>    ceLow<span class="op">();</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a>    writeConfig<span class="op">(</span>DS1722_CFG_12BIT<span class="op">);</span>               <span class="co">// powers up in shutdown; this clears SD</span></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a>    delay_millis<span class="op">(</span>TIM15<span class="op">,</span> <span class="dv">1200</span><span class="op">);</span>                   <span class="co">// let the first 12-bit conversion finish</span></span>
+<span id="cb4-35"><a href="#cb4-35" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-36"><a href="#cb4-36" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-37"><a href="#cb4-37" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> writeToTempSensor<span class="op">(</span><span class="dt">uint8_t</span> cfg<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-38"><a href="#cb4-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Accept only 111x xxx0 patterns with 1SHOT clear: 0xE0, E2, E4, E6, E8</span></span>
+<span id="cb4-39"><a href="#cb4-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">((</span>cfg <span class="op">&amp;</span> <span class="bn">0xF1</span><span class="op">)</span> <span class="op">!=</span> <span class="bn">0xE0</span> <span class="op">||</span> <span class="op">((</span>cfg <span class="op">&gt;&gt;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&amp;</span> <span class="bn">0x7</span><span class="op">)</span> <span class="op">&gt;</span> <span class="dv">4</span><span class="op">)</span> <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb4-40"><a href="#cb4-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-41"><a href="#cb4-41" aria-hidden="true" tabindex="-1"></a>    writeConfig<span class="op">(</span>cfg<span class="op">);</span></span>
+<span id="cb4-42"><a href="#cb4-42" aria-hidden="true" tabindex="-1"></a>    delay_millis<span class="op">(</span>TIM15<span class="op">,</span> conversionMs<span class="op">(</span>cfg<span class="op">));</span>      <span class="co">// CE is already low while we wait</span></span>
+<span id="cb4-43"><a href="#cb4-43" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-44"><a href="#cb4-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-45"><a href="#cb4-45" aria-hidden="true" tabindex="-1"></a><span class="dt">uint8_t</span> readConfigFromTempSensor<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-46"><a href="#cb4-46" aria-hidden="true" tabindex="-1"></a>    ceHigh<span class="op">();</span></span>
+<span id="cb4-47"><a href="#cb4-47" aria-hidden="true" tabindex="-1"></a>    spiSendReceive<span class="op">(</span>DS1722_ADDR_CFG_READ<span class="op">);</span></span>
+<span id="cb4-48"><a href="#cb4-48" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span> cfg <span class="op">=</span> spiSendReceive<span class="op">(</span><span class="bn">0x00</span><span class="op">);</span></span>
+<span id="cb4-49"><a href="#cb4-49" aria-hidden="true" tabindex="-1"></a>    ceLow<span class="op">();</span></span>
+<span id="cb4-50"><a href="#cb4-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> cfg<span class="op">;</span></span>
+<span id="cb4-51"><a href="#cb4-51" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-52"><a href="#cb4-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-53"><a href="#cb4-53" aria-hidden="true" tabindex="-1"></a><span class="dt">double</span> readFromTempSensor<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-54"><a href="#cb4-54" aria-hidden="true" tabindex="-1"></a>    <span class="co">// One burst transaction: address 0x01, then LSB, then MSB (address auto-increments)</span></span>
+<span id="cb4-55"><a href="#cb4-55" aria-hidden="true" tabindex="-1"></a>    ceHigh<span class="op">();</span></span>
+<span id="cb4-56"><a href="#cb4-56" aria-hidden="true" tabindex="-1"></a>    spiSendReceive<span class="op">(</span>DS1722_ADDR_TEMP_LSB<span class="op">);</span></span>
+<span id="cb4-57"><a href="#cb4-57" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span> lsb <span class="op">=</span> spiSendReceive<span class="op">(</span><span class="bn">0x00</span><span class="op">);</span></span>
+<span id="cb4-58"><a href="#cb4-58" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span> msb <span class="op">=</span> spiSendReceive<span class="op">(</span><span class="bn">0x00</span><span class="op">);</span></span>
+<span id="cb4-59"><a href="#cb4-59" aria-hidden="true" tabindex="-1"></a>    ceLow<span class="op">();</span></span>
+<span id="cb4-60"><a href="#cb4-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> calc_temp<span class="op">(</span>msb<span class="op">,</span> lsb<span class="op">);</span></span>
+<span id="cb4-61"><a href="#cb4-61" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb4-62"><a href="#cb4-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-63"><a href="#cb4-63" aria-hidden="true" tabindex="-1"></a><span class="dt">double</span> calc_temp<span class="op">(</span><span class="dt">uint8_t</span> hi<span class="op">,</span> <span class="dt">uint8_t</span> lo<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb4-64"><a href="#cb4-64" aria-hidden="true" tabindex="-1"></a>    <span class="co">// {hi, lo} is a 16-bit two's complement value with 8 fractional bits.</span></span>
+<span id="cb4-65"><a href="#cb4-65" aria-hidden="true" tabindex="-1"></a>    <span class="co">// The signed cast handles negative temperatures.</span></span>
+<span id="cb4-66"><a href="#cb4-66" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int16_t</span> raw <span class="op">=</span> <span class="op">(</span><span class="dt">int16_t</span><span class="op">)(((</span><span class="dt">uint16_t</span><span class="op">)</span>hi <span class="op">&lt;&lt;</span> <span class="dv">8</span><span class="op">)</span> <span class="op">|</span> lo<span class="op">);</span></span>
+<span id="cb4-67"><a href="#cb4-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> raw <span class="op">/</span> <span class="fl">256.0</span><span class="op">;</span></span>
+<span id="cb4-68"><a href="#cb4-68" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-5-contents" aria-controls="callout-5" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Main header (<code>main.h</code>)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-5" class="callout-5-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">/**</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">    Main Header: Contains general defines and selected portions of CMSIS files</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">    </span><span class="an">@file</span><span class="co"> </span><span class="cv">main.h</span></span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">    </span><span class="an">@author</span><span class="co"> Josh Brake</span></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">    </span><span class="an">@version</span><span class="co"> </span><span class="cv">1.0</span><span class="co"> 10/7/2020</span></span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">*/</span></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef MAIN_H</span></span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MAIN_H</span></span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"STM32L432KC.h"</span></span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define LED_PIN PB3 </span><span class="co">// LED pin for blinking on Port B pin 3</span></span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#define BUFF_LEN </span><span class="dv">32</span></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">// MAIN_H</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-6-contents" aria-controls="callout-6" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Main program (<code>main.c</code>)
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-6" class="callout-6-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">/*</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">File: Lab_6_JHB.c</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">Author: Josh Brake</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="co">Email: jbrake@hmc.edu</span></span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="co">Date: 9/14/19</span></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a><span class="co">*/</span></span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;string.h&gt;</span></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdlib.h&gt;</span></span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"main.h"</span></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="co">/////////////////////////////////////////////////////////////////</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="co">// Web page pieces</span></span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="co">/////////////////////////////////////////////////////////////////</span></span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span><span class="op">*</span> webpageStart <span class="op">=</span> <span class="st">"&lt;!DOCTYPE html&gt;&lt;html&gt;&lt;head&gt;&lt;title&gt;DS1722 Temperature Sensor&lt;/title&gt;</span><span class="op">\</span></span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;meta name=</span><span class="sc">\"</span><span class="st">viewport</span><span class="sc">\"</span><span class="st"> content=</span><span class="sc">\"</span><span class="st">width=device-width, initial-scale=1.0</span><span class="sc">\"</span><span class="st">&gt;</span><span class="op">\</span></span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;/head&gt;</span><span class="op">\</span></span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;body&gt;&lt;h1&gt;DS1722 Temperature Sensor&lt;/h1&gt;"</span><span class="op">;</span></span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span><span class="op">*</span> resStr <span class="op">=</span> <span class="st">"&lt;h2&gt;Resolution Control:&lt;/h2&gt;</span><span class="op">\</span></span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;form action=</span><span class="sc">\"</span><span class="st">12bit</span><span class="sc">\"</span><span class="st">&gt;&lt;input type=</span><span class="sc">\"</span><span class="st">submit</span><span class="sc">\"</span><span class="st"> value=</span><span class="sc">\"</span><span class="st">12 bits</span><span class="sc">\"</span><span class="st">&gt;&lt;/form&gt;</span><span class="op">\</span></span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;form action=</span><span class="sc">\"</span><span class="st">11bit</span><span class="sc">\"</span><span class="st">&gt;&lt;input type=</span><span class="sc">\"</span><span class="st">submit</span><span class="sc">\"</span><span class="st"> value=</span><span class="sc">\"</span><span class="st">11 bits</span><span class="sc">\"</span><span class="st">&gt;&lt;/form&gt;</span><span class="op">\</span></span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;form action=</span><span class="sc">\"</span><span class="st">10bit</span><span class="sc">\"</span><span class="st">&gt;&lt;input type=</span><span class="sc">\"</span><span class="st">submit</span><span class="sc">\"</span><span class="st"> value=</span><span class="sc">\"</span><span class="st">10 bits</span><span class="sc">\"</span><span class="st">&gt;&lt;/form&gt;</span><span class="op">\</span></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;form action=</span><span class="sc">\"</span><span class="st">9bit</span><span class="sc">\"</span><span class="st">&gt;&lt;input type=</span><span class="sc">\"</span><span class="st">submit</span><span class="sc">\"</span><span class="st"> value=</span><span class="sc">\"</span><span class="st">9 bits</span><span class="sc">\"</span><span class="st">&gt;&lt;/form&gt;</span><span class="op">\</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;form action=</span><span class="sc">\"</span><span class="st">8bit</span><span class="sc">\"</span><span class="st">&gt;&lt;input type=</span><span class="sc">\"</span><span class="st">submit</span><span class="sc">\"</span><span class="st"> value=</span><span class="sc">\"</span><span class="st">8 bits</span><span class="sc">\"</span><span class="st">&gt;&lt;/form&gt;"</span><span class="op">;</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span><span class="op">*</span> ledStr <span class="op">=</span> <span class="st">"&lt;h2&gt;LED Control:&lt;/h2&gt;&lt;form action=</span><span class="sc">\"</span><span class="st">ledon</span><span class="sc">\"</span><span class="st">&gt;&lt;input type=</span><span class="sc">\"</span><span class="st">submit</span><span class="sc">\"</span><span class="st"> value=</span><span class="sc">\"</span><span class="st">Turn the LED on!</span><span class="sc">\"</span><span class="st">&gt;&lt;/form&gt;</span><span class="op">\</span></span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="st">    &lt;form action=</span><span class="sc">\"</span><span class="st">ledoff</span><span class="sc">\"</span><span class="st">&gt;&lt;input type=</span><span class="sc">\"</span><span class="st">submit</span><span class="sc">\"</span><span class="st"> value=</span><span class="sc">\"</span><span class="st">Turn the LED off!</span><span class="sc">\"</span><span class="st">&gt;&lt;/form&gt;"</span><span class="op">;</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span><span class="op">*</span> webpageEnd   <span class="op">=</span> <span class="st">"&lt;/body&gt;&lt;/html&gt;"</span><span class="op">;</span></span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="co">/////////////////////////////////////////////////////////////////</span></span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="co">// Helpers</span></span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a><span class="co">/////////////////////////////////////////////////////////////////</span></span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a><span class="co">// Returns 1 if des appears in request, -1 if not</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> inString<span class="op">(</span><span class="dt">char</span> request<span class="op">[],</span> <span class="dt">char</span> des<span class="op">[])</span> <span class="op">{</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>strstr<span class="op">(</span>request<span class="op">,</span> des<span class="op">)</span> <span class="op">!=</span> NULL<span class="op">)</span> <span class="op">{</span><span class="cf">return</span> <span class="dv">1</span><span class="op">;}</span></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">-</span><span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a><span class="co">// LED state persists between requests; only ledon/ledoff change it</span></span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> updateLEDStatus<span class="op">(</span><span class="dt">char</span> request<span class="op">[])</span></span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    <span class="dt">static</span> <span class="dt">int</span> led_status <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"ledoff"</span><span class="op">)</span> <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        digitalWrite<span class="op">(</span>LED_PIN<span class="op">,</span> PIO_LOW<span class="op">);</span></span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>        led_status <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span> <span class="cf">if</span> <span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"ledon"</span><span class="op">)</span> <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        digitalWrite<span class="op">(</span>LED_PIN<span class="op">,</span> PIO_HIGH<span class="op">);</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>        led_status <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> led_status<span class="op">;</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a><span class="co">// Returns the DS1722 config byte for a resolution button, or 0 if the request isn't one</span></span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a><span class="dt">uint8_t</span> updateResStatus<span class="op">(</span><span class="dt">char</span> request<span class="op">[])</span></span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"12bit"</span><span class="op">)</span> <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> DS1722_CFG_12BIT<span class="op">;</span></span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"11bit"</span><span class="op">)</span> <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> DS1722_CFG_11BIT<span class="op">;</span></span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"10bit"</span><span class="op">)</span> <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> DS1722_CFG_10BIT<span class="op">;</span></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"9bit"</span><span class="op">)</span>  <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> DS1722_CFG_9BIT<span class="op">;</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"8bit"</span><span class="op">)</span>  <span class="op">==</span> <span class="dv">1</span><span class="op">)</span> <span class="cf">return</span> DS1722_CFG_8BIT<span class="op">;</span></span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a><span class="co">// Number of resolution bits for a config byte (R2 -&gt; 12, else 8 + R1:R0)</span></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> resBitsFromCfg<span class="op">(</span><span class="dt">uint8_t</span> cfg<span class="op">)</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>cfg <span class="op">&amp;</span> <span class="bn">0x08</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">12</span><span class="op">;</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="dv">8</span> <span class="op">+</span> <span class="op">((</span>cfg <span class="op">&gt;&gt;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&amp;</span> <span class="bn">0x3</span><span class="op">);</span></span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a><span class="co">// Writes value / 10^decimals as text (e.g. 235625 with decimals=4 -&gt; "23.5625") at p.</span></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a><span class="co">// Handles negatives and zero-padded fractions without using printf. Returns pointer past the end.</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a><span class="dt">char</span><span class="op">*</span> fmtFixed<span class="op">(</span><span class="dt">char</span> <span class="op">*</span>p<span class="op">,</span> <span class="dt">int</span> value<span class="op">,</span> <span class="dt">int</span> decimals<span class="op">)</span></span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> scale <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a>    <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> decimals<span class="op">;</span> i<span class="op">++)</span> scale <span class="op">*=</span> <span class="dv">10</span><span class="op">;</span></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>value <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span> <span class="op">*</span>p<span class="op">++</span> <span class="op">=</span> <span class="ch">'-'</span><span class="op">;</span> value <span class="op">=</span> <span class="op">-</span>value<span class="op">;</span> <span class="op">}</span></span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> whole <span class="op">=</span> value <span class="op">/</span> scale<span class="op">;</span></span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> frac  <span class="op">=</span> value <span class="op">%</span> scale<span class="op">;</span></span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> tmp<span class="op">[</span><span class="dv">12</span><span class="op">];</span></span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> n <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>whole <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> tmp<span class="op">[</span>n<span class="op">++]</span> <span class="op">=</span> <span class="ch">'0'</span><span class="op">;</span></span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span>whole <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span> tmp<span class="op">[</span>n<span class="op">++]</span> <span class="op">=</span> <span class="ch">'0'</span> <span class="op">+</span> <span class="op">(</span>whole <span class="op">%</span> <span class="dv">10</span><span class="op">);</span> whole <span class="op">/=</span> <span class="dv">10</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span>n <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">*</span>p<span class="op">++</span> <span class="op">=</span> tmp<span class="op">[--</span>n<span class="op">];</span></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>decimals <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>        <span class="op">*</span>p<span class="op">++</span> <span class="op">=</span> <span class="ch">'.'</span><span class="op">;</span></span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int</span> div <span class="op">=</span> scale <span class="op">/</span> <span class="dv">10</span><span class="op">;</span></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a>        <span class="cf">for</span> <span class="op">(</span><span class="dt">int</span> i <span class="op">=</span> <span class="dv">0</span><span class="op">;</span> i <span class="op">&lt;</span> decimals<span class="op">;</span> i<span class="op">++)</span> <span class="op">{</span> <span class="op">*</span>p<span class="op">++</span> <span class="op">=</span> <span class="ch">'0'</span> <span class="op">+</span> <span class="op">(</span>frac <span class="op">/</span> div<span class="op">)</span> <span class="op">%</span> <span class="dv">10</span><span class="op">;</span> div <span class="op">/=</span> <span class="dv">10</span><span class="op">;</span> <span class="op">}</span></span>
+<span id="cb6-100"><a href="#cb6-100" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-101"><a href="#cb6-101" aria-hidden="true" tabindex="-1"></a>    <span class="op">*</span>p <span class="op">=</span> <span class="ch">'</span><span class="sc">\0</span><span class="ch">'</span><span class="op">;</span></span>
+<span id="cb6-102"><a href="#cb6-102" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> p<span class="op">;</span></span>
+<span id="cb6-103"><a href="#cb6-103" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-104"><a href="#cb6-104" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-105"><a href="#cb6-105" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> configurePins<span class="op">(</span><span class="dt">void</span><span class="op">)</span></span>
+<span id="cb6-106"><a href="#cb6-106" aria-hidden="true" tabindex="-1"></a><span class="op">{</span></span>
+<span id="cb6-107"><a href="#cb6-107" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>PA5<span class="op">,</span> GPIO_ALT<span class="op">);</span>    <span class="co">// SPI1_SCK</span></span>
+<span id="cb6-108"><a href="#cb6-108" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>PA6<span class="op">,</span> GPIO_ALT<span class="op">);</span>    <span class="co">// SPI1_MISO</span></span>
+<span id="cb6-109"><a href="#cb6-109" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>PB5<span class="op">,</span> GPIO_ALT<span class="op">);</span>    <span class="co">// SPI1_MOSI</span></span>
+<span id="cb6-110"><a href="#cb6-110" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>DS1722_CE_PIN<span class="op">,</span> GPIO_OUTPUT<span class="op">);</span> <span class="co">// DS1722 CE (active high)</span></span>
+<span id="cb6-111"><a href="#cb6-111" aria-hidden="true" tabindex="-1"></a>    digitalWrite<span class="op">(</span>DS1722_CE_PIN<span class="op">,</span> <span class="dv">0</span><span class="op">);</span>      <span class="co">// idle low</span></span>
+<span id="cb6-112"><a href="#cb6-112" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-113"><a href="#cb6-113" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Very high output speed for SCK, MISO, MOSI (2 bits per pin: PA5 -&gt; [11:10], PA6 -&gt; [13:12], PB5 -&gt; [11:10])</span></span>
+<span id="cb6-114"><a href="#cb6-114" aria-hidden="true" tabindex="-1"></a>    GPIOA<span class="op">-&gt;</span>OSPEEDR <span class="op">|=</span> <span class="op">((</span><span class="dv">3</span> <span class="op">&lt;&lt;</span> <span class="dv">10</span><span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="dv">3</span> <span class="op">&lt;&lt;</span> <span class="dv">12</span><span class="op">));</span></span>
+<span id="cb6-115"><a href="#cb6-115" aria-hidden="true" tabindex="-1"></a>    GPIOB<span class="op">-&gt;</span>OSPEEDR <span class="op">|=</span> <span class="op">(</span><span class="dv">3</span> <span class="op">&lt;&lt;</span> <span class="dv">10</span><span class="op">);</span></span>
+<span id="cb6-116"><a href="#cb6-116" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-117"><a href="#cb6-117" aria-hidden="true" tabindex="-1"></a>    <span class="co">// AF5 = SPI1 on PA5 ([23:20]), PA6 ([27:24]) and PB5 ([23:20]) (AFRL, 4 bits per pin)</span></span>
+<span id="cb6-118"><a href="#cb6-118" aria-hidden="true" tabindex="-1"></a>    GPIOA<span class="op">-&gt;</span>AFR<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">&amp;=</span> <span class="op">~((</span><span class="bn">0xF</span><span class="bu">U</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span><span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="bn">0xF</span><span class="bu">U</span> <span class="op">&lt;&lt;</span> <span class="dv">24</span><span class="op">));</span></span>
+<span id="cb6-119"><a href="#cb6-119" aria-hidden="true" tabindex="-1"></a>    GPIOB<span class="op">-&gt;</span>AFR<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">&amp;=</span> <span class="op">~(</span><span class="bn">0xF</span><span class="bu">U</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span><span class="op">);</span></span>
+<span id="cb6-120"><a href="#cb6-120" aria-hidden="true" tabindex="-1"></a>    GPIOA<span class="op">-&gt;</span>AFR<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">|=</span>  <span class="op">((</span><span class="dv">5</span><span class="bu">U</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span><span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="dv">5</span><span class="bu">U</span> <span class="op">&lt;&lt;</span> <span class="dv">24</span><span class="op">));</span></span>
+<span id="cb6-121"><a href="#cb6-121" aria-hidden="true" tabindex="-1"></a>    GPIOB<span class="op">-&gt;</span>AFR<span class="op">[</span><span class="dv">0</span><span class="op">]</span> <span class="op">|=</span>  <span class="op">(</span><span class="dv">5</span><span class="bu">U</span> <span class="op">&lt;&lt;</span> <span class="dv">20</span><span class="op">);</span></span>
+<span id="cb6-122"><a href="#cb6-122" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb6-123"><a href="#cb6-123" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-124"><a href="#cb6-124" aria-hidden="true" tabindex="-1"></a><span class="co">/////////////////////////////////////////////////////////////////</span></span>
+<span id="cb6-125"><a href="#cb6-125" aria-hidden="true" tabindex="-1"></a><span class="co">// Main</span></span>
+<span id="cb6-126"><a href="#cb6-126" aria-hidden="true" tabindex="-1"></a><span class="co">/////////////////////////////////////////////////////////////////</span></span>
+<span id="cb6-127"><a href="#cb6-127" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-128"><a href="#cb6-128" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-129"><a href="#cb6-129" aria-hidden="true" tabindex="-1"></a>  configureFlash<span class="op">();</span></span>
+<span id="cb6-130"><a href="#cb6-130" aria-hidden="true" tabindex="-1"></a>  configureClock<span class="op">();</span></span>
+<span id="cb6-131"><a href="#cb6-131" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-132"><a href="#cb6-132" aria-hidden="true" tabindex="-1"></a>  gpioEnable<span class="op">(</span>GPIO_PORT_A<span class="op">);</span></span>
+<span id="cb6-133"><a href="#cb6-133" aria-hidden="true" tabindex="-1"></a>  gpioEnable<span class="op">(</span>GPIO_PORT_B<span class="op">);</span></span>
+<span id="cb6-134"><a href="#cb6-134" aria-hidden="true" tabindex="-1"></a>  gpioEnable<span class="op">(</span>GPIO_PORT_C<span class="op">);</span></span>
+<span id="cb6-135"><a href="#cb6-135" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-136"><a href="#cb6-136" aria-hidden="true" tabindex="-1"></a>  pinMode<span class="op">(</span>LED_PIN<span class="op">,</span> GPIO_OUTPUT<span class="op">);</span></span>
+<span id="cb6-137"><a href="#cb6-137" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-138"><a href="#cb6-138" aria-hidden="true" tabindex="-1"></a>  RCC<span class="op">-&gt;</span>APB2ENR <span class="op">|=</span> <span class="op">(</span>RCC_APB2ENR_TIM15EN<span class="op">);</span></span>
+<span id="cb6-139"><a href="#cb6-139" aria-hidden="true" tabindex="-1"></a>  initTIM<span class="op">(</span>TIM15<span class="op">);</span></span>
+<span id="cb6-140"><a href="#cb6-140" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-141"><a href="#cb6-141" aria-hidden="true" tabindex="-1"></a>  USART_TypeDef <span class="op">*</span> USART <span class="op">=</span> initUSART<span class="op">(</span>USART1_ID<span class="op">,</span> <span class="dv">125000</span><span class="op">);</span></span>
+<span id="cb6-142"><a href="#cb6-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-143"><a href="#cb6-143" aria-hidden="true" tabindex="-1"></a>  <span class="co">// SPI: pins first, then the peripheral (initSPI also enables the SPI1 clock)</span></span>
+<span id="cb6-144"><a href="#cb6-144" aria-hidden="true" tabindex="-1"></a>  configurePins<span class="op">();</span></span>
+<span id="cb6-145"><a href="#cb6-145" aria-hidden="true" tabindex="-1"></a>  initSPI<span class="op">(</span><span class="bn">0b111</span><span class="op">,</span> <span class="dv">0</span><span class="op">,</span> <span class="dv">1</span><span class="op">);</span>   <span class="co">// slowest clock (PCLK/256), CPOL=0, CPHA=1 as the DS1722 requires</span></span>
+<span id="cb6-146"><a href="#cb6-146" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-147"><a href="#cb6-147" aria-hidden="true" tabindex="-1"></a>  initTempSensor<span class="op">();</span>       <span class="co">// 12-bit continuous; waits for the first conversion</span></span>
+<span id="cb6-148"><a href="#cb6-148" aria-hidden="true" tabindex="-1"></a>  <span class="dt">int</span> resBits <span class="op">=</span> <span class="dv">12</span><span class="op">;</span></span>
+<span id="cb6-149"><a href="#cb6-149" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-150"><a href="#cb6-150" aria-hidden="true" tabindex="-1"></a>  <span class="cf">while</span><span class="op">(</span><span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-151"><a href="#cb6-151" aria-hidden="true" tabindex="-1"></a>    <span class="co">/* Wait for ESP8266 to send a request.</span></span>
+<span id="cb6-152"><a href="#cb6-152" aria-hidden="true" tabindex="-1"></a><span class="co">    Requests take the form of '/REQ:&lt;tag&gt;\n', with TAG begin &lt;= 10 characters.</span></span>
+<span id="cb6-153"><a href="#cb6-153" aria-hidden="true" tabindex="-1"></a><span class="co">    */</span></span>
+<span id="cb6-154"><a href="#cb6-154" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-155"><a href="#cb6-155" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Receive web request from the ESP</span></span>
+<span id="cb6-156"><a href="#cb6-156" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> request<span class="op">[</span>BUFF_LEN<span class="op">]</span> <span class="op">=</span> <span class="st">"                  "</span><span class="op">;</span> <span class="co">// initialize to known value</span></span>
+<span id="cb6-157"><a href="#cb6-157" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> charIndex <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb6-158"><a href="#cb6-158" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-159"><a href="#cb6-159" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Keep going until you get end of line character</span></span>
+<span id="cb6-160"><a href="#cb6-160" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span><span class="op">(</span>inString<span class="op">(</span>request<span class="op">,</span> <span class="st">"</span><span class="sc">\n</span><span class="st">"</span><span class="op">)</span> <span class="op">==</span> <span class="op">-</span><span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-161"><a href="#cb6-161" aria-hidden="true" tabindex="-1"></a>      <span class="co">// Wait for a complete request to be transmitted before processing</span></span>
+<span id="cb6-162"><a href="#cb6-162" aria-hidden="true" tabindex="-1"></a>      <span class="cf">while</span><span class="op">(!(</span>USART<span class="op">-&gt;</span>ISR <span class="op">&amp;</span> USART_ISR_RXNE<span class="op">));</span></span>
+<span id="cb6-163"><a href="#cb6-163" aria-hidden="true" tabindex="-1"></a>      <span class="dt">char</span> c <span class="op">=</span> readChar<span class="op">(</span>USART<span class="op">);</span></span>
+<span id="cb6-164"><a href="#cb6-164" aria-hidden="true" tabindex="-1"></a>      <span class="cf">if</span> <span class="op">(</span>charIndex <span class="op">&lt;</span> BUFF_LEN <span class="op">-</span> <span class="dv">1</span><span class="op">)</span> request<span class="op">[</span>charIndex<span class="op">++]</span> <span class="op">=</span> c<span class="op">;</span>  <span class="co">// don't overflow the buffer</span></span>
+<span id="cb6-165"><a href="#cb6-165" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-166"><a href="#cb6-166" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-167"><a href="#cb6-167" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Change resolution only if a resolution button was pressed</span></span>
+<span id="cb6-168"><a href="#cb6-168" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span> cfg <span class="op">=</span> updateResStatus<span class="op">(</span>request<span class="op">);</span></span>
+<span id="cb6-169"><a href="#cb6-169" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>cfg<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb6-170"><a href="#cb6-170" aria-hidden="true" tabindex="-1"></a>      writeToTempSensor<span class="op">(</span>cfg<span class="op">);</span>        <span class="co">// waits one full conversion at the new resolution</span></span>
+<span id="cb6-171"><a href="#cb6-171" aria-hidden="true" tabindex="-1"></a>      resBits <span class="op">=</span> resBitsFromCfg<span class="op">(</span>cfg<span class="op">);</span></span>
+<span id="cb6-172"><a href="#cb6-172" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb6-173"><a href="#cb6-173" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-174"><a href="#cb6-174" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Read temperature and format it without needing printf float support</span></span>
+<span id="cb6-175"><a href="#cb6-175" aria-hidden="true" tabindex="-1"></a>    <span class="dt">double</span> temp <span class="op">=</span> readFromTempSensor<span class="op">();</span></span>
+<span id="cb6-176"><a href="#cb6-176" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> tenThousandths <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>temp <span class="op">*</span> <span class="fl">10000.0</span> <span class="op">+</span> <span class="op">(</span>temp <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">?</span> <span class="fl">0.5</span> <span class="op">:</span> <span class="op">-</span><span class="fl">0.5</span><span class="op">));</span></span>
+<span id="cb6-177"><a href="#cb6-177" aria-hidden="true" tabindex="-1"></a>    <span class="dt">double</span> tempF <span class="op">=</span> temp <span class="op">*</span> <span class="fl">9.0</span> <span class="op">/</span> <span class="fl">5.0</span> <span class="op">+</span> <span class="fl">32.0</span><span class="op">;</span></span>
+<span id="cb6-178"><a href="#cb6-178" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> hundredthsF <span class="op">=</span> <span class="op">(</span><span class="dt">int</span><span class="op">)(</span>tempF <span class="op">*</span> <span class="fl">100.0</span> <span class="op">+</span> <span class="op">(</span>tempF <span class="op">&gt;=</span> <span class="dv">0</span> <span class="op">?</span> <span class="fl">0.5</span> <span class="op">:</span> <span class="op">-</span><span class="fl">0.5</span><span class="op">));</span></span>
+<span id="cb6-179"><a href="#cb6-179" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> tempStatusStr<span class="op">[</span><span class="dv">96</span><span class="op">];</span></span>
+<span id="cb6-180"><a href="#cb6-180" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> <span class="op">*</span>p <span class="op">=</span> tempStatusStr<span class="op">;</span></span>
+<span id="cb6-181"><a href="#cb6-181" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>p<span class="op">,</span> <span class="st">"Temperature: "</span><span class="op">);</span>  p <span class="op">+=</span> strlen<span class="op">(</span>p<span class="op">);</span></span>
+<span id="cb6-182"><a href="#cb6-182" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> fmtFixed<span class="op">(</span>p<span class="op">,</span> tenThousandths<span class="op">,</span> <span class="dv">4</span><span class="op">);</span></span>
+<span id="cb6-183"><a href="#cb6-183" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>p<span class="op">,</span> <span class="st">" C / "</span><span class="op">);</span>          p <span class="op">+=</span> strlen<span class="op">(</span>p<span class="op">);</span></span>
+<span id="cb6-184"><a href="#cb6-184" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> fmtFixed<span class="op">(</span>p<span class="op">,</span> hundredthsF<span class="op">,</span> <span class="dv">2</span><span class="op">);</span></span>
+<span id="cb6-185"><a href="#cb6-185" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>p<span class="op">,</span> <span class="st">" F ("</span><span class="op">);</span>           p <span class="op">+=</span> strlen<span class="op">(</span>p<span class="op">);</span></span>
+<span id="cb6-186"><a href="#cb6-186" aria-hidden="true" tabindex="-1"></a>    p <span class="op">=</span> fmtFixed<span class="op">(</span>p<span class="op">,</span> resBits<span class="op">,</span> <span class="dv">0</span><span class="op">);</span></span>
+<span id="cb6-187"><a href="#cb6-187" aria-hidden="true" tabindex="-1"></a>    strcpy<span class="op">(</span>p<span class="op">,</span> <span class="st">"-bit)"</span><span class="op">);</span></span>
+<span id="cb6-188"><a href="#cb6-188" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-189"><a href="#cb6-189" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Update string with current LED state</span></span>
+<span id="cb6-190"><a href="#cb6-190" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span> led_status <span class="op">=</span> updateLEDStatus<span class="op">(</span>request<span class="op">);</span></span>
+<span id="cb6-191"><a href="#cb6-191" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-192"><a href="#cb6-192" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> ledStatusStr<span class="op">[</span><span class="dv">20</span><span class="op">];</span></span>
+<span id="cb6-193"><a href="#cb6-193" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>led_status <span class="op">==</span> <span class="dv">1</span><span class="op">)</span></span>
+<span id="cb6-194"><a href="#cb6-194" aria-hidden="true" tabindex="-1"></a>      sprintf<span class="op">(</span>ledStatusStr<span class="op">,</span> <span class="st">"LED is on!"</span><span class="op">);</span></span>
+<span id="cb6-195"><a href="#cb6-195" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span></span>
+<span id="cb6-196"><a href="#cb6-196" aria-hidden="true" tabindex="-1"></a>      sprintf<span class="op">(</span>ledStatusStr<span class="op">,</span> <span class="st">"LED is off!"</span><span class="op">);</span></span>
+<span id="cb6-197"><a href="#cb6-197" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-198"><a href="#cb6-198" aria-hidden="true" tabindex="-1"></a>    <span class="co">// finally, transmit the webpage over UART</span></span>
+<span id="cb6-199"><a href="#cb6-199" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> webpageStart<span class="op">);</span></span>
+<span id="cb6-200"><a href="#cb6-200" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-201"><a href="#cb6-201" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> <span class="st">"&lt;h2&gt;Temperature&lt;/h2&gt;&lt;p&gt;"</span><span class="op">);</span></span>
+<span id="cb6-202"><a href="#cb6-202" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> tempStatusStr<span class="op">);</span></span>
+<span id="cb6-203"><a href="#cb6-203" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> <span class="st">"&lt;/p&gt;"</span><span class="op">);</span></span>
+<span id="cb6-204"><a href="#cb6-204" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> resStr<span class="op">);</span></span>
+<span id="cb6-205"><a href="#cb6-205" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-206"><a href="#cb6-206" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> ledStr<span class="op">);</span></span>
+<span id="cb6-207"><a href="#cb6-207" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> <span class="st">"&lt;h2&gt;LED Status&lt;/h2&gt;&lt;p&gt;"</span><span class="op">);</span></span>
+<span id="cb6-208"><a href="#cb6-208" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> ledStatusStr<span class="op">);</span></span>
+<span id="cb6-209"><a href="#cb6-209" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> <span class="st">"&lt;/p&gt;"</span><span class="op">);</span></span>
+<span id="cb6-210"><a href="#cb6-210" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-211"><a href="#cb6-211" aria-hidden="true" tabindex="-1"></a>    sendString<span class="op">(</span>USART<span class="op">,</span> webpageEnd<span class="op">);</span></span>
+<span id="cb6-212"><a href="#cb6-212" aria-hidden="true" tabindex="-1"></a>  <span class="op">}</span></span>
+<span id="cb6-213"><a href="#cb6-213" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</div>
+</div>
+</div>
+</section>
+<section id="pin-assignments" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="pin-assignments"><span class="header-section-number">2.2</span> Pin Assignments</h2>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Signal</th>
+<th>MCU Pin</th>
+<th>Connected To</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SPI1_SCK</td>
+<td>PA5</td>
+<td>DS1722 SCLK</td>
+</tr>
+<tr class="even">
+<td>SPI1_MISO</td>
+<td>PA6</td>
+<td>DS1722 SDO</td>
+</tr>
+<tr class="odd">
+<td>SPI1_MOSI</td>
+<td>PB5</td>
+<td>DS1722 SDI</td>
+</tr>
+<tr class="even">
+<td>CE (GPIO)</td>
+<td>PA8</td>
+<td>DS1722 CE</td>
+</tr>
+<tr class="odd">
+<td>USART1_TX</td>
+<td>PA9</td>
+<td>ESP8266 RX</td>
+</tr>
+<tr class="even">
+<td>USART1_RX</td>
+<td>PA10</td>
+<td>ESP8266 TX</td>
+</tr>
+<tr class="odd">
+<td>LED</td>
+<td>PB3</td>
+<td>On-board LED</td>
+</tr>
+</tbody>
+</table>
+<!-- TODO: DS1722 pin numbers, SERMODE tied to VDD for SPI, power pins -->
+</section>
+<section id="hardware-schematic" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="hardware-schematic"><span class="header-section-number">2.3</span> Hardware Schematic</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="schematic.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Lab 6 schematic: STM32L432KC connected to the DS1722 over SPI and to the ESP8266 over UART</figcaption>
+</figure>
+</div>
+<p>The on-board components (MCU, LED, etc.) are shown in the <a href="TODO-link">E155 development board schematic</a>.</p>
+</section>
+</section>
+<section id="results" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Results</h1>
+<section id="logic-analyzer" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="logic-analyzer"><span class="header-section-number">3.1</span> Logic Analyzer</h2>
+<p>Channels: 1 (yellow) = SCK, 2 (green) = SDO (MCU MISO), 3 (blue) = SDI (MCU MOSI), 4 (red) = CE.</p>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="full-read-scope.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Full SPI read transaction. CE (red) goes high, SCK (yellow) clocks out the bytes, then CE goes low.</figcaption>
+</figure>
+</div>
+</section>
+<section id="spi-timing-vs.-datasheet" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="spi-timing-vs.-datasheet"><span class="header-section-number">3.2</span> SPI Timing vs.&nbsp;Datasheet</h2>
+<table class="caption-top table">
+<colgroup>
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+<col style="width: 25%">
+</colgroup>
+<thead>
+<tr class="header">
+<th>Parameter</th>
+<th>Datasheet</th>
+<th>Measured</th>
+<th>Capture</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>SCLK period / frequency</td>
+<td>≥ 200 ns (≤ 5 MHz)</td>
+<td>3.18 µs (≈ 314 kHz)</td>
+<td><code>clk-period.png</code></td>
+</tr>
+<tr class="even">
+<td>CE to SCLK setup</td>
+<td>TODO</td>
+<td>2.30 µs</td>
+<td><code>ce-setup-time.png</code></td>
+</tr>
+<tr class="odd">
+<td>SCLK to CE hold</td>
+<td>TODO</td>
+<td>1.96 µs</td>
+<td><code>ce-hold-time.png</code></td>
+</tr>
+<tr class="even">
+<td>Data change to SCLK sampling edge</td>
+<td>TODO</td>
+<td>1.62 µs</td>
+<td><code>data-change.png</code></td>
+</tr>
+</tbody>
+</table>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-7-contents" aria-controls="callout-7" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>SCLK period
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-7" class="callout-7-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="clk-period.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Cursors on two consecutive SCK rising edges: 3.18 µs period (≈ 314 kHz), well under the 5 MHz max.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-8-contents" aria-controls="callout-8" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>CE setup time
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-8" class="callout-8-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ce-setup-time.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Cursors from CE rising to the first SCK rising edge: 2.30 µs.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-9-contents" aria-controls="callout-9" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>CE hold time
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-9" class="callout-9-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="ce-hold-time.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Cursors from the last SCK falling edge to CE falling: 1.96 µs.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-10-contents" aria-controls="callout-10" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Data change vs.&nbsp;sampling edge
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-10" class="callout-10-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="data-change.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Data changes on the SCK rising edge and is sampled on the falling edge (CPHA = 1), giving 1.62 µs of setup before sampling.</figcaption>
+</figure>
+</div>
+</div>
+</div>
+</div>
+</section>
+<section id="webpage-1" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="webpage-1"><span class="header-section-number">3.3</span> Webpage</h2>
+<div class="callout callout-style-default callout-note callout-titled">
+<div class="callout-header d-flex align-content-center collapsed" data-bs-toggle="collapse" data-bs-target=".callout-11-contents" aria-controls="callout-11" aria-expanded="false" aria-label="Toggle callout">
+<div class="callout-icon-container">
+<i class="callout-icon"></i>
+</div>
+<div class="callout-title-container flex-fill">
+<span class="screen-reader-only">Note</span>Webpage screenshot
+</div>
+<div class="callout-btn-toggle d-inline-block border-0 py-1 ps-1 pe-0 float-end"><i class="callout-toggle"></i></div>
+</div>
+<div id="callout-11" class="callout-11-contents callout-collapse collapse">
+<div class="callout-body-container callout-body">
+<!-- ![Webpage showing temperature, resolution controls, and LED state](lab06-ss/webpage.png){width=100%} -->
+</div>
+</div>
+</div>
+</section>
+<section id="resolution-and-temperature-range" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="resolution-and-temperature-range"><span class="header-section-number">3.4</span> Resolution and Temperature Range</h2>
+<!-- TODO: explain that the 16-bit two's complement format covers -10 °C to 30 °C at all resolutions; note which resolution you default to and why -->
+</section>
+<section id="issues-and-debugging" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="issues-and-debugging"><span class="header-section-number">3.5</span> Issues and Debugging</h2>
+<!-- TODO -->
+</section>
+</section>
+<section id="requirements-checklist" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Requirements Checklist</h1>
+<table class="caption-top table">
+<thead>
+<tr class="header">
+<th>Requirement</th>
+<th>Met?</th>
+</tr>
+</thead>
+<tbody>
+<tr class="odd">
+<td>DS1722 wired per datasheet</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>ESP8266 wired at 3.3 V, TX/RX crossed</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>FPGA disconnected (DIP switches open)</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Webpage shows temperature, updates on refresh</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Webpage shows and toggles LED state</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Resolution selectable from webpage (8–12 bit)</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>SPI driver uses CMSIS device templates</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Resolution supports -10 °C to 30 °C</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Labeled logic analyzer capture of SPI read</td>
+<td></td>
+</tr>
+<tr class="even">
+<td>Capture annotated with datasheet timing</td>
+<td></td>
+</tr>
+<tr class="odd">
+<td>Schematic meets spec</td>
+<td></td>
+</tr>
+</tbody>
+</table>
+<!-- TODO: statement of whether design meets all requirements; list any shortcomings -->
+</section>
+<section id="ai-prototype-and-reflection" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> AI Prototype and Reflection</h1>
+<section id="ai-prototype" class="level2" data-number="5.1">
+<h2 data-number="5.1" class="anchored" data-anchor-id="ai-prototype"><span class="header-section-number">5.1</span> AI Prototype</h2>
+<!-- TODO: prompt used and what it produced -->
+</section>
+<section id="reflection" class="level2" data-number="5.2">
+<h2 data-number="5.2" class="anchored" data-anchor-id="reflection"><span class="header-section-number">5.2</span> Reflection</h2>
+<!-- TODO -->
+</section>
+</section>
+<section id="hours-spent" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Hours Spent</h1>
+<!-- TODO: X hours -->
+</section>
+<section id="comments-and-suggestions" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> Comments and Suggestions</h1>
+<!-- TODO (optional) -->
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>
