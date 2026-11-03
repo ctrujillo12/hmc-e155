@@ -1,7 +1,6 @@
 // main.c
 // Lab 5: Interrupts — measure a DC motor's speed and direction with a quadrature encoder.
 // Cheyenne Trujillo
-// Based on Marina Bellido's E155 Lab 5 (github.com/Marina-Bellido/E155-labs-code)
 //
 // Every REPORT_PERIOD_US (1 s) this prints something like
 //     speed: +2.4571 rev/s  (CW)

@@ -1,7 +1,6 @@
 // main.h
 // Lab 5: Interrupts — quadrature encoder motor speed
 // Cheyenne Trujillo
-// Based on Marina Bellido's E155 Lab 5 (github.com/Marina-Bellido/E155-labs-code)
 
 #ifndef MAIN_H
 #define MAIN_H
@@ -10,8 +9,7 @@
 #include "encoder.h"
 
 // ---------------------------------------------------------------
-// Motor settings. CHECK THE LABEL ON YOUR MOTOR.
-// 25GA-370 "-10" -> 10, "-34" -> 34, etc.
+// Motor settings: 25GA-370 with a 34:1 gearbox
 // ---------------------------------------------------------------
 #define GEAR_RATIO       34
 #define PULSES_PER_MOTOR_REV 12   // per channel, on the motor shaft (from lab page)

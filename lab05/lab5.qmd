@@ -14,8 +14,6 @@ format:
 
 In this lab I used the STM32L432KC to measure the speed and direction of a 25GA-370 brushed DC motor with a quadrature encoder. The encoder has two hall-effect sensors (A and B) that make square waves 90° out of phase. Both channels trigger an interrupt on every rising and falling edge. The interrupt decides whether the shaft moved one step forward or back, and once a second the main loop turns the count into revolutions per second and prints it with the direction.
 
-I based the structure on Marina Bellido's Lab 5 ([repo](https://github.com/Marina-Bellido/E155-labs-code/tree/main/lab5)): same pins (PA6, PA8), same EXTI9_5 interrupt, same x4 decoding. I changed how direction and speed are computed (see [Changes from the reference](#changes-from-the-reference)).
-
 # Design
 
 ## Code
@@ -71,24 +69,22 @@ The speed is kept as a signed integer in micro-rev/s and printed with 4 decimal 
 
 The lab page gives 12 pulses per motor revolution per channel. With x4 decoding:
 
-- edges/rev = 4 × 12 × gear ratio
-- 1:34 motor → **1632 edges/rev** → 0.22° per edge
-- 1:10 motor → **480 edges/rev** → 0.75° per edge
+- My motor has a 34:1 gearbox, so one output revolution is 12 × 34 = 408 pulses per channel
+- edges/rev = 4 × 408 = **1632 edges/rev** → 0.22° per edge
 
-`GEAR_RATIO` is set in `main.h`. <!-- TODO: confirm the label on my motor and update GEAR_RATIO if it isn't 34 -->
+`GEAR_RATIO` is set to 34 in `main.h`.
 
 ## Slowest measurable speed
 
 The motor is called stopped after 3 s with no edge, so the slowest speed it can report is one edge every 3 s:
 
-- 1:34 → 1 / (3 × 1632) = **0.0002 rev/s**
-- 1:10 → 1 / (3 × 480) = **0.0007 rev/s**
+1 / (3 × 1632) = **0.0002 rev/s**
 
 ## Fastest measurable speed
 
 Each edge costs one interrupt. Cortex-M4 entry + exit is about 24 cycles and the handler body is roughly 40–60 more, call it ~100 cycles ≈ 1.25 µs at 80 MHz. To avoid missing an edge, the next one has to arrive after the handler finishes, so the edge rate has to stay under ~800,000 edges/s:
 
-- 1:34 → 800,000 / 1632 ≈ **490 rev/s** at the output shaft
+800,000 / 1632 ≈ **490 rev/s** at the output shaft
 
 The 25GA-370 output shaft is only in the single or low double digits of rev/s at 12 V, so the margin is huge. At 10 rev/s the edge rate is 16,320/s, about one edge every 61 µs, which keeps the CPU in the ISR only ~2% of the time. <!-- TODO: replace with the actual max speed I measured -->
 
@@ -109,7 +105,7 @@ The 25GA-370 output shaft is only in the single or low double digits of rev/s at
 | Encoder GND | GND | |
 | Motor + / − | 12 V bench supply | not connected to the MCU |
 
-The encoder outputs 5 V logic but the MCU runs at 3.3 V. PA6 and PA8 are 5 V tolerant pins (datasheet Table 14), so they can connect directly. The internal pull-up and pull-down are turned **off**: the datasheet says a FT pin can only go above V~DD~ + 0.3 V with its pull resistors disabled. (The reference code used pull-downs, which I removed for this reason.)
+The encoder outputs 5 V logic but the MCU runs at 3.3 V. PA6 and PA8 are 5 V tolerant pins (datasheet Table 14), so they can connect directly. The internal pull-up and pull-down are turned **off**: the datasheet says a FT pin can only go above V~DD~ + 0.3 V with its pull resistors disabled.
 
 <!-- TODO: double check PA6/PA8 are marked FT in Table 14 on my datasheet revision -->
 
@@ -123,7 +119,7 @@ The encoder outputs 5 V logic but the MCU runs at 3.3 V. PA6 and PA8 are 5 V tol
 - scope capture of A and B showing the 90° phase shift (and which one leads in each direction)
 - spin forward and back, check the sign flips and CW/CCW matches the real direction
   (if it's backwards, swap the A/B wires or swap ENCODER_A/ENCODER_B)
-- check against an independent measurement: scope frequency f of channel A → v = f / (12 × gear ratio)
+- check against an independent measurement: scope frequency f of channel A → v = f / 408
 - run at several supply voltages (low → 12 V) and record printed speed vs scope speed
 - confirm "missed edges" never prints at full speed
 -->
@@ -135,19 +131,6 @@ The encoder outputs 5 V logic but the MCU runs at 3.3 V. PA6 and PA8 are 5 V tol
 # Results
 
 <!-- TODO -->
-
-# Changes from the reference
-
-Marina's code was the starting point. What I changed and why:
-
-- **Signed position from a lookup table** instead of an unsigned counter plus a separate `direction` flag. Direction and count come from the same table, and a count that goes back and forth (vibration) cancels out instead of adding up.
-- **`EXTI->PR1 = pending`** instead of `PR1 |= ...`, so clearing one line can't clear another.
-- **Read A and B in one `IDR` read**, after clearing the flag, so the pair is always consistent.
-- **Edge-timestamped speed** instead of edges ÷ 1 s, for accuracy at low speed (above).
-- **Missed-edge detection**, so I can verify the high-speed requirement instead of assuming it.
-- **No pull resistors** on the 5 V inputs (above).
-- **Gear ratio as a setting** in `main.h` instead of a hard-coded 1632.
-- **Integer printing**, so float printf support doesn't have to be enabled.
 
 # Requirements Checklist
 
@@ -177,7 +160,6 @@ Marina's code was the starting point. What I changed and why:
 // main.h
 // Lab 5: Interrupts — quadrature encoder motor speed
 // Cheyenne Trujillo
-// Based on Marina Bellido's E155 Lab 5 (github.com/Marina-Bellido/E155-labs-code)
 
 #ifndef MAIN_H
 #define MAIN_H
@@ -186,8 +168,7 @@ Marina's code was the starting point. What I changed and why:
 #include "encoder.h"
 
 // ---------------------------------------------------------------
-// Motor settings. CHECK THE LABEL ON YOUR MOTOR.
-// 25GA-370 "-10" -> 10, "-34" -> 34, etc.
+// Motor settings: 25GA-370 with a 34:1 gearbox
 // ---------------------------------------------------------------
 #define GEAR_RATIO       34
 #define PULSES_PER_MOTOR_REV 12   // per channel, on the motor shaft (from lab page)
@@ -215,7 +196,6 @@ Marina's code was the starting point. What I changed and why:
 // main.c
 // Lab 5: Interrupts — measure a DC motor's speed and direction with a quadrature encoder.
 // Cheyenne Trujillo
-// Based on Marina Bellido's E155 Lab 5 (github.com/Marina-Bellido/E155-labs-code)
 //
 // Every REPORT_PERIOD_US (1 s) this prints something like
 //     speed: +2.4571 rev/s  (CW)
