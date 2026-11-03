@@ -1,0 +1,136 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1400" height="760" viewBox="0 0 1400 760" font-family="Helvetica, Arial, sans-serif">
+<defs>
+<marker id="a" markerWidth="10" markerHeight="8" refX="9" refY="4" orient="auto"><path d="M0,0 L10,4 L0,8 z" fill="#222"/></marker>
+<style>
+.chip{fill:#fff;stroke:#222;stroke-width:2.5}
+.blk{fill:#eef3fb;stroke:#4a6fa5;stroke-width:1.5}
+.mblk{fill:#eef7ee;stroke:#4f8a4f;stroke-width:1.5}
+.ext{fill:#f7f7f7;stroke:#222;stroke-width:1.5}
+.t{font-size:15px;fill:#111}
+.s{font-size:12.5px;fill:#444}
+.h{font-size:18px;font-weight:bold;fill:#111}
+.p{font-size:13px;fill:#b03a2e;font-weight:bold}
+.w{stroke:#222;stroke-width:2;fill:none;marker-end:url(#a)}
+.i{stroke:#666;stroke-width:1.3;fill:none;marker-end:url(#a)}
+.o{stroke:#888;stroke-width:2;fill:none;stroke-dasharray:6 5;marker-end:url(#a)}
+</style>
+</defs>
+<rect width="1400" height="760" fill="#fff"/>
+<text x="700" y="34" text-anchor="middle" class="h" font-size="22">Voice-Controlled Smart Glasses: System Block Diagram</text>
+
+<!-- Mics -->
+<rect x="30" y="170" width="150" height="70" class="ext" rx="6"/>
+<text x="105" y="200" text-anchor="middle" class="t">PDM mic 1 (L)</text>
+<text x="105" y="220" text-anchor="middle" class="s">Adafruit 3492</text>
+<rect x="30" y="300" width="150" height="70" class="ext" rx="6"/>
+<text x="105" y="330" text-anchor="middle" class="t">PDM mic 2 (R)</text>
+<text x="105" y="350" text-anchor="middle" class="s">Adafruit 3492</text>
+
+<!-- FPGA -->
+<rect x="250" y="70" width="430" height="560" class="chip" rx="10"/>
+<text x="465" y="98" text-anchor="middle" class="h">FPGA: iCE40 UP5K (UPduino v3.1)</text>
+<rect x="275" y="120" width="380" height="44" class="blk" rx="5"/>
+<text x="465" y="147" text-anchor="middle" class="t">PDM clock gen (1.024 MHz) + L/R edge demux</text>
+<rect x="275" y="182" width="380" height="54" class="blk" rx="5"/>
+<text x="465" y="205" text-anchor="middle" class="t">CIC decimator ×2 → FIR low-pass ×2</text>
+<text x="465" y="224" text-anchor="middle" class="s">1-bit @ 1.024 MHz → 16-bit @ 16 kHz, per mic</text>
+<rect x="275" y="254" width="380" height="54" class="blk" rx="5"/>
+<text x="465" y="277" text-anchor="middle" class="t">Delay-and-subtract beamformer</text>
+<text x="465" y="296" text-anchor="middle" class="s">steered at mouth, 16 kHz mono out</text>
+<rect x="275" y="326" width="380" height="54" class="blk" rx="5"/>
+<text x="465" y="349" text-anchor="middle" class="t">512-point FFT every 16 ms</text>
+<text x="465" y="368" text-anchor="middle" class="s">DSP blocks (MAC16) · SPRAM frame buffers</text>
+<rect x="275" y="398" width="380" height="54" class="blk" rx="5"/>
+<text x="465" y="421" text-anchor="middle" class="t">|X|² → 32 mel bands → log</text>
+<text x="465" y="440" text-anchor="middle" class="s">32 log-mel energies per frame</text>
+<rect x="275" y="470" width="380" height="54" class="blk" rx="5"/>
+<text x="465" y="493" text-anchor="middle" class="t">SPI peripheral + output buffer</text>
+<text x="465" y="512" text-anchor="middle" class="s">raises "frame ready" when a frame is latched</text>
+<path d="M465,164 L465,180" class="i"/><path d="M465,236 L465,252" class="i"/><path d="M465,308 L465,324" class="i"/>
+<path d="M465,380 L465,396" class="i"/><path d="M465,452 L465,468" class="i"/>
+<text x="465" y="560" text-anchor="middle" class="s">Fixed-rate streaming DSP: ~2 Mb/s of PDM input,</text>
+<text x="465" y="578" text-anchor="middle" class="s">too fast for the MCU to filter while also recognizing</text>
+
+<!-- mic wiring -->
+<path d="M273,142 L105,142 L105,168" class="w"/>
+<path d="M105,142 L15,142 L15,285 L105,285 L105,298" class="w"/>
+<text x="20" y="122" class="p">PDM CLK 1.024 MHz (shared)</text>
+<path d="M180,205 L220,205 L220,209 L273,209" class="w"/>
+<path d="M180,335 L220,335 L220,205" stroke="#222" stroke-width="2" fill="none"/>
+<text x="16" y="402" class="p">PDM DATA (1 shared line)</text>
+<text x="16" y="419" class="s">mic 1 drives on rising edge,</text>
+<text x="16" y="435" class="s">mic 2 on falling edge</text>
+
+<!-- MCU -->
+<rect x="840" y="70" width="380" height="560" class="chip" rx="10"/>
+<text x="1030" y="98" text-anchor="middle" class="h">MCU: STM32L432KC (Nucleo)</text>
+<rect x="865" y="120" width="330" height="54" class="mblk" rx="5"/>
+<text x="1030" y="143" text-anchor="middle" class="t">SPI1 controller + DMA → RAM</text>
+<text x="1030" y="162" text-anchor="middle" class="s">EXTI on frame-ready starts each transfer</text>
+<rect x="865" y="192" width="330" height="44" class="mblk" rx="5"/>
+<text x="1030" y="219" text-anchor="middle" class="t">Energy-based speech detection</text>
+<rect x="865" y="254" width="330" height="44" class="mblk" rx="5"/>
+<text x="1030" y="281" text-anchor="middle" class="t">MFCCs (DCT of log-mel)</text>
+<rect x="865" y="316" width="330" height="54" class="mblk" rx="5"/>
+<text x="1030" y="339" text-anchor="middle" class="t">DTW match vs. enrolled templates</text>
+<text x="1030" y="358" text-anchor="middle" class="s">19 words × 3 templates, stored in flash</text>
+<rect x="865" y="388" width="330" height="54" class="mblk" rx="5"/>
+<text x="1030" y="411" text-anchor="middle" class="t">App logic: calculator · clock · timer</text>
+<text x="1030" y="430" text-anchor="middle" class="s">RTC for HH:MM:SS; timer countdown</text>
+<rect x="865" y="460" width="330" height="54" class="mblk" rx="5"/>
+<text x="1030" y="483" text-anchor="middle" class="t">SSD1306 driver + SPI3 controller</text>
+<text x="1030" y="502" text-anchor="middle" class="s">caption line, results, level meter</text>
+<path d="M1030,174 L1030,190" class="i"/><path d="M1030,236 L1030,252" class="i"/><path d="M1030,298 L1030,314" class="i"/>
+<path d="M1030,370 L1030,386" class="i"/><path d="M1030,442 L1030,458" class="i"/>
+<text x="1030" y="560" text-anchor="middle" class="s">Variable-length, data-dependent work:</text>
+<text x="1030" y="578" text-anchor="middle" class="s">DTW search, UI, timekeeping</text>
+
+<!-- FPGA<->MCU -->
+<path d="M655,490 L808,490 L808,140 L863,140" class="w"/>
+<path d="M863,155 L820,155 L820,500 L657,500" class="w"/>
+<text x="690" y="400" class="p">SPI</text>
+<text x="690" y="416" class="s">MCU = controller</text>
+<text x="690" y="432" class="s">SCK, MOSI, MISO,</text><text x="690" y="446" class="s">CS</text>
+<text x="690" y="466" class="s">32 × 16 bit / 16 ms</text>
+<text x="690" y="482" class="s">≈ 4 kB/s</text>
+<path d="M655,515 L832,515 L832,168 L863,168" class="w" stroke-dasharray="3 3"/>
+<text x="690" y="540" class="p">GPIO → EXTI</text>
+<text x="690" y="556" class="s">frame ready</text>
+
+<!-- OLED + optics -->
+<rect x="1255" y="455" width="130" height="80" class="ext" rx="6"/>
+<text x="1320" y="482" text-anchor="middle" class="t">128×64 OLED</text>
+<text x="1320" y="501" text-anchor="middle" class="s">SSD1306</text>
+<text x="1320" y="519" text-anchor="middle" class="s">right temple</text>
+<path d="M1195,487 L1253,487" class="w"/>
+<text x="1255" y="556" class="p">SPI3 + DC, RST</text>
+<text x="1255" y="572" class="s">≤ 1 KB / frame</text>
+<rect x="1255" y="300" width="130" height="80" class="ext" rx="6"/>
+<text x="1320" y="327" text-anchor="middle" class="t">f = 40 mm lens</text>
+<text x="1320" y="346" text-anchor="middle" class="t">+ 45° beam</text>
+<text x="1320" y="365" text-anchor="middle" class="t">splitter</text>
+<path d="M1320,453 L1320,382" class="o"/>
+<text x="1328" y="425" class="s">light</text>
+<rect x="1255" y="150" width="130" height="70" class="ext" rx="6"/>
+<text x="1320" y="180" text-anchor="middle" class="t">Right eye</text>
+<text x="1320" y="200" text-anchor="middle" class="s">image ~1 m away</text>
+<path d="M1320,298 L1320,222" class="o"/>
+
+<!-- Power -->
+<rect x="560" y="670" width="280" height="56" class="ext" rx="6"/>
+<text x="700" y="695" text-anchor="middle" class="t">5,000 mAh USB power bank</text>
+<text x="700" y="714" text-anchor="middle" class="s">5 V USB → both boards → 3.3 V to mics, OLED</text>
+<path d="M600,670 L600,632" class="w"/><path d="M800,670 L960,670 L960,632" class="w"/>
+<text x="560" y="652" class="s">5 V</text><text x="968" y="652" class="s">5 V</text>
+
+<!-- legend -->
+<g transform="translate(30,520)">
+<rect width="190" height="120" fill="#fff" stroke="#bbb"/>
+<text x="10" y="20" class="s" font-weight="bold">Legend</text>
+<path d="M10,40 L50,40" class="w"/><text x="58" y="44" class="s">electrical signal</text>
+<path d="M10,62 L50,62" class="o"/><text x="58" y="66" class="s">optical path</text>
+<text x="10" y="90" class="p">RED</text><text x="48" y="90" class="s">= protocol / rate</text>
+<rect x="10" y="100" width="14" height="12" class="blk"/><text x="30" y="111" class="s">FPGA</text>
+<rect x="80" y="100" width="14" height="12" class="mblk"/><text x="100" y="111" class="s">MCU</text>
+</g>
+</svg>

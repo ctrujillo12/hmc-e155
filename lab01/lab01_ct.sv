@@ -7,6 +7,7 @@ module lab01_ct(
 
     logic int_osc;
 
+    // instatiate the fpga's internal oscillator 
     HSOSC #(.CLKHF_DIV(2'b01))
         hf_osc (
             .CLKHFPU(1'b1),

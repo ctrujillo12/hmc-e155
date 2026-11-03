@@ -9,7 +9,7 @@ module counter #(
 
     localparam int COUNT_WIDTH = $clog2(MAX_COUNT);
 
-    logic [COUNT_WIDTH-1:0] count;
+    logic [COUNT_WIDTH-1:0] count; // count to 9999999
 
     always_ff @(posedge clk, negedge reset) begin
         if (!reset) begin
@@ -19,7 +19,7 @@ module counter #(
         else if (enable) begin
             if (count == MAX_COUNT - 1) begin
                 count <= 0;
-                blink <= ~blink;
+                blink <= ~blink; // toggle led
             end
             else begin
                 count <= count + 1;

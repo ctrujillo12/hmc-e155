@@ -1,0 +1,645 @@
+---
+title: "Lab 7: The Advanced Encryption Standard"
+author: "Cheyenne Trujillo"
+date: "2026-10-31"
+
+format:
+  html:
+    toc: true
+    toc-depth: 3
+    number-sections: true
+---
+
+# Introduction
+
+In this lab I built a hardware accelerator for 128-bit AES encryption on the UP5K FPGA. The MCU (running the provided `lab7.c`) shifts the plaintext and key to the FPGA over SPI, the FPGA runs the AES cipher from FIPS-197, and then the MCU shifts the cyphertext back out and checks it against the answer in Appendix A/B. I used the starter SPI interface, `mixcolumns`, and `sbox_sync` modules and wrote the rest of `aes_core`.
+
+# Design and Testing Methodology
+
+## Overall Design
+
+<!-- TODO: system block diagram (MCU <-> FPGA via SW7: sck P21, sdi P10, sdo P12, load P26, done P27) -->
+
+- [`lab07_top.sv`](#lab07_top-sv): FPGA top level. HSOSC (12 MHz) + the `aes` accelerator
+- [`aes.sv`](#aes-sv): `aes` (SPI + core) and `aes_spi` from the starter code, unchanged
+- [`aes_core.sv`](#aes_core-sv): `aes_core`, split into `aes_controller` (FSM) and `aes_datapath`
+- [`aes_steps.sv`](#aes_steps-sv): one module per AES step: `subbytes`, `shiftrows`, `mixcolumns`, `addroundkey`, `keyexpansion`, `rcon` (plus the starter `sbox_sync`/`mixcolumn`/`galoismult`)
+- [`lab07.pdc`](#lab07-pdc): pin assignments
+
+The full AES cipher doesn't fit as one big combinational block, so the core does **one round at a time** and reuses the same round hardware for all 10 rounds. The datapath has two 128-bit registers: `aesstate` (the 4x4 state array) and `roundkey`. Each round does SubBytes → ShiftRows → MixColumns → AddRoundKey on `aesstate`, and computes the next round key from `roundkey` in the same cycle, so I never have to store the whole expanded key schedule (11 round keys = 1408 bits of flops).
+
+## AES Core Datapath
+
+<!-- TODO: aes_core block diagram (aes_controller ctrl + aes_datapath dp) -->
+
+The 128-bit values are packed so each 32-bit word is one *column* of the state (`[127:120]` = s~0,0~, `[119:112]` = s~1,0~, ...). This tripped me up at first for ShiftRows since the rows are spread across the words, so in `shiftrows` I just unpacked all 16 bytes with names like `s12` (row 1, col 2) and reassembled them with `s'[r][c] = s[r][(c+r) mod 4]`. Writing it out this way made it way easier to check against Figure 8 in the spec.
+
+- **Round 0:** while `load` is high, `aesstate <= plaintext ^ key` (`ark0`) and `roundkey <= key`.
+- **SubBytes:** 16 `sbox_sync` instances (one per byte) generated with a `for` loop.
+- **MixColumns:** starter code, 4 `mixcolumn`s. Round 10 skips it with a mux on `lastround`.
+- **KeyExpansion:** `temp = SubWord(RotWord(w3)) ^ Rcon[round]`, then `w0' = w0 ^ temp`, `w1' = w1 ^ w0'`, `w2' = w2 ^ w1'`, `w3' = w3 ^ w2'`. Rcon is a small lookup table on the round number (`rcon`). SubWord uses 4 more `sbox_sync`s.
+
+## Synchronous S-box Timing
+
+The S-boxes are in block RAM, so the output shows up one clock edge *after* the address is applied. Both SubBytes and SubWord read straight from the `aesstate`/`roundkey` registers, so their latency lines up exactly. Each round takes 2 cycles:
+
+1. **SUB:** registers hold the current state/key; the sbox RAMs latch them at the end of the cycle.
+2. **ROUND:** `subbed` and `subword` are now valid, so the rest of the round is combinational and `aesstate` and `roundkey` get written at the end of the cycle.
+
+So encryption takes 1 (LOAD→SUB) + 10 × 2 = 21 cycles after `load` drops, ~1.75 µs at 12 MHz. Using 20 S-boxes is a lot of RAM (20 of the 30 EBRs), but it means I only need 2 cycles per round. The other option was 4 S-boxes and doing one column per cycle, which would save EBRs but needs a more complicated FSM.
+
+## Controller
+
+<!-- TODO: aes_controller state transition diagram (LOAD/SUB/ROUND/DONE) -->
+
+The controller is a Moore FSM (canonical form: state register, next-state logic, output logic) plus a 4-bit round counter. `load` acts like a synchronous reset. While it's high, the FSM sits in LOAD and keeps reloading the registers, which is fine because the SPI is still shifting in `key`/`plaintext` during that time. When `load` drops, the FSM alternates SUB/ROUND until `round == 10`, then goes to DONE and holds `done = 1` and the cyphertext until the next `load`.
+
+Outputs to the datapath: `init` (state == LOAD), `update` (state == ROUND), `lastround` (round == 10), and `round[3:0]` for Rcon.
+
+## Pin Assignments
+
+From the dev board schematic, the MCU and FPGA connect through the SW7 DIP switch bridge (SW7 switches need to be ON for these):
+
+| Signal | MCU pin | FPGA pin | Direction |
+|--------|---------|----------|-----------|
+| `sck`  | PB3 (SPI1 SCK)  | P21 | MCU → FPGA |
+| `sdi`  | PB5 (SPI1 MOSI) | P10 | MCU → FPGA |
+| `sdo`  | PB4 (SPI1 MISO) | P12 | FPGA → MCU |
+| `load` | PA5 | P26 | MCU → FPGA |
+| `done` | PA6 | P27 | FPGA → MCU |
+
+`lab7.c` calls `initSPI(1, 0, 0)`, so CPOL = 0, CPHA = 0. That matches `aes_spi`, which samples `sdi` on the rising edge of `sck` and changes `sdo` on the falling edge.
+
+## Testing
+
+I tested bottom-up. I used the provided `testbench_aes_core` (FIPS-197 Appendix A.1/B vector) to get the core working without SPI, then made a copy of it with the Appendix C.1 vector (`testbench_aes_core_c1`) so I wasn't only passing one input, then ran the full system `testbench_aes_spi`. To debug, I compared `aesstate` and `roundkey` each round against the round-by-round table in Appendix B (e.g., the start of round 1 should be `193de3bea0f4e22b9ac68d2ae9f84808` and round key 1 should be `a0fafe1788542cb123a339392a6c7605`).
+
+# Results
+
+## Simulation
+
+All three testbenches print `Testbench ran successfully`:
+
+| Testbench | Vector | Result |
+|-----------|--------|--------|
+| `testbench_aes_core` | Appendix A.1/B | pass, cyphertext `3925841d02dc09fbdc118597196a0b32` |
+| `testbench_aes_core_c1` | Appendix C.1 | pass, cyphertext `69c4e0d86a7b0430d8cdb78070b4c55a` |
+| `testbench_aes_spi` | Appendix A.1/B over SPI | pass |
+
+<!-- TODO: QuestaSim screenshot of testbench_aes_core zoomed on rounds 1-2 (aesstate 193de3be... then a49c7ff2..., subbed changes 1 cycle after aesstate) -->
+
+<!-- TODO: QuestaSim screenshot of full testbench_aes_core run -->
+
+<!-- TODO: QuestaSim screenshot of testbench_aes_spi -->
+
+## Synthesis
+
+<!-- TODO: synthesize in Radiant and put resource usage here (LUTs, EBRs). Rough pre-check from Claude w/ yosys: ~950 LUT4s, 20 of 30 EBRs, so it should fit. -->
+
+## Hardware
+
+<!-- TODO: flash lab07_mcu, program FPGA, flip SW7 on, check PA9 (pass) / PA10 (fail) LEDs -->
+<!-- TODO: logic analyzer screenshot of SPI decode (CE on PA11, sck, mosi, miso, load, done) -->
+
+# Requirements Checklist
+
+The design passes both required simulations (`testbench_aes_core` and `testbench_aes_spi`), so it meets the simulation and Verilog structure specs. The AES steps are in separate modules, control and datapath are separate, the controller is a canonical FSM, and the sync RAM latency is handled with the SUB/ROUND split. The SPI pins and mode match `lab7.c`.
+
+Shortcomings / not done yet:
+
+- Not tested on hardware yet (no board run or logic analyzer capture) <!-- TODO: update after testing -->
+- Block diagrams still need to be drawn (one per module). <!-- TODO -->
+
+# AI Prototype and Reflection
+
+## AI Prototype
+
+<!-- TODO: run the prompt from https://hmc-e155.github.io/lab/lab7/ai-prototype.html and paste result / errors -->
+
+## Reflection
+
+<!-- TODO -->
+
+# Hours Spent
+
+<!-- TODO: X hours -->
+
+# Comments and Suggestions
+
+The Appendix B round-by-round table was the most useful thing for debugging. Being able to check `aesstate` against it after every single round made it obvious where something went wrong.
+
+# Technical Documentation
+
+## Code
+
+::: {.callout-note collapse="true"}
+## `lab07_top.sv`
+
+```verilog
+// lab07_top.sv
+// Cheyenne Trujillo
+// cheyenneettrujillo@gmail.com
+// 10/31/2026
+// FPGA top level for Lab 7: internal oscillator + AES accelerator with SPI.
+// MCU <-> FPGA through the SW7 bridge on the dev board:
+//   PB3 SCK  -> P21    PB5 MOSI -> P10    PB4 MISO <- P12
+//   PA5 LOAD -> P26    PA6 DONE <- P27
+
+module lab07_top(input  logic sck,
+                 input  logic sdi,
+                 output logic sdo,
+                 input  logic load,
+                 output logic done);
+
+    logic clk;
+
+    // 48 MHz HSOSC divided by 4 = 12 MHz
+    HSOSC #(.CLKHF_DIV(2'b10))
+        hf_osc (
+            .CLKHFPU(1'b1),
+            .CLKHFEN(1'b1),
+            .CLKHF(clk)
+        );
+
+    aes accelerator(.clk(clk), .sck(sck), .sdi(sdi), .sdo(sdo), .load(load), .done(done));
+endmodule
+```
+:::
+
+::: {.callout-note collapse="true"}
+## `aes.sv`
+
+```verilog
+// aes.sv
+// Cheyenne Trujillo
+// cheyenneettrujillo@gmail.com
+// 10/31/2026
+// aes (SPI + core) and aes_spi, both from the starter code (unchanged).
+// aes_core is in aes_core.sv, the step modules are in aes_steps.sv.
+
+module aes(input  logic clk,
+           input  logic sck, 
+           input  logic sdi,
+           output logic sdo,
+           input  logic load,
+           output logic done);
+                    
+    logic [127:0] key, plaintext, cyphertext;
+            
+    aes_spi spi(sck, sdi, sdo, done, key, plaintext, cyphertext);   
+    aes_core core(clk, load, key, plaintext, done, cyphertext);
+endmodule
+
+/////////////////////////////////////////////
+// aes_spi
+//   SPI interface.  Shifts in key and plaintext
+//   Captures ciphertext when done, then shifts it out
+//   Tricky cases to properly change sdo on negedge clk
+/////////////////////////////////////////////
+
+module aes_spi(input  logic sck, 
+               input  logic sdi,
+               output logic sdo,
+               input  logic done,
+               output logic [127:0] key, plaintext,
+               input  logic [127:0] cyphertext);
+
+    logic         sdodelayed, wasdone;
+    logic [127:0] cyphertextcaptured;
+               
+    // assert load
+    // apply 256 sclks to shift in key and plaintext, starting with plaintext[127]
+    // then deassert load, wait until done
+    // then apply 128 sclks to shift out cyphertext, starting with cyphertext[127]
+    // SPI mode is equivalent to cpol = 0, cpha = 0 since data is sampled on first edge and the first
+    // edge is a rising edge (clock going from low in the idle state to high).
+    always_ff @(posedge sck)
+        if (!wasdone)  {cyphertextcaptured, plaintext, key} = {cyphertext, plaintext[126:0], key, sdi};
+        else           {cyphertextcaptured, plaintext, key} = {cyphertextcaptured[126:0], plaintext, key, sdi}; 
+    
+    // sdo should change on the negative edge of sck
+    always_ff @(negedge sck) begin
+        wasdone = done;
+        sdodelayed = cyphertextcaptured[126];
+    end
+    
+    // when done is first asserted, shift out msb before clock edge
+    assign sdo = (done & !wasdone) ? cyphertext[127] : sdodelayed;
+endmodule
+```
+:::
+
+::: {.callout-note collapse="true"}
+## `aes_core.sv`
+
+```verilog
+// aes_core.sv
+// Cheyenne Trujillo
+// cheyenneettrujillo@gmail.com
+// 10/31/2026
+// AES-128 encryption core. Split into a controller (FSM) and a datapath.
+// When load is high the core grabs key and plaintext. When load drops it runs
+// 10 rounds (2 clock cycles each because the sbox RAM has 1 cycle of latency)
+// and then asserts done and holds the cyphertext until load goes high again.
+
+/////////////////////////////////////////////
+// aes_core
+//   top level of the AES core: controller + datapath
+/////////////////////////////////////////////
+module aes_core(input  logic         clk,
+                input  logic         load,
+                input  logic [127:0] key,
+                input  logic [127:0] plaintext,
+                output logic         done,
+                output logic [127:0] cyphertext);
+
+    logic       init, update, lastround;
+    logic [3:0] round;
+
+    aes_controller ctrl(.clk(clk), .load(load), .init(init), .update(update),
+                        .lastround(lastround), .round(round), .done(done));
+
+    aes_datapath   dp(.clk(clk), .init(init), .update(update), .lastround(lastround),
+                      .round(round), .key(key), .plaintext(plaintext),
+                      .cyphertext(cyphertext));
+endmodule
+
+/////////////////////////////////////////////
+// aes_controller
+//   FSM that sequences the rounds
+//   LOAD  : (re)load state and key every cycle while load is high
+//   SUB   : sbox RAMs are reading the state, wait 1 cycle for the result
+//   ROUND : sbox output is valid, finish the round and write state + round key
+//   DONE  : hold cyphertext, done = 1
+/////////////////////////////////////////////
+module aes_controller(input  logic       clk,
+                      input  logic       load,
+                      output logic       init,
+                      output logic       update,
+                      output logic       lastround,
+                      output logic [3:0] round,
+                      output logic       done);
+
+    typedef enum logic [1:0] {LOAD, SUB, ROUND, DONE} statetype;
+    statetype state, nextstate;
+
+    // state register + round counter
+    always_ff @(posedge clk) begin
+        if (load) begin
+            state <= LOAD;
+            round <= 4'd1;
+        end else begin
+            state <= nextstate;
+            if (state == ROUND) round <= round + 4'd1;
+        end
+    end
+
+    // next state logic
+    always_comb
+        case (state)
+            LOAD:    nextstate = SUB;
+            SUB:     nextstate = ROUND;
+            ROUND:   if (lastround) nextstate = DONE;
+                     else           nextstate = SUB;
+            DONE:    nextstate = DONE;
+            default: nextstate = LOAD;
+        endcase
+
+    // output logic
+    assign lastround = (round == 4'd10);
+    assign init      = (state == LOAD);
+    assign update    = (state == ROUND);
+    assign done      = (state == DONE);
+endmodule
+
+/////////////////////////////////////////////
+// aes_datapath
+//   state register (the 4x4 byte state) and round key register
+//   one round = SubBytes -> ShiftRows -> MixColumns (skipped in round 10) -> AddRoundKey
+//   the next round key is computed in the same cycle by keyexpansion
+/////////////////////////////////////////////
+module aes_datapath(input  logic         clk,
+                    input  logic         init,
+                    input  logic         update,
+                    input  logic         lastround,
+                    input  logic [3:0]   round,
+                    input  logic [127:0] key,
+                    input  logic [127:0] plaintext,
+                    output logic [127:0] cyphertext);
+
+    logic [127:0] aesstate, roundkey;          // registers
+    logic [127:0] initstate;                    // plaintext ^ key (round 0 AddRoundKey)
+    logic [127:0] subbed, shifted, mixed, mixout, nextstate;
+    logic [127:0] nextkey;
+
+    // round 0
+    addroundkey ark0(.a(plaintext), .roundkey(key), .y(initstate));
+
+    // round steps
+    subbytes    sb(.clk(clk), .a(aesstate), .y(subbed));      // 1 cycle latency
+    shiftrows   sr(.a(subbed), .y(shifted));
+    mixcolumns  mc(.a(shifted), .y(mixed));
+    assign mixout = lastround ? shifted : mixed;               // no MixColumns in round 10
+    addroundkey ark(.a(mixout), .roundkey(nextkey), .y(nextstate));
+
+    // key schedule (also has a 1 cycle latency sbox inside, lines up with subbytes)
+    keyexpansion ke(.clk(clk), .round(round), .prevkey(roundkey), .nextkey(nextkey));
+
+    // state and round key registers
+    always_ff @(posedge clk)
+        if (init) begin
+            aesstate <= initstate;
+            roundkey <= key;
+        end else if (update) begin
+            aesstate <= nextstate;
+            roundkey <= nextkey;
+        end
+
+    assign cyphertext = aesstate;
+endmodule
+```
+:::
+
+::: {.callout-note collapse="true"}
+## `aes_steps.sv`
+
+```verilog
+// aes_steps.sv
+// Cheyenne Trujillo
+// cheyenneettrujillo@gmail.com
+// 10/31/2026
+// The individual AES steps from FIPS-197 section 5.1 and 5.2.
+// sbox, sbox_sync, mixcolumns, mixcolumn and galoismult are from the starter code.
+//
+// Byte packing (same as starter code): each 32 bit word is one COLUMN of the state
+//        [127:120] [95:88] [63:56] [31:24]     S0,0    S0,1    S0,2    S0,3
+//        [119:112] [87:80] [55:48] [23:16]     S1,0    S1,1    S1,2    S1,3
+//        [111:104] [79:72] [47:40] [15:8]      S2,0    S2,1    S2,2    S2,3
+//        [103:96]  [71:64] [39:32] [7:0]       S3,0    S3,1    S3,2    S3,3
+
+/////////////////////////////////////////////
+// subbytes
+//   SubBytes (5.1.1): run all 16 bytes through the sbox
+//   uses 16 synchronous sboxes (block RAMs) so output is 1 cycle late
+/////////////////////////////////////////////
+module subbytes(input  logic         clk,
+                input  logic [127:0] a,
+                output logic [127:0] y);
+
+    genvar i;
+    generate
+        for (i = 0; i < 16; i++) begin : sboxes
+            sbox_sync sb(.a(a[8*i +: 8]), .clk(clk), .y(y[8*i +: 8]));
+        end
+    endgenerate
+endmodule
+
+/////////////////////////////////////////////
+// shiftrows
+//   ShiftRows (5.1.2): row r gets rotated left by r bytes
+//   s'[r][c] = s[r][(c + r) mod 4]
+/////////////////////////////////////////////
+module shiftrows(input  logic [127:0] a,
+                 output logic [127:0] y);
+
+    logic [7:0] s00, s10, s20, s30,   // column 0
+                s01, s11, s21, s31,   // column 1
+                s02, s12, s22, s32,   // column 2
+                s03, s13, s23, s33;   // column 3
+
+    assign {s00, s10, s20, s30, s01, s11, s21, s31,
+            s02, s12, s22, s32, s03, s13, s23, s33} = a;
+
+    // row 0 stays, row 1 shifts by 1, row 2 by 2, row 3 by 3
+    assign y = {s00, s11, s22, s33,
+                s01, s12, s23, s30,
+                s02, s13, s20, s31,
+                s03, s10, s21, s32};
+endmodule
+
+/////////////////////////////////////////////
+// addroundkey
+//   AddRoundKey (5.1.4): XOR with the round key
+/////////////////////////////////////////////
+module addroundkey(input  logic [127:0] a,
+                   input  logic [127:0] roundkey,
+                   output logic [127:0] y);
+
+    assign y = a ^ roundkey;
+endmodule
+
+/////////////////////////////////////////////
+// keyexpansion
+//   KeyExpansion (5.2): makes the next round key from the previous one
+//   temp = SubWord(RotWord(w3)) ^ Rcon
+//   w0' = w0 ^ temp, w1' = w1 ^ w0', w2' = w2 ^ w1', w3' = w3 ^ w2'
+//   SubWord uses 4 synchronous sboxes so nextkey is valid 1 cycle after prevkey changes
+/////////////////////////////////////////////
+module keyexpansion(input  logic         clk,
+                    input  logic [3:0]   round,
+                    input  logic [127:0] prevkey,
+                    output logic [127:0] nextkey);
+
+    logic [31:0] w0, w1, w2, w3;
+    logic [31:0] rotword, subword, temp;
+    logic [31:0] nw0, nw1, nw2, nw3;
+    logic [7:0]  rconbyte;
+
+    assign {w0, w1, w2, w3} = prevkey;
+
+    assign rotword = {w3[23:0], w3[31:24]};          // RotWord: [a0,a1,a2,a3] -> [a1,a2,a3,a0]
+
+    // SubWord
+    sbox_sync sw0(.a(rotword[31:24]), .clk(clk), .y(subword[31:24]));
+    sbox_sync sw1(.a(rotword[23:16]), .clk(clk), .y(subword[23:16]));
+    sbox_sync sw2(.a(rotword[15:8]),  .clk(clk), .y(subword[15:8]));
+    sbox_sync sw3(.a(rotword[7:0]),   .clk(clk), .y(subword[7:0]));
+
+    rcon rc(.round(round), .rconbyte(rconbyte));
+
+    assign temp = subword ^ {rconbyte, 24'h000000};
+    assign nw0  = w0 ^ temp;
+    assign nw1  = w1 ^ nw0;
+    assign nw2  = w2 ^ nw1;
+    assign nw3  = w3 ^ nw2;
+
+    assign nextkey = {nw0, nw1, nw2, nw3};
+endmodule
+
+/////////////////////////////////////////////
+// rcon
+//   round constant (5.2), only the first byte is nonzero
+/////////////////////////////////////////////
+module rcon(input  logic [3:0] round,
+            output logic [7:0] rconbyte);
+
+    always_comb
+        case (round)
+            4'd1:    rconbyte = 8'h01;
+            4'd2:    rconbyte = 8'h02;
+            4'd3:    rconbyte = 8'h04;
+            4'd4:    rconbyte = 8'h08;
+            4'd5:    rconbyte = 8'h10;
+            4'd6:    rconbyte = 8'h20;
+            4'd7:    rconbyte = 8'h40;
+            4'd8:    rconbyte = 8'h80;
+            4'd9:    rconbyte = 8'h1b;
+            4'd10:   rconbyte = 8'h36;
+            default: rconbyte = 8'h00;
+        endcase
+endmodule
+
+/////////////////////////////////////////////
+// sbox (from starter code)
+//   Combinational version which is mapped to LUTs (logic cells)
+//   not used in my design, kept for reference
+/////////////////////////////////////////////
+module sbox(input  logic [7:0] a,
+            output logic [7:0] y);
+
+  logic [7:0] sbox[0:255];
+
+  initial   $readmemh("sbox.txt", sbox);
+  assign y = sbox[a];
+endmodule
+
+/////////////////////////////////////////////
+// sbox_sync (from starter code)
+//   Synchronous version which is mapped to embedded block RAMs (EBR)
+/////////////////////////////////////////////
+module sbox_sync(input  logic [7:0] a,
+                 input  logic       clk,
+                 output logic [7:0] y);
+
+  logic [7:0] sbox [0:255];
+
+  initial   $readmemh("sbox.txt", sbox);
+
+  always_ff @(posedge clk) begin
+    y <= sbox[a];
+  end
+endmodule
+
+/////////////////////////////////////////////
+// mixcolumns (from starter code)
+//   MixColumns (5.1.3), same operation on each of the four columns
+/////////////////////////////////////////////
+module mixcolumns(input  logic [127:0] a,
+                  output logic [127:0] y);
+
+  mixcolumn mc0(a[127:96], y[127:96]);
+  mixcolumn mc1(a[95:64],  y[95:64]);
+  mixcolumn mc2(a[63:32],  y[63:32]);
+  mixcolumn mc3(a[31:0],   y[31:0]);
+endmodule
+
+/////////////////////////////////////////////
+// mixcolumn (from starter code)
+//   See EQ(4) from E. Ahmed et al, Lightweight Mix Columns Implementation for AES, AIC09
+/////////////////////////////////////////////
+module mixcolumn(input  logic [31:0] a,
+                 output logic [31:0] y);
+
+  logic [7:0] a0, a1, a2, a3, y0, y1, y2, y3, t0, t1, t2, t3, tmp;
+
+  assign {a0, a1, a2, a3} = a;
+  assign tmp = a0 ^ a1 ^ a2 ^ a3;
+
+  galoismult gm0(a0^a1, t0);
+  galoismult gm1(a1^a2, t1);
+  galoismult gm2(a2^a3, t2);
+  galoismult gm3(a3^a0, t3);
+
+  assign y0 = a0 ^ tmp ^ t0;
+  assign y1 = a1 ^ tmp ^ t1;
+  assign y2 = a2 ^ tmp ^ t2;
+  assign y3 = a3 ^ tmp ^ t3;
+  assign y = {y0, y1, y2, y3};
+endmodule
+
+/////////////////////////////////////////////
+// galoismult (from starter code)
+//   multiply by x in GF(2^8): shift left, XOR 0x1B if it overflowed
+/////////////////////////////////////////////
+module galoismult(input  logic [7:0] a,
+                  output logic [7:0] y);
+
+  logic [7:0] ashift;
+
+  assign ashift = {a[6:0], 1'b0};
+  assign y = a[7] ? (ashift ^ 8'b00011011) : ashift;
+endmodule
+```
+:::
+
+::: {.callout-note collapse="true"}
+## `lab07.pdc`
+
+```tcl
+ldc_set_location -site {21} [get_ports sck]
+ldc_set_location -site {10} [get_ports sdi]
+ldc_set_location -site {12} [get_ports sdo]
+ldc_set_location -site {26} [get_ports load]
+ldc_set_location -site {27} [get_ports done]
+```
+:::
+
+::: {.callout-note collapse="true"}
+## `aes_core_tb_c1.sv` (my copy of the core testbench with the C.1 vector)
+
+```verilog
+`timescale 10ns/1ns
+
+/////////////////////////////////////////////
+// testbench_aes_core
+// Tests AES with cases from FIPS-197 appendix
+// Tests aes_core module apart from the SPI load
+// Added 4/28/21 by Josh Brake
+// jbrake@hmc.edu
+/////////////////////////////////////////////
+
+module testbench_aes_core_c1();
+    logic clk, load, done;
+    logic [127:0] key, plaintext, cyphertext, expected;
+    
+    // device under test
+    aes_core dut(clk, load, key, plaintext, done, cyphertext);
+    
+    // test case
+    initial begin   
+    // Test case from FIPS-197 Appendix A.1, B
+    key       <= 128'h000102030405060708090A0B0C0D0E0F;
+    plaintext <= 128'h00112233445566778899AABBCCDDEEFF;
+    expected  <= 128'h69C4E0D86A7B0430D8CDB78070B4C55A;
+
+    // Alternate test case from Appendix C.1
+    //      key       <= 128'h000102030405060708090A0B0C0D0E0F;
+    //      plaintext <= 128'h00112233445566778899AABBCCDDEEFF;
+    //      expected  <= 128'h69C4E0D86A7B0430D8CDB78070B4C55A;
+    end
+    
+    // generate clock and load signals
+    always begin
+			clk = 1'b0; #5;
+			clk = 1'b1; #5;
+		end
+        
+    initial begin
+      load = 1'b1; #22; load = 1'b0; //Pulse load to start conversion
+    end
+
+    // wait until done and then check the result
+    always @(posedge clk) begin
+      if (done) begin
+        if (cyphertext == expected)
+            $display("Testbench ran successfully");
+        else $display("Error: cyphertext = %h, expected %h",
+            cyphertext, expected);
+        $stop();
+      end
+    end
+    
+endmodule
+```
+:::
+
