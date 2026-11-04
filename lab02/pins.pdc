@@ -1,0 +1,25 @@
+# lab02 pin constraints (iCE40UP5K)
+
+# transistor bases (high = digit on)
+ldc_set_location -site {21} [get_ports {cathode[0]}]
+ldc_set_location -site {10} [get_ports {cathode[1]}]
+
+# segments a..g (active-high, HDSP-5303 common cathode)
+ldc_set_location -site {45} [get_ports {segment[0]}]
+ldc_set_location -site {3}  [get_ports {segment[1]}]
+ldc_set_location -site {44} [get_ports {segment[2]}]
+ldc_set_location -site {18} [get_ports {segment[3]}]
+ldc_set_location -site {13} [get_ports {segment[4]}]
+ldc_set_location -site {12} [get_ports {segment[5]}]
+ldc_set_location -site {20} [get_ports {segment[6]}]
+
+# DIP switch A (sA[3] = MSB)
+ldc_set_location -site {48} [get_ports {sA[0]}]
+ldc_set_location -site {4}  [get_ports {sA[1]}]
+ldc_set_location -site {6}  [get_ports {sA[2]}]
+ldc_set_location -site {11} [get_ports {sA[3]}]
+
+# reset (counter resets while reset is LOW)
+ldc_set_location -site {34} [get_ports reset]
+
+# sB not wired yet
