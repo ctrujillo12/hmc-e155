@@ -19,6 +19,12 @@ ldc_set_location -site {6}  [get_ports {sA[1]}]
 ldc_set_location -site {4}  [get_ports {sA[2]}]
 ldc_set_location -site {48} [get_ports {sA[3]}]
 
+# external 10k pull-downs on the switches, so disable the internal 100k pull-ups
+ldc_set_port -iobuf {PULLMODE=NONE} [get_ports {sA[0]}]
+ldc_set_port -iobuf {PULLMODE=NONE} [get_ports {sA[1]}]
+ldc_set_port -iobuf {PULLMODE=NONE} [get_ports {sA[2]}]
+ldc_set_port -iobuf {PULLMODE=NONE} [get_ports {sA[3]}]
+
 # reset (counter resets while reset is LOW)
 ldc_set_location -site {34} [get_ports reset]
 
