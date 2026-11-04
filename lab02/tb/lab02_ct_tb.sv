@@ -11,8 +11,8 @@ module lab02_ct_tb();
     logic       reset_n;
     logic [3:0] switch_n;
     logic [1:0] button_n;
-    logic [3:0] col_n;
-    logic [3:0] row;
+    logic [3:0] col;
+    logic [3:0] row_n;
     logic [2:0] led;
     logic [1:0] anode_en_n;
     logic [6:0] segment;
@@ -28,8 +28,8 @@ module lab02_ct_tb();
         .reset_n(reset_n),
         .switch_n(switch_n),
         .button_n(button_n),
-        .col_n(col_n),
-        .row(row),
+        .col(col),
+        .row_n(row_n),
         .led(led),
         .anode_en_n(anode_en_n),
         .segment(segment)
@@ -91,11 +91,11 @@ module lab02_ct_tb();
                 end
             endcase
 
-            if (!$onehot(row)) begin
-                $display("ERROR t=%0t: row=%b is not one-hot", $time, row);
+            if (!$onehot(~row_n)) begin
+                $display("ERROR t=%0t: row_n=%b does not drive exactly one row", $time, row_n);
                 errors++;
             end
-            rows_seen |= row;
+            rows_seen |= ~row_n;
         end
     end
 
@@ -106,7 +106,7 @@ module lab02_ct_tb();
         rows_seen     = 4'b0000;
         switch_n      = 4'b1111;
         button_n      = 2'b11;
-        col_n         = 4'b1111;
+        col           = 4'b0000;
         reset_n       = 0;
         #12;
         reset_n = 1;
@@ -121,11 +121,11 @@ module lab02_ct_tb();
         end
 
         // LED pass-through: every column pattern
-        for (int col = 0; col < 16; col++) begin
-            col_n = col[3:0];
+        for (int col_value = 0; col_value < 16; col_value++) begin
+            col = col_value[3:0];
             #1;
-            if (led !== ~col_n[3:1]) begin
-                $display("ERROR: col_n=%b, led=%b expected %b", col_n, led, ~col_n[3:1]);
+            if (led !== col[3:1]) begin
+                $display("ERROR: col=%b, led=%b expected %b", col, led, col[3:1]);
                 errors++;
             end
         end

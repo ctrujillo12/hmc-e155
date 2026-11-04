@@ -32,7 +32,7 @@ flowchart LR
         osc -- int_osc --> scan["keypad_scanner : scanner\nCYCLES_PER_ROW = 6,000,000"]
         mux -- "blink → digit_sel" --> sel{{"assign digit_value\nassign anode_en_n"}}
         sel -- "digit_value[3:0]" --> dec["display_decoder : seven_segment"]
-        colin{{"assign led = ~col_n"}}
+        colin{{"assign led = col[3:1]"}}
         subgraph scanner
             sc["scan_counter : counter\nMAX_COUNT = 24,000,000"] -- "scan_count" --> rowlogic{{"assign row (one-hot)"}}
         end
@@ -43,8 +43,8 @@ flowchart LR
     rst["reset_n"] --> mux & scan
     sel --> cath["anode_en_n[1:0]"]
     dec --> seg["segment[6:0]"]
-    col["col_n[3:0]"] --> colin --> led["led[3:0]"]
-    rowlogic --> row["row[3:0]"]
+    col["col[3:0]"] --> colin --> led["led[2:0]"]
+    rowlogic --> rowinv{{"assign row_n = ~row_active"}} --> row["row_n[3:0]"]
 ```
 
 ## Time Multiplexing
@@ -73,9 +73,9 @@ The display is an HDSP-521A, a common-anode dual-digit display. The lab 1 decode
 
 With `CYCLES_PER_ROW = 6,000,000`, each row is active for 0.25 s and the pattern repeats once per second. Each row bit goes high once and low once per second, so it toggles at 2 Hz. `reset` and `enable` are passed through to the counter: reset forces row 1000, and holding `enable` low freezes the current row.
 
-Each `row` output drives the gate of a TN2106 NMOS transistor whose source is grounded. When `row[i] = 1`, the transistor pulls keypad row i low. When `row[i] = 0`, a 10 kΩ pull-up holds the row high. Because the FPGA never drives a row high directly, two pressed keys in the same column can't short a high row to a low one. That's why the rows are open-drain.
+The lab stocks TN2106 NMOS transistors for the rows, but only TP2104 PMOS transistors were available, so the keypad uses the mirror image of the intended circuit. The top level inverts the scanner output into `row_n`, and each `row_n` output drives the gate of a TP2104 whose source is at 3.3 V and whose drain is a keypad row. When `row_n[i] = 0`, the PMOS turns on and pulls keypad row i up to 3.3 V. When `row_n[i] = 1`, the PMOS is off and a 10 kΩ pull-down holds the row at ground. The FPGA never drives a row low directly, so two pressed keys in the same column can't short an active row to a driven-low row. It's the same protection as an open-drain NMOS, just mirrored.
 
-The columns are FPGA inputs with internal pull-ups. A pressed key in the active row pulls its column low, and `led = ~col_n[3:1]` turns the matching LED on. Column 1 has no LED, because every FPGA pin the breadboard adapter can reach was already in use. Holding a key blinks its column's LED on for 0.25 s every second.
+Each column has a 10 kΩ pull-down to ground. That overpowers the FPGA's weak internal pull-up (about 100 kΩ), so an idle column reads 0. A pressed key in the active row pulls its column up to 3.3 V through the PMOS, and `led = col[3:1]` turns the matching LED on. Column 1 has no LED, because every FPGA pin the breadboard adapter can reach was already in use. Holding a key blinks its column's LED on for 0.25 s every second.
 
 ## Testing Methodology
 
@@ -83,7 +83,7 @@ The decoder is unchanged from lab 1, so I did not re-simulate it. Its lab 1 test
 
 - [`counter_tb.sv`](#counter_tb-sv) re-verifies the counter after the new `count` output: reset values, counting and wrap, `blink` toggling on each wrap, enable hold, and asynchronous reset between clock edges.
 - [`scanner_tb.sv`](#scanner_tb-sv) checks every cycle against a reference model. It covers reset to 1000, all four transitions over two full rotations (it counts 8 transitions), `CYCLES_PER_ROW` cycles per row, enable hold mid-row, and asynchronous reset.
-- [`lab02_ct_tb.sv`](#lab02_ct_tb-sv) checks the top level. For all 16 switch values × 4 button values, on every clock it checks that `anode_en_n` enables exactly one digit and that the enabled digit shows the right segments. It also checks `led` for all 16 column patterns and that `row` is always one-hot and visits every row.
+- [`lab02_ct_tb.sv`](#lab02_ct_tb-sv) checks the top level. For all 16 switch values × 4 button values, on every clock it checks that `anode_en_n` enables exactly one digit and that the enabled digit shows the right segments. It also checks `led` for all 16 column patterns, and that exactly one `row_n` bit is low at a time and every row gets a turn.
 
 The testbenches use small parameter values (`CYCLES_PER_ROW = 3`, `MUX_TOGGLE_CYCLES = 2`) so the simulations stay short. The top-level testbench forces the oscillator net to a testbench clock.
 
@@ -178,11 +178,11 @@ FPGA limit: the iCE40UP5K data sheet, Table 4.13 (sysI/O Single-Ended DC Electri
 - The collector carries at most 7 × 6.4 ≈ 45 mA, well under the 2N3906's 200 mA maximum.
 - Forced β = 45 / 2.6 ≈ 17. That is below the 2N3906's minimum h<sub>FE</sub> of 60 at 50 mA, so the transistor is saturated.
 
-**Keypad row pins (4 outputs).** Each drives a TN2106 gate, which draws only gate leakage (nanoamps), so ≈ **0 mA**. The 10 kΩ row pull-ups carry 3.3 V / 10 kΩ = 0.33 mA, but that current flows through the NMOS, not the FPGA. <!-- TODO: confirm from the TN2106 data sheet that V_GS(th) max is below 3.3 V. -->
+**Keypad row pins (4 outputs).** Each drives a TP2104 gate, which draws only gate leakage (nanoamps), so ≈ **0 mA**. When a row is active, its PMOS supplies the 10 kΩ row pull-down (0.33 mA) plus 0.33 mA for each column pulled up through a pressed key. That current comes from 3.3 V through the PMOS, not from the FPGA. The board LEDs D2–D4 on the PA6, PA9 and PA10 gate nets each add (3.3 − 2.0) V / 1 kΩ ≈ 1.3 mA on their row pins, still well under 8 mA.
 
 **LED pins (3 outputs).** D6–D8 have 1 kΩ series resistors on the board. Even with V<sub>F</sub> = 0, I ≤ 3.3 V / 1 kΩ = **3.3 mA** < 8 mA.
 
-**Input pins** (DIP switch, buttons, keypad columns, reset). When an input is pulled low, the only current is the internal pull-up current: I<sub>PU</sub> ≤ **128 µA** at V<sub>CCIO</sub> = 3.3 V (DC Electrical Characteristics, I<sub>PU</sub>).
+**Input pins** (DIP switch, buttons, keypad columns, reset). An input draws only its internal pull-up current when it sits low (a closed switch or button, or an idle column held down by its 10 kΩ): I<sub>PU</sub> ≤ **128 µA** at V<sub>CCIO</sub> = 3.3 V (DC Electrical Characteristics, I<sub>PU</sub>).
 
 # Simulation Results
 
@@ -206,7 +206,7 @@ The seven-segment decoder is unchanged from lab 1 and was verified there: [lab 1
 <!-- TODO: QuestaSim screenshot of lab02_ct_tb -->
 <details>
 <summary>lab02_ct_tb waveform</summary>
-![lab02_ct_tb: anode_en_n alternates, segment matches the enabled digit's input, led follows ~col_n](lab02_ct_tb.png){width=100%}
+![lab02_ct_tb: anode_en_n alternates, segment matches the enabled digit's input, led follows col[3:1]](lab02_ct_tb.png){width=100%}
 </details>
 
 # Hardware Results
@@ -222,6 +222,7 @@ Deviations from the lab handout:
 
 - The 4-bit number comes from a DIP switch on the breadboard instead of the development board's SW6, because SW6 switch 4 never registered on my board.
 - Keypad column 1 has no LED. The breadboard adapter reaches only 21 FPGA pins, and all of them are used; the only LED left (D5) needs FPGA pin 21, which the DIP switch uses. Holding a key in column 1 still works, but nothing shows it.
+- The keypad rows use TP2104 PMOS transistors (source to 3.3 V, 10 kΩ pull-downs on rows and columns) instead of TN2106 NMOS with pull-ups, because only TP2104s were available.
 - Each digit's anode is switched by a 2N3906 PNP transistor (with a 1 kΩ base resistor) instead of a TP2104 PMOS. It's the same high-side switch, active-low from the FPGA.
 
 # Conclusion
