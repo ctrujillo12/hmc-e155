@@ -4,11 +4,11 @@
 # reset (no board connection; internal pull-up holds it high, jumper to GND to reset)
 ldc_set_location -site {10} [get_ports reset_n]
 
-# onboard DIP switch SW6 (switch to GND, internal pull-ups)
-ldc_set_location -site {32} [get_ports {switch_n[0]}]
-ldc_set_location -site {35} [get_ports {switch_n[1]}]
-ldc_set_location -site {31} [get_ports {switch_n[2]}]
-ldc_set_location -site {37} [get_ports {switch_n[3]}]
+# breadboard DIP switch (pin -> switch -> GND, internal pull-ups)
+ldc_set_location -site {21} [get_ports {switch_n[0]}]
+ldc_set_location -site {19} [get_ports {switch_n[1]}]
+ldc_set_location -site {11} [get_ports {switch_n[2]}]
+ldc_set_location -site {6}  [get_ports {switch_n[3]}]
 
 # onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
 ldc_set_location -site {34} [get_ports {button_n[0]}]
@@ -18,7 +18,8 @@ ldc_set_location -site {43} [get_ports {button_n[1]}]
 ldc_set_location -site {23} [get_ports {col_n[0]}]
 ldc_set_location -site {25} [get_ports {col_n[1]}]
 ldc_set_location -site {26} [get_ports {col_n[2]}]
-ldc_set_location -site {21} [get_ports {col_n[3]}]
+# col_n[3] on p32 shares a trace with SW6 switch 1: keep SW6 all OFF
+ldc_set_location -site {32} [get_ports {col_n[3]}]
 
 # keypad rows (to TN2106 NMOS gates)
 ldc_set_location -site {46} [get_ports {row[0]}]
@@ -32,11 +33,11 @@ ldc_set_location -site {38} [get_ports {led[1]}]
 ldc_set_location -site {28} [get_ports {led[2]}]
 ldc_set_location -site {27} [get_ports {led[3]}]
 
-# digit enables (to PNP bases, low = digit on)
-ldc_set_location -site {20} [get_ports {cathode_en_n[0]}]
-ldc_set_location -site {12} [get_ports {cathode_en_n[1]}]
+# digit enables (to 2N3906 bases through 1k, low = digit on)
+ldc_set_location -site {20} [get_ports {anode_en_n[0]}]
+ldc_set_location -site {12} [get_ports {anode_en_n[1]}]
 
-# segments a..g (active-high, HDSP-5303 common cathode)
+# segments a..g (active-low, HDSP-521A common anode; each line feeds both digits)
 ldc_set_location -site {2}  [get_ports {segment[0]}]
 ldc_set_location -site {4}  [get_ports {segment[1]}]
 ldc_set_location -site {44} [get_ports {segment[2]}]

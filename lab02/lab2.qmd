@@ -12,7 +12,7 @@ format:
 
 # Introduction
 
-In this lab I drove two seven-segment digits from a single seven-segment decoder by time multiplexing them, switched each digit's common cathode with a transistor, and scanned a 4×4 keypad through open-drain row drivers. The first digit shows the 4-bit number on the development board's DIP switch (SW6). The second digit shows the 2-bit number on pushbuttons SW1 and SW0, so it ranges from 0 to 3. The keypad columns are passed straight through to LEDs, so holding a key blinks an LED at the scan rate.
+In this lab I drove two seven-segment digits from a single seven-segment decoder by time multiplexing them, switched each digit's common anode with a transistor, and scanned a 4×4 keypad through open-drain row drivers. The first digit shows the 4-bit number on a DIP switch on the breadboard. The second digit shows the 2-bit number on pushbuttons SW1 and SW0, so it ranges from 0 to 3. The keypad columns are passed straight through to LEDs, so holding a key blinks an LED at the scan rate.
 
 # Design and Testing Methodology
 
@@ -30,9 +30,8 @@ flowchart LR
     subgraph lab02_ct
         osc["hf_osc : HSOSC\n24 MHz"] -- int_osc --> mux["mux_counter : counter\nMAX_COUNT = 24,000"]
         osc -- int_osc --> scan["keypad_scanner : scanner\nCYCLES_PER_ROW = 6,000,000"]
-        mux -- "blink → digit_sel" --> sel{{"assign digit_value\nassign cathode_en_n"}}
+        mux -- "blink → digit_sel" --> sel{{"assign digit_value\nassign anode_en_n"}}
         sel -- "digit_value[3:0]" --> dec["display_decoder : seven_segment"]
-        dec -- "segment_n[6:0]" --> inv{{"assign segment = ~segment_n"}}
         colin{{"assign led = ~col_n"}}
         subgraph scanner
             sc["scan_counter : counter\nMAX_COUNT = 24,000,000"] -- "scan_count" --> rowlogic{{"assign row (one-hot)"}}
@@ -42,8 +41,8 @@ flowchart LR
     sw["switch_n[3:0]"] --> sel
     btn["button_n[1:0]"] --> sel
     rst["reset_n"] --> mux & scan
-    sel --> cath["cathode_en_n[1:0]"]
-    inv --> seg["segment[6:0]"]
+    sel --> cath["anode_en_n[1:0]"]
+    dec --> seg["segment[6:0]"]
     col["col_n[3:0]"] --> colin --> led["led[3:0]"]
     rowlogic --> row["row[3:0]"]
 ```
@@ -52,14 +51,14 @@ flowchart LR
 
 `mux_counter` is a lab 1 counter with `MAX_COUNT = 24,000`. Its `blink` output toggles every 24,000 cycles of the 24 MHz oscillator, which is every 1 ms. That signal, `digit_sel`, picks both what the decoder sees and which digit is on:
 
-- `digit_sel = 0`: decoder input is the DIP switch, `cathode_en_n = 10` (digit 0 on).
-- `digit_sel = 1`: decoder input is `{2'b00, buttons}`, `cathode_en_n = 01` (digit 1 on).
+- `digit_sel = 0`: decoder input is the DIP switch, `anode_en_n = 10` (digit 0 on).
+- `digit_sel = 1`: decoder input is `{2'b00, buttons}`, `anode_en_n = 01` (digit 1 on).
 
 Each digit is lit for 1 ms out of every 2 ms, a 500 Hz refresh. That is far above the roughly 60 Hz where flicker becomes visible. It is also long compared with the transistor switching time (well under a microsecond), so the digits don't bleed into each other.
 
 The DIP switch and pushbuttons connect their pins to ground when ON or pressed, and the FPGA's internal pull-ups hold them high otherwise. The top level inverts them (`~switch_n`, `~button_n`) so that ON or pressed counts as 1.
 
-The lab 1 decoder drives active-low segments for a common-anode display. I used an HDSP-5303, which is common cathode, so the top level inverts the decoder output (`segment = ~segment_n`). The decoder itself is unchanged, so its lab 1 simulation still applies.
+The display is an HDSP-521A, a common-anode dual-digit display. The lab 1 decoder already drives active-low segments for a common-anode display, so its output goes straight to the segment pins, and the decoder's lab 1 simulation still applies. Each segment line connects to that segment on both digits, so the 7 FPGA pins drive both.
 
 ## Keypad Scanning
 
@@ -84,7 +83,7 @@ The decoder is unchanged from lab 1, so I did not re-simulate it. Its lab 1 test
 
 - [`counter_tb.sv`](#counter_tb-sv) re-verifies the counter after the new `count` output: reset values, counting and wrap, `blink` toggling on each wrap, enable hold, and asynchronous reset between clock edges.
 - [`scanner_tb.sv`](#scanner_tb-sv) checks every cycle against a reference model. It covers reset to 1000, all four transitions over two full rotations (it counts 8 transitions), `CYCLES_PER_ROW` cycles per row, enable hold mid-row, and asynchronous reset.
-- [`lab02_ct_tb.sv`](#lab02_ct_tb-sv) checks the top level. For all 16 switch values × 4 button values, on every clock it checks that `cathode_en_n` enables exactly one digit and that the enabled digit shows the right segments. It also checks `led` for all 16 column patterns and that `row` is always one-hot and visits every row.
+- [`lab02_ct_tb.sv`](#lab02_ct_tb-sv) checks the top level. For all 16 switch values × 4 button values, on every clock it checks that `anode_en_n` enables exactly one digit and that the enabled digit shows the right segments. It also checks `led` for all 16 column patterns and that `row` is always one-hot and visits every row.
 
 The testbenches use small parameter values (`CYCLES_PER_ROW = 3`, `MUX_TOGGLE_CYCLES = 2`) so the simulations stay short. The top-level testbench forces the oscillator net to a testbench clock.
 
@@ -157,26 +156,27 @@ The development board's SW7 (the MCU bridge DIP switch) is kept all OFF, because
 <!-- TODO: add the schematic image. Off-board parts only; label part numbers, values, pin names and numbers; title block. -->
 ![Schematic of the off-board circuit](schematic.png){width=100%}
 
-The DIP switch (SW6), pushbuttons (SW0, SW1) and LEDs D6–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
+The pushbuttons (SW0, SW1) and LEDs D6–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
 
 ## Current Calculations
 
 FPGA limit: the iCE40UP5K data sheet, Table 4.13 (sysI/O Single-Ended DC Electrical Characteristics), specifies I<sub>OL</sub> = I<sub>OH</sub> = 8 mA for LVCMOS 3.3 (V<sub>OL</sub> ≤ 0.4 V, V<sub>OH</sub> ≥ V<sub>CCIO</sub> − 0.4 V at that current). Every pin below stays under 8 mA.
 
-**Digit switching.** Each digit's common cathode (HDSP-5303 pins 3 and 8) connects to the emitter of a 2N3906 PNP. The collector goes to GND and the base goes directly to the FPGA pin, so the transistor works as an emitter follower.
+**Digit switching.** Each digit's common anode (HDSP-521A pin 14 for the left digit, pin 13 for the right) connects to the collector of a 2N3906 PNP. The emitter goes to 3.3 V and the base goes to the FPGA pin through 1 kΩ. When the FPGA drives the base low, the transistor saturates and connects that digit's anode to 3.3 V. When it drives the base high, the transistor is off and the digit is dark.
 
-- **Base pin = 0 V:** the emitter, and with it the cathode, sits one V<sub>EB</sub> (about 0.7 V) above ground, so that digit's segments can conduct.
-- **Base pin = 3.3 V:** the emitter would have to rise above about 4 V to conduct. The segments can only pull it to 3.3 − V<sub>F</sub> ≈ 1.7 V, so the digit is off.
+**Segment pins (7 outputs, sinking).** Current flows from 3.3 V through the PNP, the segment LED and a 220 Ω resistor into the FPGA pin, which drives low to light the segment.
 
-**Segment pins (7 outputs).** Each one sources one segment through a 220 Ω resistor, then through the LED and the PNP to ground.
+<!-- TODO: confirm V_F from the HDSP-521A data sheet and cite the table. -->
+- HDSP-521A (AlGaAs red) V<sub>F</sub> ≈ 1.8 V typical at 20 mA, and slightly lower at a few mA.
+- Worst case for the pin is the highest current: V<sub>F</sub> = 1.7 V and V<sub>EC(sat)</sub> = 0.2 V.
+- I = (3.3 − 0.2 − 1.7) V / 220 Ω ≈ **6.4 mA** < 8 mA, and well under the display's DC limit per segment.
+- Every segment has its own resistor, and there is none on the anode. So each segment's current doesn't depend on how many other segments are lit, and the brightness stays the same.
 
-- HDSP-5303 V<sub>F</sub> = 1.6 V typical at 20 mA (Electrical/Optical Characteristics, Red HDSP-53XX). Figure 4 of the data sheet shows V<sub>F</sub> slightly lower, about 1.5 V, at a few mA.
-- Worst case for the pin is the highest current: V<sub>F</sub> = 1.5 V and a low V<sub>EB</sub> = 0.6 V.
-- I = (3.3 − 1.5 − 0.6) V / 220 Ω ≈ **5.5 mA** < 8 mA. That is also far below the display's 25 mA DC limit per segment.
-- Typical: (3.3 − 1.6 − 0.7) V / 220 Ω ≈ 4.5 mA.
-- Every segment has its own resistor, and there is none on the cathode. So each segment's current doesn't depend on how many other segments are lit, and the brightness stays the same.
+**Digit enable pins (2 outputs, sinking).**
 
-**Digit enable pins (2 outputs, sinking).** The PNP's emitter current is at most 7 × 5.5 mA ≈ 39 mA, well under the 2N3906's 200 mA maximum. The FPGA pin sinks only the base current: I<sub>B</sub> = I<sub>E</sub> / (h<sub>FE</sub> + 1) ≤ 39 mA / 61 ≈ **0.64 mA** < 8 mA, using the 2N3906's minimum h<sub>FE</sub> of 60 at 50 mA. Leaving out a base resistor keeps the cathode near 0.7 V. A 1 kΩ base resistor would add about 0.6 V and noticeably dim the display.
+- Base current: I<sub>B</sub> = (3.3 − 0.7) V / 1 kΩ ≈ **2.6 mA** < 8 mA.
+- The collector carries at most 7 × 6.4 ≈ 45 mA, well under the 2N3906's 200 mA maximum.
+- Forced β = 45 / 2.6 ≈ 17. That is below the 2N3906's minimum h<sub>FE</sub> of 60 at 50 mA, so the transistor is saturated.
 
 **Keypad row pins (4 outputs).** Each drives a TN2106 gate, which draws only gate leakage (nanoamps), so ≈ **0 mA**. The 10 kΩ row pull-ups carry 3.3 V / 10 kΩ = 0.33 mA, but that current flows through the NMOS, not the FPGA. <!-- TODO: confirm from the TN2106 data sheet that V_GS(th) max is below 3.3 V. -->
 
@@ -206,7 +206,7 @@ The seven-segment decoder is unchanged from lab 1 and was verified there: [lab 1
 <!-- TODO: QuestaSim screenshot of lab02_ct_tb -->
 <details>
 <summary>lab02_ct_tb waveform</summary>
-![lab02_ct_tb: cathode_en_n alternates, segment matches the enabled digit's input, led follows ~col_n](lab02_ct_tb.png){width=100%}
+![lab02_ct_tb: anode_en_n alternates, segment matches the enabled digit's input, led follows ~col_n](lab02_ct_tb.png){width=100%}
 </details>
 
 # Hardware Results
@@ -218,7 +218,7 @@ The seven-segment decoder is unchanged from lab 1 and was verified there: [lab 1
 <!-- TODO: update after testing on hardware. -->
 The design is written to meet all Proficiency and Excellence specifications. Hardware verification on the board is still pending.
 
-One deviation from the lab handout: I used HDSP-5303 common-cathode displays switched by 2N3906 PNP transistors wired as emitter followers, instead of a common-anode display with TP2104 PMOS transistors. The lab 1 decoder's outputs are inverted at the top level to match.
+Deviations from the lab handout: the 4-bit number comes from a DIP switch on the breadboard, because switch 4 of the development board's SW6 never registered. Also, each digit's anode is switched by a 2N3906 PNP transistor (with a 1 kΩ base resistor) instead of a TP2104 PMOS. It's the same high-side switch, active-low from the FPGA.
 
 # Conclusion
 
