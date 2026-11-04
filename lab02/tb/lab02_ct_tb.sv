@@ -1,5 +1,5 @@
 // lab02_ct_tb: automatic testbench for the top level.
-// Checks multiplexing (each digit shows the right number on the right cathode_en, for every input),
+// Checks multiplexing (each digit shows the right number on the right cathode_en_n, for every input),
 // LED pass-through for every column pattern, and that the keypad row output is always one-hot.
 // Needs the Radiant iCE40UP simulation library for HSOSC (vsim -L iCE40UP); the clock is forced from here.
 module lab02_ct_tb();
@@ -14,7 +14,7 @@ module lab02_ct_tb();
     logic [3:0] col_n;
     logic [3:0] row;
     logic [3:0] led;
-    logic [1:0] cathode_en;
+    logic [1:0] cathode_en_n;
     logic [6:0] segment;
 
     int errors;
@@ -31,7 +31,7 @@ module lab02_ct_tb();
         .col_n(col_n),
         .row(row),
         .led(led),
-        .cathode_en(cathode_en),
+        .cathode_en_n(cathode_en_n),
         .segment(segment)
     );
 
@@ -67,8 +67,8 @@ module lab02_ct_tb();
     // check the display and keypad outputs on every falling edge
     always @(negedge clk) begin
         if (reset_n) begin
-            case (cathode_en)
-                2'b01: begin
+            case (cathode_en_n)
+                2'b10: begin
                     digit0_checks++;
                     if (segment !== expected_segment(~switch_n)) begin
                         $display("ERROR t=%0t: digit 0, switch_n=%b, segment=%b expected %b",
@@ -76,7 +76,7 @@ module lab02_ct_tb();
                         errors++;
                     end
                 end
-                2'b10: begin
+                2'b01: begin
                     digit1_checks++;
                     if (segment !== expected_segment({2'b00, ~button_n})) begin
                         $display("ERROR t=%0t: digit 1, button_n=%b, segment=%b expected %b",
@@ -85,7 +85,7 @@ module lab02_ct_tb();
                     end
                 end
                 default: begin
-                    $display("ERROR t=%0t: cathode_en=%b is not one-hot", $time, cathode_en);
+                    $display("ERROR t=%0t: cathode_en_n=%b does not enable exactly one digit", $time, cathode_en_n);
                     errors++;
                 end
             endcase

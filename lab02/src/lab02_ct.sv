@@ -1,5 +1,6 @@
 // lab02_ct: top level.
-// Time-multiplexes one seven-segment decoder across two HDSP-5303 (common cathode) digits:
+// Time-multiplexes one seven-segment decoder across two HDSP-5303 (common cathode) digits,
+// each cathode switched by a PNP emitter follower:
 //   digit 0 = onboard DIP switch (4 bits), digit 1 = pushbuttons SW1, SW0 (2 bits).
 // Scans a 4x4 keypad (rows through open-drain TN2106 NMOS) and passes the columns to LEDs.
 module lab02_ct #(
@@ -12,7 +13,7 @@ module lab02_ct #(
     input  logic [3:0] col_n,       // keypad columns, 0 = key pressed in the active row
     output logic [3:0] row,         // keypad row NMOS gates, 1 = row pulled low
     output logic [3:0] led,         // keypad column pass-through, 1 = on
-    output logic [1:0] cathode_en,  // digit NPN bases, 1 = digit on
+    output logic [1:0] cathode_en_n, // digit PNP bases, 0 = digit on
     output logic [6:0] segment      // {g,f,e,d,c,b,a}, 1 = lit
 );
 
@@ -53,7 +54,7 @@ module lab02_ct #(
 
     // multiplexing
     assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n;
-    assign cathode_en  = digit_sel ? 2'b10 : 2'b01;
+    assign cathode_en_n = digit_sel ? 2'b01 : 2'b10;
 
     // single decoder (lab 1, active-low outputs for common anode)
     seven_segment display_decoder (
