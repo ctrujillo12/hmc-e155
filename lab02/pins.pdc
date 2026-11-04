@@ -5,10 +5,10 @@
 ldc_set_location -site {10} [get_ports reset_n]
 
 # breadboard DIP switch (pin -> switch -> GND, internal pull-ups)
-ldc_set_location -site {21} [get_ports {switch_n[0]}]
-ldc_set_location -site {19} [get_ports {switch_n[1]}]
-ldc_set_location -site {11} [get_ports {switch_n[2]}]
-ldc_set_location -site {6}  [get_ports {switch_n[3]}]
+ldc_set_location -site {6}  [get_ports {switch_n[0]}]
+ldc_set_location -site {11} [get_ports {switch_n[1]}]
+ldc_set_location -site {19} [get_ports {switch_n[2]}]
+ldc_set_location -site {21} [get_ports {switch_n[3]}]
 
 # onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
 ldc_set_location -site {34} [get_ports {button_n[0]}]
