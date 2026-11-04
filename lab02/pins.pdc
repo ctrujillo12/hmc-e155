@@ -1,23 +1,23 @@
 # lab02 pin constraints (iCE40UP5K, SG48)
-# Development board SW7 (MCU bridge DIP) must be all OFF: pins 10, 12, 20, 21 are used here.
+# Development board SW7 (MCU bridge DIP) must be all OFF: pins 10, 12, 20, 21, 23, 25, 26, 27 are used here.
 
 # reset (no board connection; internal pull-up holds it high, jumper to GND to reset)
 ldc_set_location -site {10} [get_ports reset_n]
 
-# onboard DIP switch SW6 (switch to GND, internal pull-ups)
-ldc_set_location -site {32} [get_ports {switch_n[0]}]
-ldc_set_location -site {35} [get_ports {switch_n[1]}]
-ldc_set_location -site {31} [get_ports {switch_n[2]}]
-ldc_set_location -site {37} [get_ports {switch_n[3]}]
+# breadboard DIP switch (pin -> switch -> GND, internal pull-ups)
+ldc_set_location -site {19} [get_ports {switch_n[0]}]
+ldc_set_location -site {11} [get_ports {switch_n[1]}]
+ldc_set_location -site {6}  [get_ports {switch_n[2]}]
+ldc_set_location -site {4}  [get_ports {switch_n[3]}]
 
 # onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
 ldc_set_location -site {34} [get_ports {button_n[0]}]
 ldc_set_location -site {43} [get_ports {button_n[1]}]
 
 # keypad columns (inputs, internal pull-ups)
-ldc_set_location -site {11} [get_ports {col_n[0]}]
-ldc_set_location -site {6}  [get_ports {col_n[1]}]
-ldc_set_location -site {4}  [get_ports {col_n[2]}]
+ldc_set_location -site {23} [get_ports {col_n[0]}]
+ldc_set_location -site {25} [get_ports {col_n[1]}]
+ldc_set_location -site {26} [get_ports {col_n[2]}]
 ldc_set_location -site {21} [get_ports {col_n[3]}]
 
 # keypad rows (to TN2106 NMOS gates)
@@ -30,7 +30,7 @@ ldc_set_location -site {36} [get_ports {row[3]}]
 ldc_set_location -site {42} [get_ports {led[0]}]
 ldc_set_location -site {38} [get_ports {led[1]}]
 ldc_set_location -site {28} [get_ports {led[2]}]
-ldc_set_location -site {19} [get_ports {led[3]}]
+ldc_set_location -site {27} [get_ports {led[3]}]
 
 # digit enables (to PNP bases, low = digit on)
 ldc_set_location -site {20} [get_ports {cathode_en_n[0]}]
