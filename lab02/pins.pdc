@@ -1,7 +1,8 @@
 # lab02 pin constraints (iCE40UP5K, SG48)
 # Development board SW7 (MCU bridge DIP): switches 1, 2, 3, 8 ON (keypad rows reach the FPGA through
-# MCU header pins PA9, PA5, PA6, PA10); switches 4, 5, 6, 7 OFF (P20, P10, P12, P21 are used directly).
-# The Nucleo must not drive PA5, PA6, PA9 or PA10.
+# MCU header pins PA9, PA5, PA6, PA10) and switch 7 ON (P21 drives LED D5 on PB3);
+# switches 4, 5, 6 OFF (P20, P10, P12 are used directly).
+# The Nucleo must not drive PA5, PA6, PA9, PA10 or PB3.
 
 # reset: pushbutton SW0 (button to GND, internal pull-up), press to reset
 ldc_set_location -site {34} [get_ports reset_n]
@@ -10,7 +11,7 @@ ldc_set_location -site {34} [get_ports reset_n]
 ldc_set_location -site {6}  [get_ports {switch_n[0]}]
 ldc_set_location -site {11} [get_ports {switch_n[1]}]
 ldc_set_location -site {19} [get_ports {switch_n[2]}]
-ldc_set_location -site {21} [get_ports {switch_n[3]}]
+ldc_set_location -site {36} [get_ports {switch_n[3]}]
 
 # onboard DIP switch SW6 (switch to GND, internal pull-ups); switch 1 = MSB, switch 4 = LSB
 ldc_set_location -site {32} [get_ports {onboard_switch_n[3]}]
@@ -30,11 +31,11 @@ ldc_set_location -site {25} [get_ports {row[1]}]
 ldc_set_location -site {26} [get_ports {row[2]}]
 ldc_set_location -site {23} [get_ports {row[3]}]
 
-# LEDs: D6, D7, D8 on the board, led[3] is an external LED
-ldc_set_location -site {42} [get_ports {led[0]}]
-ldc_set_location -site {38} [get_ports {led[1]}]
-ldc_set_location -site {28} [get_ports {led[2]}]
-ldc_set_location -site {36} [get_ports {led[3]}]
+# column LEDs on the board: D5 (PB3, through SW7 switch 7), D6, D7, D8
+ldc_set_location -site {21} [get_ports {led[0]}]
+ldc_set_location -site {42} [get_ports {led[1]}]
+ldc_set_location -site {38} [get_ports {led[2]}]
+ldc_set_location -site {28} [get_ports {led[3]}]
 
 # digit enables (to 2N3906 bases through 1k, low = digit on)
 ldc_set_location -site {20} [get_ports {anode_en_n[0]}]

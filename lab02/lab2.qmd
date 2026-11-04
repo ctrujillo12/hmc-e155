@@ -149,14 +149,14 @@ The testbenches use small parameter values (`CYCLES_PER_ROW = 3`, `MUX_TOGGLE_CY
 ```
 </details>
 
-The keypad row signals reach the breadboard through the development board's SW7 bridge: switches 1, 2, 3 and 8 are ON, connecting FPGA pins 25, 26, 27 and 23 to the MCU header pins PA9, PA5, PA6 and PA10, which the Nucleo leaves undriven. Switches 4–7 are OFF, because pins 20, 10, 12 and 21 are wired directly.
+The keypad row signals reach the breadboard through the development board's SW7 bridge: switches 1, 2, 3 and 8 are ON, connecting FPGA pins 25, 26, 27 and 23 to the MCU header pins PA9, PA5, PA6 and PA10, which the Nucleo leaves undriven. Switch 7 is also ON, so FPGA pin 21 drives the board's LED D5 (on PB3). Switches 4–6 are OFF, because pins 20, 10 and 12 are wired directly.
 
 ## Hardware Schematic
 
 <!-- TODO: add the schematic image. Off-board parts only; label part numbers, values, pin names and numbers; title block. -->
 ![Schematic of the off-board circuit](schematic.png){width=100%}
 
-The DIP switch SW6 and LEDs D6–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
+The DIP switch SW6 and LEDs D5–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
 
 ## Current Calculations
 
@@ -180,7 +180,7 @@ FPGA limit: the iCE40UP5K data sheet, Table 4.13 (sysI/O Single-Ended DC Electri
 
 **Keypad row pins (4 outputs).** Each drives a TN2106 gate, which draws only gate leakage (nanoamps), so ≈ **0 mA**. The 10 kΩ row pull-ups carry 3.3 V / 10 kΩ = 0.33 mA, but that current flows through the NMOS, not the FPGA. <!-- TODO: confirm from the TN2106 data sheet that V_GS(th) max is below 3.3 V. -->
 
-**LED pins (4 outputs).** D6–D8 have 1 kΩ series resistors on the board, and the external LED on `led[3]` has 1 kΩ too. Even with V<sub>F</sub> = 0, I ≤ 3.3 V / 1 kΩ = **3.3 mA** < 8 mA.
+**LED pins (4 outputs).** D5–D8 have 1 kΩ series resistors on the board. Even with V<sub>F</sub> = 0, I ≤ 3.3 V / 1 kΩ = **3.3 mA** < 8 mA.
 
 **Input pins** (both DIP switches, keypad columns, reset). When an input is pulled low, the only current is the internal pull-up current: I<sub>PU</sub> ≤ **128 µA** at V<sub>CCIO</sub> = 3.3 V (DC Electrical Characteristics, I<sub>PU</sub>).
 
