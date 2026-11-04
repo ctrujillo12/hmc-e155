@@ -124,8 +124,8 @@ module lab02_ct_tb();
         for (int col_value = 0; col_value < 16; col_value++) begin
             col = col_value[3:0];
             #1;
-            if (led !== col[3:1]) begin
-                $display("ERROR: col=%b, led=%b expected %b", col, led, col[3:1]);
+            if (led !== col[2:0]) begin
+                $display("ERROR: col=%b, led=%b expected %b", col, led, col[2:0]);
                 errors++;
             end
         end

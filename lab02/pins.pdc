@@ -30,7 +30,7 @@ ldc_set_location -site {25} [get_ports {row_n[1]}]
 ldc_set_location -site {47} [get_ports {row_n[2]}]
 ldc_set_location -site {23} [get_ports {row_n[3]}]
 
-# column LEDs on the board: D6 = column 2, D7 = column 3, D8 = column 4 (column 1 has none)
+# column LEDs on the board: D6 = column 1, D7 = column 2, D8 = column 3 (column 4 has none)
 ldc_set_location -site {42} [get_ports {led[0]}]
 ldc_set_location -site {38} [get_ports {led[1]}]
 ldc_set_location -site {28} [get_ports {led[2]}]
