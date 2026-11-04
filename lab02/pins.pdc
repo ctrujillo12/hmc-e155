@@ -10,16 +10,18 @@ ldc_set_location -site {11} [get_ports {switch_n[1]}]
 ldc_set_location -site {19} [get_ports {switch_n[2]}]
 ldc_set_location -site {21} [get_ports {switch_n[3]}]
 
-# onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
-ldc_set_location -site {34} [get_ports {button_n[0]}]
-ldc_set_location -site {43} [get_ports {button_n[1]}]
+# onboard DIP switch SW6 (switch to GND, internal pull-ups); switch 1 = MSB, switch 4 = LSB
+ldc_set_location -site {32} [get_ports {onboard_switch_n[3]}]
+ldc_set_location -site {35} [get_ports {onboard_switch_n[2]}]
+ldc_set_location -site {31} [get_ports {onboard_switch_n[1]}]
+ldc_set_location -site {37} [get_ports {onboard_switch_n[0]}]
 
 # keypad columns (inputs, internal pull-ups)
 ldc_set_location -site {23} [get_ports {col_n[0]}]
 ldc_set_location -site {25} [get_ports {col_n[1]}]
 ldc_set_location -site {26} [get_ports {col_n[2]}]
-# col_n[3] on p32 shares a trace with SW6 switch 1: keep SW6 all OFF
-ldc_set_location -site {32} [get_ports {col_n[3]}]
+# col_n[3] on p43 shares a trace with pushbutton SW1: don't press SW1
+ldc_set_location -site {43} [get_ports {col_n[3]}]
 
 # keypad rows (to TN2106 NMOS gates)
 ldc_set_location -site {46} [get_ports {row[0]}]
@@ -52,8 +54,10 @@ ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[0]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[1]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[2]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[3]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[0]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[1]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[0]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[1]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[2]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[3]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[0]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[1]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[2]}]

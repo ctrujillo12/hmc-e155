@@ -1,7 +1,7 @@
 // lab02_ct: top level.
 // Time-multiplexes one seven-segment decoder across the two digits of an HDSP-521A
 // (common-anode dual display), each anode switched high-side by a 2N3906 PNP:
-//   digit 0 = breadboard DIP switch (4 bits), digit 1 = pushbuttons SW1, SW0 (2 bits).
+//   digit 0 = breadboard DIP switch (4 bits), digit 1 = onboard DIP switch SW6 (4 bits).
 // Scans a 4x4 keypad (rows through open-drain TN2106 NMOS) and passes the columns to LEDs.
 module lab02_ct #(
     parameter int unsigned MUX_TOGGLE_CYCLES   = 24_000,    // 1 ms per digit at 24 MHz
@@ -9,7 +9,7 @@ module lab02_ct #(
 )(
     input  logic       reset_n,     // active-low reset (internal pull-up keeps it high)
     input  logic [3:0] switch_n,    // breadboard DIP switch to GND, ON = 0
-    input  logic [1:0] button_n,    // pushbuttons SW1, SW0, pressed = 0
+    input  logic [3:0] onboard_switch_n, // onboard DIP switch SW6, ON = 0
     input  logic [3:0] col_n,       // keypad columns, 0 = key pressed in the active row
     output logic [3:0] row,         // keypad row NMOS gates, 1 = row pulled low
     output logic [3:0] led,         // keypad column pass-through, 1 = on
@@ -52,7 +52,7 @@ module lab02_ct #(
     );
 
     // multiplexing
-    assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n;
+    assign digit_value = digit_sel ? ~onboard_switch_n : ~switch_n;
     assign anode_en_n = digit_sel ? 2'b01 : 2'b10;
 
     // single decoder (lab 1, active-low segments: 0 = lit)
