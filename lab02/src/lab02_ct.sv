@@ -1,18 +1,19 @@
 // lab02_ct: top level.
 // Time-multiplexes one seven-segment decoder across the two digits of an HDSP-521A
 // (common-anode dual display), each anode switched high-side by a 2N3906 PNP:
-//   digit 0 = breadboard DIP switch (4 bits), digit 1 = onboard DIP switch SW6 (4 bits).
-// Scans a 4x4 keypad (rows through open-drain TN2106 NMOS) and passes the columns to LEDs.
+//   digit 0 = breadboard DIP switch (4 bits), digit 1 = pushbuttons SW1, SW0 (2 bits).
+// Scans a 4x4 keypad (rows through open-drain TN2106 NMOS) and passes columns 2-4 to LEDs
+// (column 1 has no LED: no FPGA pin was left to reach one).
 module lab02_ct #(
     parameter int unsigned MUX_TOGGLE_CYCLES   = 24_000,    // 1 ms per digit at 24 MHz
     parameter int unsigned SCAN_CYCLES_PER_ROW = 6_000_000  // 0.25 s per row: each row bit toggles at 2 Hz
 )(
     input  logic       reset_n,     // active-low reset (internal pull-up keeps it high)
     input  logic [3:0] switch_n,    // breadboard DIP switch to GND, ON = 0
-    input  logic [3:0] onboard_switch_n, // onboard DIP switch SW6, ON = 0
+    input  logic [1:0] button_n,    // pushbuttons SW1, SW0, pressed = 0
     input  logic [3:0] col_n,       // keypad columns, 0 = key pressed in the active row
     output logic [3:0] row,         // keypad row NMOS gates, 1 = row pulled low
-    output logic [3:0] led,         // keypad column pass-through, 1 = on
+    output logic [2:0] led,         // keypad columns 2-4 pass-through, 1 = on
     output logic [1:0] anode_en_n,  // digit PNP bases, 0 = digit on
     output logic [6:0] segment      // {g,f,e,d,c,b,a}, 0 = lit
 );
@@ -52,7 +53,7 @@ module lab02_ct #(
     );
 
     // multiplexing
-    assign digit_value = digit_sel ? ~onboard_switch_n : ~switch_n;
+    assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n;
     assign anode_en_n = digit_sel ? 2'b01 : 2'b10;
 
     // single decoder (lab 1, active-low segments: 0 = lit)
@@ -62,6 +63,6 @@ module lab02_ct #(
     );
 
     // LED pass-through: LED on when its column is pulled low
-    assign led = ~col_n;
+    assign led = ~col_n[3:1];
 
 endmodule

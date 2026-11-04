@@ -12,7 +12,7 @@ format:
 
 # Introduction
 
-In this lab I drove two seven-segment digits from a single seven-segment decoder by time multiplexing them, switched each digit's common anode with a transistor, and scanned a 4×4 keypad through open-drain row drivers. The first digit shows the 4-bit number on a DIP switch on the breadboard. The second digit shows the 4-bit number on the development board's DIP switch (SW6). The keypad columns are passed straight through to LEDs, so holding a key blinks an LED at the scan rate.
+In this lab I drove two seven-segment digits from a single seven-segment decoder by time multiplexing them, switched each digit's common anode with a transistor, and scanned a 4×4 keypad through open-drain row drivers. The first digit shows the 4-bit number on a DIP switch on the breadboard. The second digit shows the 2-bit number on pushbuttons SW1 and SW0, so it ranges from 0 to 3. Keypad columns 2–4 are passed straight through to LEDs, so holding a key in those columns blinks an LED at the scan rate.
 
 # Design and Testing Methodology
 
@@ -39,7 +39,7 @@ flowchart LR
         scan --- scanner
     end
     sw["switch_n[3:0]"] --> sel
-    btn["onboard_switch_n[3:0]"] --> sel
+    btn["button_n[1:0]"] --> sel
     rst["reset_n"] --> mux & scan
     sel --> cath["anode_en_n[1:0]"]
     dec --> seg["segment[6:0]"]
@@ -51,12 +51,12 @@ flowchart LR
 
 `mux_counter` is a lab 1 counter with `MAX_COUNT = 24,000`. Its `blink` output toggles every 24,000 cycles of the 24 MHz oscillator, which is every 1 ms. That signal, `digit_sel`, picks both what the decoder sees and which digit is on:
 
-- `digit_sel = 0`: decoder input is the DIP switch, `anode_en_n = 10` (digit 0 on).
-- `digit_sel = 1`: decoder input is the onboard DIP switch SW6, `anode_en_n = 01` (digit 1 on).
+- `digit_sel = 0`: decoder input is the breadboard DIP switch, `anode_en_n = 10` (digit 0 on).
+- `digit_sel = 1`: decoder input is `{2'b00, buttons}`, `anode_en_n = 01` (digit 1 on).
 
 Each digit is lit for 1 ms out of every 2 ms, a 500 Hz refresh. That is far above the roughly 60 Hz where flicker becomes visible. It is also long compared with the transistor switching time (well under a microsecond), so the digits don't bleed into each other.
 
-Both DIP switches connect their pins to ground when ON, and the FPGA's internal pull-ups hold them high otherwise. The top level inverts them (`~switch_n`, `~onboard_switch_n`) so that ON counts as 1.
+The DIP switch and pushbuttons connect their pins to ground when ON or pressed, and the FPGA's internal pull-ups hold them high otherwise. The top level inverts them (`~switch_n`, `~button_n`) so that ON or pressed counts as 1.
 
 The display is an HDSP-521A, a common-anode dual-digit display. The lab 1 decoder already drives active-low segments for a common-anode display, so its output goes straight to the segment pins, and the decoder's lab 1 simulation still applies. Each segment line connects to that segment on both digits, so the 7 FPGA pins drive both.
 
@@ -75,7 +75,7 @@ With `CYCLES_PER_ROW = 6,000,000`, each row is active for 0.25 s and the pattern
 
 Each `row` output drives the gate of a TN2106 NMOS transistor whose source is grounded. When `row[i] = 1`, the transistor pulls keypad row i low. When `row[i] = 0`, a 10 kΩ pull-up holds the row high. Because the FPGA never drives a row high directly, two pressed keys in the same column can't short a high row to a low one. That's why the rows are open-drain.
 
-The columns are FPGA inputs with internal pull-ups. A pressed key in the active row pulls its column low, and `led = ~col_n` turns the matching LED on. Holding a key blinks its column's LED on for 0.25 s every second.
+The columns are FPGA inputs with internal pull-ups. A pressed key in the active row pulls its column low, and `led = ~col_n[3:1]` turns the matching LED on. Column 1 has no LED, because every FPGA pin the breadboard adapter can reach was already in use. Holding a key blinks its column's LED on for 0.25 s every second.
 
 ## Testing Methodology
 
@@ -83,7 +83,7 @@ The decoder is unchanged from lab 1, so I did not re-simulate it. Its lab 1 test
 
 - [`counter_tb.sv`](#counter_tb-sv) re-verifies the counter after the new `count` output: reset values, counting and wrap, `blink` toggling on each wrap, enable hold, and asynchronous reset between clock edges.
 - [`scanner_tb.sv`](#scanner_tb-sv) checks every cycle against a reference model. It covers reset to 1000, all four transitions over two full rotations (it counts 8 transitions), `CYCLES_PER_ROW` cycles per row, enable hold mid-row, and asynchronous reset.
-- [`lab02_ct_tb.sv`](#lab02_ct_tb-sv) checks the top level. For all 16 × 16 combinations of the two switch inputs, on every clock it checks that `anode_en_n` enables exactly one digit and that the enabled digit shows the right segments. It also checks `led` for all 16 column patterns and that `row` is always one-hot and visits every row.
+- [`lab02_ct_tb.sv`](#lab02_ct_tb-sv) checks the top level. For all 16 switch values × 4 button values, on every clock it checks that `anode_en_n` enables exactly one digit and that the enabled digit shows the right segments. It also checks `led` for all 16 column patterns and that `row` is always one-hot and visits every row.
 
 The testbenches use small parameter values (`CYCLES_PER_ROW = 3`, `MUX_TOGGLE_CYCLES = 2`) so the simulations stay short. The top-level testbench forces the oscillator net to a testbench clock.
 
@@ -149,14 +149,14 @@ The testbenches use small parameter values (`CYCLES_PER_ROW = 3`, `MUX_TOGGLE_CY
 ```
 </details>
 
-The keypad row signals reach the breadboard through the development board's SW7 bridge: switches 1, 2, 3 and 8 are ON, connecting FPGA pins 25, 26, 27 and 23 to the MCU header pins PA9, PA5, PA6 and PA10, which the Nucleo leaves undriven. Switch 7 is also ON, so FPGA pin 21 drives the board's LED D5 (on PB3). Switches 4–6 are OFF, because pins 20, 10 and 12 are wired directly.
+All off-board wiring goes through the E155 breadboard adapter. The adapter doesn't bring out FPGA pins 23, 25 and 27, so three keypad row signals reach the breadboard through the development board's SW7 bridge instead: switches 1, 3 and 8 are ON, connecting FPGA pins 25, 27 and 23 to the adapter's MCU pins PA9, PA6 and PA10, which the Nucleo leaves undriven. The other SW7 switches are OFF. Row 3 uses FPGA pin 47 directly. Reset is on FPGA pin 26, which is left unconnected (SW7 switch 2 OFF), so the internal pull-up keeps it inactive.
 
 ## Hardware Schematic
 
 <!-- TODO: add the schematic image. Off-board parts only; label part numbers, values, pin names and numbers; title block. -->
 ![Schematic of the off-board circuit](schematic.png){width=100%}
 
-The DIP switch SW6 and LEDs D5–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
+The pushbuttons SW0 and SW1 and LEDs D6–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
 
 ## Current Calculations
 
@@ -180,9 +180,9 @@ FPGA limit: the iCE40UP5K data sheet, Table 4.13 (sysI/O Single-Ended DC Electri
 
 **Keypad row pins (4 outputs).** Each drives a TN2106 gate, which draws only gate leakage (nanoamps), so ≈ **0 mA**. The 10 kΩ row pull-ups carry 3.3 V / 10 kΩ = 0.33 mA, but that current flows through the NMOS, not the FPGA. <!-- TODO: confirm from the TN2106 data sheet that V_GS(th) max is below 3.3 V. -->
 
-**LED pins (4 outputs).** D5–D8 have 1 kΩ series resistors on the board. Even with V<sub>F</sub> = 0, I ≤ 3.3 V / 1 kΩ = **3.3 mA** < 8 mA.
+**LED pins (3 outputs).** D6–D8 have 1 kΩ series resistors on the board. Even with V<sub>F</sub> = 0, I ≤ 3.3 V / 1 kΩ = **3.3 mA** < 8 mA.
 
-**Input pins** (both DIP switches, keypad columns, reset). When an input is pulled low, the only current is the internal pull-up current: I<sub>PU</sub> ≤ **128 µA** at V<sub>CCIO</sub> = 3.3 V (DC Electrical Characteristics, I<sub>PU</sub>).
+**Input pins** (DIP switch, buttons, keypad columns, reset). When an input is pulled low, the only current is the internal pull-up current: I<sub>PU</sub> ≤ **128 µA** at V<sub>CCIO</sub> = 3.3 V (DC Electrical Characteristics, I<sub>PU</sub>).
 
 # Simulation Results
 
@@ -218,7 +218,11 @@ The seven-segment decoder is unchanged from lab 1 and was verified there: [lab 1
 <!-- TODO: update after testing on hardware. -->
 The design is written to meet all Proficiency and Excellence specifications. Hardware verification on the board is still pending.
 
-Deviations from the lab handout: the second number comes from the development board's DIP switch SW6 (4 bits) instead of pushbuttons SW0 and SW1, and the first number comes from a DIP switch on the breadboard. SW6 switch 4 never registered on my board, so that bit of the second digit always reads 0. Also, each digit's anode is switched by a 2N3906 PNP transistor (with a 1 kΩ base resistor) instead of a TP2104 PMOS. It's the same high-side switch, active-low from the FPGA.
+Deviations from the lab handout:
+
+- The 4-bit number comes from a DIP switch on the breadboard instead of the development board's SW6, because SW6 switch 4 never registered on my board.
+- Keypad column 1 has no LED. The breadboard adapter reaches only 21 FPGA pins, and all of them are used; the only LED left (D5) needs FPGA pin 21, which the DIP switch uses. Holding a key in column 1 still works, but nothing shows it.
+- Each digit's anode is switched by a 2N3906 PNP transistor (with a 1 kΩ base resistor) instead of a TP2104 PMOS. It's the same high-side switch, active-low from the FPGA.
 
 # Conclusion
 

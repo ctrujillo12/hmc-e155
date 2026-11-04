@@ -10,10 +10,10 @@ module lab02_ct_tb();
     logic       clk;
     logic       reset_n;
     logic [3:0] switch_n;
-    logic [3:0] onboard_switch_n;
+    logic [1:0] button_n;
     logic [3:0] col_n;
     logic [3:0] row;
-    logic [3:0] led;
+    logic [2:0] led;
     logic [1:0] anode_en_n;
     logic [6:0] segment;
 
@@ -27,7 +27,7 @@ module lab02_ct_tb();
     ) dut (
         .reset_n(reset_n),
         .switch_n(switch_n),
-        .onboard_switch_n(onboard_switch_n),
+        .button_n(button_n),
         .col_n(col_n),
         .row(row),
         .led(led),
@@ -79,9 +79,9 @@ module lab02_ct_tb();
                 end
                 2'b01: begin
                     digit1_checks++;
-                    if (segment !== ~expected_segment(~onboard_switch_n)) begin
-                        $display("ERROR t=%0t: digit 1, onboard_switch_n=%b, segment=%b expected %b",
-                                 $time, onboard_switch_n, segment, ~expected_segment(~onboard_switch_n));
+                    if (segment !== ~expected_segment({2'b00, ~button_n})) begin
+                        $display("ERROR t=%0t: digit 1, button_n=%b, segment=%b expected %b",
+                                 $time, button_n, segment, ~expected_segment({2'b00, ~button_n}));
                         errors++;
                     end
                 end
@@ -105,17 +105,17 @@ module lab02_ct_tb();
         digit1_checks = 0;
         rows_seen     = 4'b0000;
         switch_n      = 4'b1111;
-        onboard_switch_n = 4'b1111;
+        button_n      = 2'b11;
         col_n         = 4'b1111;
         reset_n       = 0;
         #12;
         reset_n = 1;
 
-        // multiplexing: every breadboard switch value with every onboard switch value, long enough to see both digits
+        // multiplexing: every switch value with every button value, long enough to see both digits
         for (int sw = 0; sw < 16; sw++) begin
-            for (int onboard = 0; onboard < 16; onboard++) begin
+            for (int btn = 0; btn < 4; btn++) begin
                 switch_n = ~sw[3:0];
-                onboard_switch_n = ~onboard[3:0];
+                button_n = ~btn[1:0];
                 repeat (4 * MUX_TOGGLE_CYCLES) @(posedge clk);
             end
         end
@@ -124,8 +124,8 @@ module lab02_ct_tb();
         for (int col = 0; col < 16; col++) begin
             col_n = col[3:0];
             #1;
-            if (led !== ~col_n) begin
-                $display("ERROR: col_n=%b, led=%b expected %b", col_n, led, ~col_n);
+            if (led !== ~col_n[3:1]) begin
+                $display("ERROR: col_n=%b, led=%b expected %b", col_n, led, ~col_n[3:1]);
                 errors++;
             end
         end

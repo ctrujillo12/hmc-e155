@@ -1,23 +1,22 @@
 # lab02 pin constraints (iCE40UP5K, SG48)
-# Development board SW7 (MCU bridge DIP): switches 1, 2, 3, 8 ON (keypad rows reach the FPGA through
-# MCU header pins PA9, PA5, PA6, PA10) and switch 7 ON (P21 drives LED D5 on PB3);
-# switches 4, 5, 6 OFF (P20, P10, P12 are used directly).
-# The Nucleo must not drive PA5, PA6, PA9, PA10 or PB3.
+# Everything off the development board goes through the E155 breadboard adapter.
+# Development board SW7 (MCU bridge DIP): switches 1, 3, 8 ON, switches 2, 4, 5, 6, 7 OFF.
+#   ON:  #1 PA9 <-> P25 (row 2), #3 PA6 <-> P27 (row 1), #8 PA10 <-> P23 (row 4)
+#   OFF: #4 P20, #5 P10, #6 P12, #7 P21 are wired directly; #2 keeps P26 (reset) unconnected
+# The Nucleo must not drive PA6, PA9 or PA10.
 
-# reset: pushbutton SW0 (button to GND, internal pull-up), press to reset
-ldc_set_location -site {34} [get_ports reset_n]
+# reset on P26: not wired to anything (SW7 #2 OFF), internal pull-up holds it high
+ldc_set_location -site {26} [get_ports reset_n]
 
-# breadboard DIP switch (pin -> switch -> GND, internal pull-ups)
-ldc_set_location -site {6}  [get_ports {switch_n[0]}]
-ldc_set_location -site {11} [get_ports {switch_n[1]}]
+# breadboard DIP switch (pin -> switch -> GND, internal pull-ups); P21 = MSB
+ldc_set_location -site {21} [get_ports {switch_n[3]}]
 ldc_set_location -site {19} [get_ports {switch_n[2]}]
-ldc_set_location -site {36} [get_ports {switch_n[3]}]
+ldc_set_location -site {11} [get_ports {switch_n[1]}]
+ldc_set_location -site {6}  [get_ports {switch_n[0]}]
 
-# onboard DIP switch SW6 (switch to GND, internal pull-ups); switch 1 = MSB, switch 4 = LSB
-ldc_set_location -site {32} [get_ports {onboard_switch_n[3]}]
-ldc_set_location -site {35} [get_ports {onboard_switch_n[2]}]
-ldc_set_location -site {31} [get_ports {onboard_switch_n[1]}]
-ldc_set_location -site {37} [get_ports {onboard_switch_n[0]}]
+# onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
+ldc_set_location -site {34} [get_ports {button_n[0]}]
+ldc_set_location -site {43} [get_ports {button_n[1]}]
 
 # keypad columns (inputs, internal pull-ups)
 ldc_set_location -site {3}  [get_ports {col_n[0]}]
@@ -25,17 +24,16 @@ ldc_set_location -site {45} [get_ports {col_n[1]}]
 ldc_set_location -site {46} [get_ports {col_n[2]}]
 ldc_set_location -site {10} [get_ports {col_n[3]}]
 
-# keypad rows (to TN2106 NMOS gates, through SW7 and the MCU header pins)
+# keypad rows (to TN2106 NMOS gates; rows 1, 2, 4 through SW7 and the adapter MCU pins, row 3 direct)
 ldc_set_location -site {27} [get_ports {row[0]}]
 ldc_set_location -site {25} [get_ports {row[1]}]
-ldc_set_location -site {26} [get_ports {row[2]}]
+ldc_set_location -site {47} [get_ports {row[2]}]
 ldc_set_location -site {23} [get_ports {row[3]}]
 
-# column LEDs on the board: D5 (PB3, through SW7 switch 7), D6, D7, D8
-ldc_set_location -site {21} [get_ports {led[0]}]
-ldc_set_location -site {42} [get_ports {led[1]}]
-ldc_set_location -site {38} [get_ports {led[2]}]
-ldc_set_location -site {28} [get_ports {led[3]}]
+# column LEDs on the board: D6 = column 2, D7 = column 3, D8 = column 4 (column 1 has none)
+ldc_set_location -site {42} [get_ports {led[0]}]
+ldc_set_location -site {38} [get_ports {led[1]}]
+ldc_set_location -site {28} [get_ports {led[2]}]
 
 # digit enables (to 2N3906 bases through 1k, low = digit on)
 ldc_set_location -site {20} [get_ports {anode_en_n[0]}]
@@ -56,10 +54,8 @@ ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[0]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[1]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[2]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[3]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[0]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[1]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[2]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {onboard_switch_n[3]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[0]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[1]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[0]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[1]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[2]}]
