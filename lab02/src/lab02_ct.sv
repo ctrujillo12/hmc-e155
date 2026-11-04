@@ -27,8 +27,8 @@ module lab02_ct(
         .sel(sel)
     );
 
-    // do mux
-    assign mux_out = sel ? sB : sA;
+    // do mux (switches pull pins to GND when ON, so invert: ON = 1)
+    assign mux_out = sel ? ~sB : ~sA;
 
     // enable only the digit currently being driven (high = NPN on, cathode pulled to GND)
     assign cathode = sel ? 2'b10 : 2'b01;
