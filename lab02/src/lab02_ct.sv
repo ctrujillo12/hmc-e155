@@ -2,8 +2,7 @@
 // Time-multiplexes one seven-segment decoder across the two digits of an HDSP-521A
 // (common-anode dual display), each anode switched high-side by a 2N3906 PNP:
 //   digit 0 = breadboard DIP switch (4 bits), digit 1 = pushbuttons SW1, SW0 (2 bits).
-// Scans a 4x4 keypad (rows driven high through TP2104 PMOS, open-drain style, with pull-downs)
-// and passes columns 2-4 to LEDs
+// Scans a 4x4 keypad (rows pulled low through open-collector 2N3904 NPNs) and passes columns 2-4 to LEDs
 // (column 1 has no LED: no FPGA pin was left to reach one).
 module lab02_ct #(
     parameter int unsigned MUX_TOGGLE_CYCLES   = 24_000,    // 1 ms per digit at 24 MHz
@@ -12,8 +11,8 @@ module lab02_ct #(
     input  logic       reset_n,     // active-low reset (internal pull-up keeps it high)
     input  logic [3:0] switch_n,    // breadboard DIP switch to GND, ON = 0
     input  logic [1:0] button_n,    // pushbuttons SW1, SW0, pressed = 0
-    input  logic [3:0] col,         // keypad columns, 1 = key pressed in the active row
-    output logic [3:0] row_n,       // keypad row PMOS gates, 0 = row pulled high (active)
+    input  logic [3:0] col_n,       // keypad columns, 0 = key pressed in the active row
+    output logic [3:0] row,         // keypad row NPN bases, 1 = row pulled low (active)
     output logic [2:0] led,         // keypad columns 2-4 pass-through, 1 = on
     output logic [1:0] anode_en_n,  // digit PNP bases, 0 = digit on
     output logic [6:0] segment      // {g,f,e,d,c,b,a}, 0 = lit
@@ -23,7 +22,6 @@ module lab02_ct #(
     logic                                 digit_sel;
     logic [$clog2(MUX_TOGGLE_CYCLES)-1:0] mux_count_unused;
     logic [3:0]                           digit_value;
-    logic [3:0]                           row_active;
 
     // internal oscillator, 24 MHz
     HSOSC #(.CLKHF_DIV(2'b01))
@@ -51,7 +49,7 @@ module lab02_ct #(
         .clk(int_osc),
         .reset(reset_n),
         .enable(1'b1),
-        .row(row_active)
+        .row(row)
     );
 
     // multiplexing
@@ -64,10 +62,7 @@ module lab02_ct #(
         .segment(segment)
     );
 
-    // PMOS gates are active-low
-    assign row_n = ~row_active;
-
-    // LED pass-through: LED on when its column is pulled high
-    assign led = col[3:1];
+    // LED pass-through: LED on when its column is pulled low
+    assign led = ~col_n[3:1];
 
 endmodule
