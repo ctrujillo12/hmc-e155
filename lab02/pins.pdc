@@ -38,7 +38,7 @@ ldc_set_location -site {12} [get_ports {cathode_en_n[1]}]
 
 # segments a..g (active-high, HDSP-5303 common cathode)
 ldc_set_location -site {2}  [get_ports {segment[0]}]
-ldc_set_location -site {47} [get_ports {segment[1]}]
+ldc_set_location -site {4}  [get_ports {segment[1]}]
 ldc_set_location -site {44} [get_ports {segment[2]}]
 ldc_set_location -site {13} [get_ports {segment[3]}]
 ldc_set_location -site {18} [get_ports {segment[4]}]
