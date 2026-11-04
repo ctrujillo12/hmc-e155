@@ -3,8 +3,8 @@ module lab02_ct(
     input  logic [3:0] sA, sB,
 
     output logic [2:0] led,
-    output logic [1:0] anode,   // to PNP transistor bases, active-low: anode[0] = digit A, anode[1] = digit B
-    output logic [6:0] segment  // HDSP-511A common anode: segments active-low
+    output logic [1:0] cathode, // to NPN transistor bases, active-high: cathode[0] = digit A, cathode[1] = digit B
+    output logic [6:0] segment  // HDSP-5303 common cathode: segments active-high
 );
 
     // from lab 1
@@ -30,8 +30,8 @@ module lab02_ct(
     // do mux
     assign mux_out = sel ? sB : sA;
 
-    // enable only the digit currently being driven (low = transistor on)
-    assign anode = sel ? 2'b01 : 2'b10;
+    // enable only the digit currently being driven (high = NPN on, cathode pulled to GND)
+    assign cathode = sel ? 2'b10 : 2'b01;
 
     // same decoder
     seven_segment display_decoder (
