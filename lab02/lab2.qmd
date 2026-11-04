@@ -149,7 +149,7 @@ The testbenches use small parameter values (`CYCLES_PER_ROW = 3`, `MUX_TOGGLE_CY
 ```
 </details>
 
-The development board's SW7 (the MCU bridge DIP switch) is kept all OFF, because the design uses pins 10, 12, 20, 21, 23, 25, 26 and 27, which SW7 would connect to the microcontroller.
+The keypad row signals reach the breadboard through the development board's SW7 bridge: switches 1, 2, 3 and 8 are ON, connecting FPGA pins 25, 26, 27 and 23 to the MCU header pins PA9, PA5, PA6 and PA10, which the Nucleo leaves undriven. Switches 4–7 are OFF, because pins 20, 10, 12 and 21 are wired directly.
 
 ## Hardware Schematic
 
