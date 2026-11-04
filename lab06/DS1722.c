@@ -30,7 +30,7 @@ static void writeConfig(uint8_t cfg) {
 
 void initTempSensor(void) {
     ceLow();
-    writeConfig(DS1722_CFG_12BIT);               // powers up in shutdown; this clears SD
+    writeConfig(DS1722_CFG_12BIT);               // powers up in shutdown; clears SD
     delay_millis(TIM15, 1200);                   // let the first 12-bit conversion finish
 }
 
@@ -51,21 +51,22 @@ uint8_t readConfigFromTempSensor(void) {
 }
 
 double readFromTempSensor(void) {
-    // One burst transaction: address 0x01, then LSB, then MSB (address auto-increments)
+    // One transaction, address 0x01, then LSB, then MSB (address auto-increments)
     ceHigh();
     spiSendReceive(DS1722_ADDR_TEMP_LSB);
     uint8_t lsb = spiSendReceive(0x00);
     uint8_t msb = spiSendReceive(0x00);
     ceLow();
-    return calc_temp(msb, lsb);
+    return calcTemp(msb, lsb);
 }
 
-double calc_temp(uint8_t hi, uint8_t lo) {
+double calcTemp(uint8_t hi, uint8_t lo) {
     // {hi, lo} is a 16-bit two's complement value with 8 fractional bits.
     // The signed cast handles negative temperatures.
     int16_t raw = (int16_t)(((uint16_t)hi << 8) | lo);
     return raw / 256.0;
 }
+
 
 
 

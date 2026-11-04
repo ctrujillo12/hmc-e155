@@ -1,5 +1,5 @@
 // STM32L432KC_SPI.c
-// SPI1 master driver for STM32L432KC (matches the course-provided STM32L432KC_SPI.h)
+// SPI1 master driver for STM32L432KC 
 
 #include "STM32L432KC_SPI.h"
 
@@ -40,5 +40,6 @@ char spiSendReceive(char send) {
     while (SPI1->SR & SPI_SR_BSY);                          // bus idle before caller drops CE
     return (char)rx;
 }
+
 
 

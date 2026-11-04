@@ -16,22 +16,23 @@
 #define DS1722_CFG_11BIT  0xE6
 #define DS1722_CFG_12BIT  0xE8
 
-// Sets continuous conversion at 12-bit and waits for the first conversion.
+// Sets continuous conversion at 12-bit and waits for the first conversion
 void initTempSensor(void);
 
 // Writes a config byte (0xE0..0xE8) and waits one full conversion time.
-// Ignores bytes that aren't a valid resolution config (e.g. 0).
+// Ignores bytes that aren't a valid resolution config (e.g. 0)
 void writeToTempSensor(uint8_t cfg);
 
-// Reads the config register (for checking the SPI link; expect what you wrote).
+// Reads the config register (for checking the SPI link; expect what you wrote)
 uint8_t readConfigFromTempSensor(void);
 
-// Reads temperature registers and returns degrees C.
+// Reads temperature registers and returns degrees C
 double readFromTempSensor(void);
 
-// Converts raw {MSB, LSB} to degrees C (16-bit two's complement, /256).
-double calc_temp(uint8_t hi, uint8_t lo);
+// Converts raw {MSB, LSB} to degrees C (16-bit two's complement, /256)
+double calcTemp(uint8_t hi, uint8_t lo);
 
 #endif
+
 
 

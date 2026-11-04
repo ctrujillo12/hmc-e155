@@ -24,13 +24,13 @@ char* ledStr = "<h2>LED Control:</h2><form action=\"ledon\"><input type=\"submit
 
 char* webpageEnd   = "</body></html>";
 
-//determines whether a given character sequence is in a char array request, returning 1 if present, -1 if not present
+// Returns 1 if des appears in request, -1 if not
 int inString(char request[], char des[]) {
 	if (strstr(request, des) != NULL) {return 1;}
 	return -1;
 }
 
-// led state stays same between requests, only ledon/ledoff change it
+// LED state stays between requests; only ledon/ledoff change it
 int updateLEDStatus(char request[])
 {
 	static int led_status = 0;
@@ -127,7 +127,7 @@ int main(void) {
 
   // SPI: pins first, then the peripheral (initSPI also enables the SPI1 clock)
   configurePins();
-  initSPI(0b111, 0, 1);   // slowest clock (PCLK/256), CPOL=0, CPHA=1 as the DS1722 requires
+  initSPI(0b111, 0, 1);   // slowest mcu clock (PCLK/256), CPOL=0, CPHA=1 as the DS1722 requires
 
   initTempSensor();       // 12-bit continuous; waits for the first conversion
   int resBits = 12;
@@ -158,7 +158,7 @@ int main(void) {
       resBits = resBitsFromCfg(cfg);
     }
 
-    // Read temperature and format it without needing printf float support
+    // Read temperature and format it, no printf styff
     double temp = readFromTempSensor();
     int tenThousandths = (int)(temp * 10000.0 + (temp >= 0 ? 0.5 : -0.5));
     double tempF = temp * 9.0 / 5.0 + 32.0;
@@ -182,7 +182,7 @@ int main(void) {
     else
       sprintf(ledStatusStr, "LED is off!");
 
-    // transmit the webpage over UART
+    // transmit webpage over UART
     sendString(USART, webpageStart);
 
     sendString(USART, "<h2>Temperature</h2><p>");
