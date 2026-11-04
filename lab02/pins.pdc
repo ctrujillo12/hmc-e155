@@ -14,10 +14,10 @@ ldc_set_location -site {12} [get_ports {segment[5]}]
 ldc_set_location -site {20} [get_ports {segment[6]}]
 
 # DIP switch A (sA[3] = MSB)
-ldc_set_location -site {48} [get_ports {sA[0]}]
-ldc_set_location -site {4}  [get_ports {sA[1]}]
-ldc_set_location -site {6}  [get_ports {sA[2]}]
-ldc_set_location -site {11} [get_ports {sA[3]}]
+ldc_set_location -site {11} [get_ports {sA[0]}]
+ldc_set_location -site {6}  [get_ports {sA[1]}]
+ldc_set_location -site {4}  [get_ports {sA[2]}]
+ldc_set_location -site {48} [get_ports {sA[3]}]
 
 # reset (counter resets while reset is LOW)
 ldc_set_location -site {34} [get_ports reset]
