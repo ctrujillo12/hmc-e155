@@ -1,8 +1,40 @@
-# lab02 pin constraints (iCE40UP5K)
+# lab02 pin constraints (iCE40UP5K, SG48)
+# Development board SW7 (MCU bridge DIP) must be all OFF: pins 10, 12, 20, 21 are used here.
 
-# transistor bases (high = digit on)
-ldc_set_location -site {21} [get_ports {cathode[0]}]
-ldc_set_location -site {10} [get_ports {cathode[1]}]
+# reset (no board connection; internal pull-up holds it high, jumper to GND to reset)
+ldc_set_location -site {2}  [get_ports reset_n]
+
+# onboard DIP switch SW6 (switch to GND, internal pull-ups)
+ldc_set_location -site {32} [get_ports {switch_n[0]}]
+ldc_set_location -site {35} [get_ports {switch_n[1]}]
+ldc_set_location -site {31} [get_ports {switch_n[2]}]
+ldc_set_location -site {37} [get_ports {switch_n[3]}]
+
+# onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
+ldc_set_location -site {34} [get_ports {button_n[0]}]
+ldc_set_location -site {43} [get_ports {button_n[1]}]
+
+# keypad columns (inputs, internal pull-ups)
+ldc_set_location -site {11} [get_ports {col_n[0]}]
+ldc_set_location -site {6}  [get_ports {col_n[1]}]
+ldc_set_location -site {4}  [get_ports {col_n[2]}]
+ldc_set_location -site {48} [get_ports {col_n[3]}]
+
+# keypad rows (to TN2106 NMOS gates)
+ldc_set_location -site {46} [get_ports {row[0]}]
+ldc_set_location -site {47} [get_ports {row[1]}]
+ldc_set_location -site {9}  [get_ports {row[2]}]
+ldc_set_location -site {36} [get_ports {row[3]}]
+
+# LEDs: D6, D7, D8 on the board, led[3] is an external LED
+ldc_set_location -site {42} [get_ports {led[0]}]
+ldc_set_location -site {38} [get_ports {led[1]}]
+ldc_set_location -site {28} [get_ports {led[2]}]
+ldc_set_location -site {19} [get_ports {led[3]}]
+
+# digit enables (to 2N3904 bases, high = digit on)
+ldc_set_location -site {21} [get_ports {cathode_en[0]}]
+ldc_set_location -site {10} [get_ports {cathode_en[1]}]
 
 # segments a..g (active-high, HDSP-5303 common cathode)
 ldc_set_location -site {45} [get_ports {segment[0]}]
@@ -13,15 +45,15 @@ ldc_set_location -site {13} [get_ports {segment[4]}]
 ldc_set_location -site {12} [get_ports {segment[5]}]
 ldc_set_location -site {20} [get_ports {segment[6]}]
 
-# DIP switch A (sA[3] = MSB)
-ldc_set_location -site {11} [get_ports {sA[0]}]
-ldc_set_location -site {6}  [get_ports {sA[1]}]
-ldc_set_location -site {4}  [get_ports {sA[2]}]
-ldc_set_location -site {48} [get_ports {sA[3]}]
-
-# switches wired pin -> switch -> GND, using the FPGA internal 100k pull-ups (default)
-
-# reset (counter resets while reset is LOW)
-ldc_set_location -site {34} [get_ports reset]
-
-# sB not wired yet
+# internal 100k pull-ups on all inputs
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports reset_n]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[0]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[1]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[2]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[3]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[0]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[1]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[0]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[1]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[2]}]
+ldc_set_port -iobuf {PULLMODE=100K} [get_ports {col_n[3]}]

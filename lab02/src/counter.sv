@@ -1,22 +1,30 @@
-module counter(
-    input  logic reset, clk,
-    output logic sel
+// counter: lab 1 counter, reused for lab 2.
+// Sequential, asynchronous active-low reset.
+// While enable is high, count runs 0 .. MAX_COUNT-1 and wraps; blink toggles on every wrap.
+// Lab 2 change: count is now an output port so the scanner can decode it.
+module counter #(
+    parameter int unsigned MAX_COUNT = 10_000_000
+)(
+    input  logic                         clk,
+    input  logic                         reset,
+    input  logic                         enable,
+    output logic [$clog2(MAX_COUNT)-1:0] count,
+    output logic                         blink
 );
 
-    // 24 MHz clock / 4800 = toggle every 200 us (2.5 kHz full refresh, no flicker)
-    logic [15:0] count;
-
     always_ff @(posedge clk, negedge reset) begin
-        if (reset == 0) begin
+        if (!reset) begin
             count <= 0;
-            sel   <= 0;
+            blink <= 0;
         end
-        else if (count == 16'd4799) begin
-            count <= 0;
-            sel   <= ~sel; // toggle the select bit
-        end
-        else begin
-            count <= count + 1;
+        else if (enable) begin
+            if (count == MAX_COUNT - 1) begin
+                count <= 0;
+                blink <= ~blink; // toggle on wrap
+            end
+            else begin
+                count <= count + 1;
+            end
         end
     end
 
