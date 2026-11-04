@@ -4,11 +4,11 @@
 # reset (no board connection; internal pull-up holds it high, jumper to GND to reset)
 ldc_set_location -site {10} [get_ports reset_n]
 
-# breadboard DIP switch (pin -> switch -> GND, internal pull-ups)
-ldc_set_location -site {19} [get_ports {switch_n[0]}]
-ldc_set_location -site {11} [get_ports {switch_n[1]}]
-ldc_set_location -site {6}  [get_ports {switch_n[2]}]
-ldc_set_location -site {4}  [get_ports {switch_n[3]}]
+# onboard DIP switch SW6 (switch to GND, internal pull-ups)
+ldc_set_location -site {32} [get_ports {switch_n[0]}]
+ldc_set_location -site {35} [get_ports {switch_n[1]}]
+ldc_set_location -site {31} [get_ports {switch_n[2]}]
+ldc_set_location -site {37} [get_ports {switch_n[3]}]
 
 # onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
 ldc_set_location -site {34} [get_ports {button_n[0]}]

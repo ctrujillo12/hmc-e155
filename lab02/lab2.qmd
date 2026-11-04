@@ -12,7 +12,7 @@ format:
 
 # Introduction
 
-In this lab I drove two seven-segment digits from a single seven-segment decoder by time multiplexing them, switched each digit's common cathode with a transistor, and scanned a 4×4 keypad through open-drain row drivers. The first digit shows the 4-bit number on a DIP switch on the breadboard. The second digit shows the 2-bit number on pushbuttons SW1 and SW0, so it ranges from 0 to 3. The keypad columns are passed straight through to LEDs, so holding a key blinks an LED at the scan rate.
+In this lab I drove two seven-segment digits from a single seven-segment decoder by time multiplexing them, switched each digit's common cathode with a transistor, and scanned a 4×4 keypad through open-drain row drivers. The first digit shows the 4-bit number on the development board's DIP switch (SW6). The second digit shows the 2-bit number on pushbuttons SW1 and SW0, so it ranges from 0 to 3. The keypad columns are passed straight through to LEDs, so holding a key blinks an LED at the scan rate.
 
 # Design and Testing Methodology
 
@@ -157,7 +157,7 @@ The development board's SW7 (the MCU bridge DIP switch) is kept all OFF, because
 <!-- TODO: add the schematic image. Off-board parts only; label part numbers, values, pin names and numbers; title block. -->
 ![Schematic of the off-board circuit](schematic.png){width=100%}
 
-The pushbuttons (SW0, SW1) and LEDs D6–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
+The DIP switch (SW6), pushbuttons (SW0, SW1) and LEDs D6–D8 with their 1 kΩ resistors are on the development board and are not redrawn. See the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch, pushbutton and keypad column inputs use the FPGA's internal pull-up resistors.
 
 ## Current Calculations
 
@@ -218,7 +218,7 @@ The seven-segment decoder is unchanged from lab 1 and was verified there: [lab 1
 <!-- TODO: update after testing on hardware. -->
 The design is written to meet all Proficiency and Excellence specifications. Hardware verification on the board is still pending.
 
-Deviations from the lab handout: the 4-bit number comes from a DIP switch on the breadboard instead of the development board's SW6. Also, I used HDSP-5303 common-cathode displays switched by 2N3906 PNP transistors wired as emitter followers, instead of a common-anode display with TP2104 PMOS transistors. The lab 1 decoder's outputs are inverted at the top level to match.
+One deviation from the lab handout: I used HDSP-5303 common-cathode displays switched by 2N3906 PNP transistors wired as emitter followers, instead of a common-anode display with TP2104 PMOS transistors. The lab 1 decoder's outputs are inverted at the top level to match.
 
 # Conclusion
 

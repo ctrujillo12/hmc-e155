@@ -1,14 +1,14 @@
 // lab02_ct: top level.
 // Time-multiplexes one seven-segment decoder across two HDSP-5303 (common cathode) digits,
 // each cathode switched by a PNP emitter follower:
-//   digit 0 = breadboard DIP switch (4 bits), digit 1 = pushbuttons SW1, SW0 (2 bits).
+//   digit 0 = onboard DIP switch SW6 (4 bits), digit 1 = pushbuttons SW1, SW0 (2 bits).
 // Scans a 4x4 keypad (rows through open-drain TN2106 NMOS) and passes the columns to LEDs.
 module lab02_ct #(
     parameter int unsigned MUX_TOGGLE_CYCLES   = 24_000,    // 1 ms per digit at 24 MHz
     parameter int unsigned SCAN_CYCLES_PER_ROW = 6_000_000  // 0.25 s per row: each row bit toggles at 2 Hz
 )(
     input  logic       reset_n,     // active-low reset (internal pull-up keeps it high)
-    input  logic [3:0] switch_n,    // breadboard DIP switch to GND, ON = 0
+    input  logic [3:0] switch_n,    // onboard DIP switch SW6, ON = 0
     input  logic [1:0] button_n,    // pushbuttons SW1, SW0, pressed = 0
     input  logic [3:0] col_n,       // keypad columns, 0 = key pressed in the active row
     output logic [3:0] row,         // keypad row NMOS gates, 1 = row pulled low
