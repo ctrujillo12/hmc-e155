@@ -14,14 +14,13 @@ module lab02_ct #(
     output logic [3:0] row,         // keypad row NMOS gates, 1 = row pulled low
     output logic [3:0] led,         // keypad column pass-through, 1 = on
     output logic [1:0] cathode_en_n, // digit PNP bases, 0 = digit on
-    output logic [6:0] segment      // {g,f,e,d,c,b,a}, 1 = lit
+    output logic [6:0] segment      // {g,f,e,d,c,b,a}, 0 = lit
 );
 
     logic                                 int_osc;
     logic                                 digit_sel;
     logic [$clog2(MUX_TOGGLE_CYCLES)-1:0] mux_count_unused;
     logic [3:0]                           digit_value;
-    logic [6:0]                           segment_n;
 
     // internal oscillator, 24 MHz
     HSOSC #(.CLKHF_DIV(2'b01))
@@ -56,14 +55,11 @@ module lab02_ct #(
     assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n;
     assign cathode_en_n = digit_sel ? 2'b01 : 2'b10;
 
-    // single decoder (lab 1, active-low outputs for common anode)
+    // single decoder (lab 1, active-low segments: 0 = lit)
     seven_segment display_decoder (
         .s(digit_value),
-        .segment(segment_n)
+        .segment(segment)
     );
-
-    // HDSP-5303 is common cathode: segments are active-high
-    assign segment = ~segment_n;
 
     // LED pass-through: LED on when its column is pulled low
     assign led = ~col_n;

@@ -42,7 +42,8 @@ module lab02_ct_tb();
     end
     initial force dut.int_osc = clk;
 
-    // expected segments, active-high {g,f,e,d,c,b,a} (independent of the DUT's decoder)
+    // expected lit segments {g,f,e,d,c,b,a}, 1 = lit (independent of the DUT's decoder);
+    // the DUT drives active-low, so outputs are compared against the inverse
     function automatic logic [6:0] expected_segment(input logic [3:0] value);
         case (value)
             4'h0: return 7'b0111111;
@@ -70,17 +71,17 @@ module lab02_ct_tb();
             case (cathode_en_n)
                 2'b10: begin
                     digit0_checks++;
-                    if (segment !== expected_segment(~switch_n)) begin
+                    if (segment !== ~expected_segment(~switch_n)) begin
                         $display("ERROR t=%0t: digit 0, switch_n=%b, segment=%b expected %b",
-                                 $time, switch_n, segment, expected_segment(~switch_n));
+                                 $time, switch_n, segment, ~expected_segment(~switch_n));
                         errors++;
                     end
                 end
                 2'b01: begin
                     digit1_checks++;
-                    if (segment !== expected_segment({2'b00, ~button_n})) begin
+                    if (segment !== ~expected_segment({2'b00, ~button_n})) begin
                         $display("ERROR t=%0t: digit 1, button_n=%b, segment=%b expected %b",
-                                 $time, button_n, segment, expected_segment({2'b00, ~button_n}));
+                                 $time, button_n, segment, ~expected_segment({2'b00, ~button_n}));
                         errors++;
                     end
                 end
