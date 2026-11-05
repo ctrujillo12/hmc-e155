@@ -8,10 +8,10 @@ module scanner #(
     output logic [3:0] row
 );
 
-    localparam int unsigned SCAN_PERIOD = 4 * CYCLES_PER_ROW;
+    localparam int unsigned SCAN_PERIOD = 4 * CYCLES_PER_ROW; // 4 rows
 
-    logic [$clog2(SCAN_PERIOD)-1:0] scan_count;
-    logic                           scan_wrap_unused;
+    logic [$clog2(SCAN_PERIOD)-1:0] scan_count; // used to pick the row
+    logic                           scan_wrap_unused; // unused output from counter
 
     counter #(
         .MAX_COUNT(SCAN_PERIOD)
@@ -23,9 +23,9 @@ module scanner #(
         .blink(scan_wrap_unused)
     );
 
-    assign row = (scan_count < CYCLES_PER_ROW)     ? 4'b1000 :
-                 (scan_count < 2 * CYCLES_PER_ROW) ? 4'b0100 :
-                 (scan_count < 3 * CYCLES_PER_ROW) ? 4'b0010 :
-                                                     4'b0001;
+    assign row = (scan_count < CYCLES_PER_ROW)     ? 4'b1000 : // 0-0.25 ms
+                 (scan_count < 2 * CYCLES_PER_ROW) ? 4'b0100 : // 0.25-0.5 ms
+                 (scan_count < 3 * CYCLES_PER_ROW) ? 4'b0010 : // 0.5-0.75 ms
+                                                     4'b0001; // 0.75-1.0 ms
 
 endmodule

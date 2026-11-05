@@ -90,33 +90,41 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
    
   <ul>
   <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
-  <li><a href="#design" id="toc-design" class="nav-link" data-scroll-target="#design"><span class="header-section-number">2</span> Design</a>
+  <li><a href="#design-and-testing-methodology" id="toc-design-and-testing-methodology" class="nav-link" data-scroll-target="#design-and-testing-methodology"><span class="header-section-number">2</span> Design and Testing Methodology</a>
   <ul class="collapse">
-  <li><a href="#code" id="toc-code" class="nav-link" data-scroll-target="#code"><span class="header-section-number">2.1</span> Code</a></li>
-  <li><a href="#block-diagram" id="toc-block-diagram" class="nav-link" data-scroll-target="#block-diagram"><span class="header-section-number">2.2</span> Block Diagram</a></li>
-  <li><a href="#how-the-encoder-works" id="toc-how-the-encoder-works" class="nav-link" data-scroll-target="#how-the-encoder-works"><span class="header-section-number">2.3</span> How the Encoder Works</a></li>
-  <li><a href="#quadrature-decoding" id="toc-quadrature-decoding" class="nav-link" data-scroll-target="#quadrature-decoding"><span class="header-section-number">2.4</span> Quadrature Decoding</a></li>
-  <li><a href="#interrupts" id="toc-interrupts" class="nav-link" data-scroll-target="#interrupts"><span class="header-section-number">2.5</span> Interrupts</a></li>
-  <li><a href="#speed" id="toc-speed" class="nav-link" data-scroll-target="#speed"><span class="header-section-number">2.6</span> Speed</a></li>
+  <li><a href="#overall-design" id="toc-overall-design" class="nav-link" data-scroll-target="#overall-design"><span class="header-section-number">2.1</span> Overall Design</a></li>
+  <li><a href="#quadrature-encoder" id="toc-quadrature-encoder" class="nav-link" data-scroll-target="#quadrature-encoder"><span class="header-section-number">2.2</span> Quadrature Encoder</a></li>
+  <li><a href="#interrupts" id="toc-interrupts" class="nav-link" data-scroll-target="#interrupts"><span class="header-section-number">2.3</span> Interrupts</a></li>
+  <li><a href="#calculating-speed" id="toc-calculating-speed" class="nav-link" data-scroll-target="#calculating-speed"><span class="header-section-number">2.4</span> Calculating Speed</a></li>
+  <li><a href="#testing-methodology" id="toc-testing-methodology" class="nav-link" data-scroll-target="#testing-methodology"><span class="header-section-number">2.5</span> Testing Methodology</a></li>
   </ul></li>
-  <li><a href="#calculations" id="toc-calculations" class="nav-link" data-scroll-target="#calculations"><span class="header-section-number">3</span> Calculations</a>
+  <li><a href="#technical-documentation" id="toc-technical-documentation" class="nav-link" data-scroll-target="#technical-documentation"><span class="header-section-number">3</span> Technical Documentation</a>
   <ul class="collapse">
-  <li><a href="#edges-per-revolution" id="toc-edges-per-revolution" class="nav-link" data-scroll-target="#edges-per-revolution"><span class="header-section-number">3.1</span> Edges per revolution</a></li>
-  <li><a href="#update-rate" id="toc-update-rate" class="nav-link" data-scroll-target="#update-rate"><span class="header-section-number">3.2</span> Update rate</a></li>
-  <li><a href="#slowest-speed" id="toc-slowest-speed" class="nav-link" data-scroll-target="#slowest-speed"><span class="header-section-number">3.3</span> Slowest speed</a></li>
-  <li><a href="#fastest-speed" id="toc-fastest-speed" class="nav-link" data-scroll-target="#fastest-speed"><span class="header-section-number">3.4</span> Fastest speed</a></li>
-  <li><a href="#resolution-and-accuracy" id="toc-resolution-and-accuracy" class="nav-link" data-scroll-target="#resolution-and-accuracy"><span class="header-section-number">3.5</span> Resolution and accuracy</a></li>
-  </ul></li>
-  <li><a href="#hardware" id="toc-hardware" class="nav-link" data-scroll-target="#hardware"><span class="header-section-number">4</span> Hardware</a>
+  <li><a href="#code" id="toc-code" class="nav-link" data-scroll-target="#code"><span class="header-section-number">3.1</span> Code</a></li>
+  <li><a href="#pin-assignments" id="toc-pin-assignments" class="nav-link" data-scroll-target="#pin-assignments"><span class="header-section-number">3.2</span> Pin Assignments</a></li>
+  <li><a href="#hardware-schematic" id="toc-hardware-schematic" class="nav-link" data-scroll-target="#hardware-schematic"><span class="header-section-number">3.3</span> Hardware Schematic</a></li>
+  <li><a href="#calculations" id="toc-calculations" class="nav-link" data-scroll-target="#calculations"><span class="header-section-number">3.4</span> Calculations</a>
   <ul class="collapse">
-  <li><a href="#pin-assignments" id="toc-pin-assignments" class="nav-link" data-scroll-target="#pin-assignments"><span class="header-section-number">4.1</span> Pin Assignments</a></li>
-  <li><a href="#testing" id="toc-testing" class="nav-link" data-scroll-target="#testing"><span class="header-section-number">4.2</span> Testing</a></li>
+  <li><a href="#edges-per-revolution" id="toc-edges-per-revolution" class="nav-link" data-scroll-target="#edges-per-revolution"><span class="header-section-number">3.4.1</span> Edges per Revolution</a></li>
+  <li><a href="#update-rate" id="toc-update-rate" class="nav-link" data-scroll-target="#update-rate"><span class="header-section-number">3.4.2</span> Update Rate</a></li>
+  <li><a href="#slowest-speed" id="toc-slowest-speed" class="nav-link" data-scroll-target="#slowest-speed"><span class="header-section-number">3.4.3</span> Slowest Speed</a></li>
+  <li><a href="#fastest-speed" id="toc-fastest-speed" class="nav-link" data-scroll-target="#fastest-speed"><span class="header-section-number">3.4.4</span> Fastest Speed</a></li>
+  <li><a href="#resolution-and-accuracy" id="toc-resolution-and-accuracy" class="nav-link" data-scroll-target="#resolution-and-accuracy"><span class="header-section-number">3.4.5</span> Resolution and Accuracy</a></li>
   </ul></li>
-  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">5</span> Results</a></li>
-  <li><a href="#requirements-checklist" id="toc-requirements-checklist" class="nav-link" data-scroll-target="#requirements-checklist"><span class="header-section-number">6</span> Requirements Checklist</a></li>
-  <li><a href="#ai-prototype" id="toc-ai-prototype" class="nav-link" data-scroll-target="#ai-prototype"><span class="header-section-number">7</span> AI Prototype</a></li>
-  <li><a href="#hours" id="toc-hours" class="nav-link" data-scroll-target="#hours"><span class="header-section-number">8</span> Hours</a></li>
-  <li><a href="#code-1" id="toc-code-1" class="nav-link" data-scroll-target="#code-1"><span class="header-section-number">9</span> Code</a></li>
+  </ul></li>
+  <li><a href="#results" id="toc-results" class="nav-link" data-scroll-target="#results"><span class="header-section-number">4</span> Results</a>
+  <ul class="collapse">
+  <li><a href="#scope-comparison" id="toc-scope-comparison" class="nav-link" data-scroll-target="#scope-comparison"><span class="header-section-number">4.1</span> Scope Comparison</a></li>
+  <li><a href="#speeding-up-and-slowing-down" id="toc-speeding-up-and-slowing-down" class="nav-link" data-scroll-target="#speeding-up-and-slowing-down"><span class="header-section-number">4.2</span> Speeding Up and Slowing Down</a></li>
+  <li><a href="#direction" id="toc-direction" class="nav-link" data-scroll-target="#direction"><span class="header-section-number">4.3</span> Direction</a></li>
+  </ul></li>
+  <li><a href="#requirements" id="toc-requirements" class="nav-link" data-scroll-target="#requirements"><span class="header-section-number">5</span> Requirements</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">6</span> Conclusion</a></li>
+  <li><a href="#ai-prototype-and-reflection" id="toc-ai-prototype-and-reflection" class="nav-link" data-scroll-target="#ai-prototype-and-reflection"><span class="header-section-number">7</span> AI Prototype and Reflection</a>
+  <ul class="collapse">
+  <li><a href="#ai-prototype" id="toc-ai-prototype" class="nav-link" data-scroll-target="#ai-prototype"><span class="header-section-number">7.1</span> AI Prototype</a></li>
+  <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection"><span class="header-section-number">7.2</span> Reflection</a></li>
+  </ul></li>
   </ul>
 </nav>
 </div>
@@ -155,48 +163,25 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 
 <section id="introduction" class="level1" data-number="1">
 <h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
-<p>In this lab I used the STM32L432KC to measure how fast a 25GA-370 DC motor spins and which way it’s going. The motor has a quadrature encoder on the back: a magnet disk on the motor shaft and two hall sensors (A and B) that switch on and off as the magnet spins past them. That gives two square waves that are 90° apart.</p>
-<p>Every rising and falling edge on A or B triggers an interrupt on the MCU. The interrupt checks A and B and figures out if the shaft moved one step forward or one step backward, and saves the time it happened. Once a second the main loop uses those counts and times to calculate the speed in rev/s and prints it with the direction (CW or CCW) in the SEGGER debug terminal.</p>
+<p>In this lab I used the STM32L432KC to measure the speed and direction of a 25GA-370 DC motor. The motor has a quadrature encoder on the back, which is two hall effect sensors (A and B) that pulse as a magnet on the shaft spins past them. The MCU gets an interrupt on every edge of A and B, keeps track of which way the shaft moved and when, and once a second prints the speed in rev/s and the direction (CW or CCW) to the SEGGER debug terminal.</p>
 </section>
-<section id="design" class="level1" data-number="2">
-<h1 data-number="2"><span class="header-section-number">2</span> Design</h1>
-<section id="code" class="level2" data-number="2.1">
-<h2 data-number="2.1" class="anchored" data-anchor-id="code"><span class="header-section-number">2.1</span> Code</h2>
-<p>I split code into these files:</p>
+<section id="design-and-testing-methodology" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Design and Testing Methodology</h1>
+<section id="overall-design" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="overall-design"><span class="header-section-number">2.1</span> Overall Design</h2>
+<p>I split the code into these files:</p>
 <ul>
-<li><code>main.c</code> sets everything up, and then every 1 s calculates the speed and prints it.</li>
-<li><code>main.h</code> has the gear ratio and timing settings.</li>
-<li><code>encoder.c</code> / <code>encoder.h</code> set up the pins, the interrupts and a 1 MHz timer, and has the interrupt handler. Nothing in here depends on the motor, so the gear ratio gets passed in from <code>main</code>.</li>
-<li><code>lib/</code> is the course GPIO, RCC (80 MHz) and FLASH drivers, same as lab 6.</li>
+<li><a href="#main-c"><code>main.c</code></a>: sets everything up, then every 1 s calculates the speed and prints it</li>
+<li><a href="#main-h"><code>main.h</code></a>: gear ratio and timing settings</li>
+<li><a href="#encoder-c"><code>encoder.c</code></a> / <a href="#encoder-h"><code>encoder.h</code></a>: sets up the pins, the interrupts and a 1 MHz timer, and has the interrupt handler</li>
+<li><code>lib/</code>: course GPIO, RCC and FLASH drivers (80 MHz clock)</li>
 </ul>
+<p>The interrupt handler only updates a few shared variables: <code>position</code> (signed count of steps), <code>edgeTime</code> (TIM2 time of the last step) and <code>badEdges</code> (missed edges). main reads them once a second and does all the math and printing, so the handler stays really short. The shared variables are <code>volatile</code> since the interrupt can change them at any time. Otherwise the compiler could keep an old copy in a register and main would never see the new value.</p>
 </section>
-<section id="block-diagram" class="level2" data-number="2.2">
-<h2 data-number="2.2" class="anchored" data-anchor-id="block-diagram"><span class="header-section-number">2.2</span> Block Diagram</h2>
-<div class="quarto-figure quarto-figure-center">
-<figure class="figure">
-<p><img src="Lab2-19.jpg" class="img-fluid figure-img" style="width:60.0%"></p>
-<figcaption>Block diagram: encoder A/B → EXTI6/EXTI8 (both edges) → EXTI9_5_IRQHandler (read A,B → lookup table) → main every 1 s, with TIM2 at 1 MHz giving the edge times</figcaption>
-</figure>
-</div>
-<p>There are two parts that run separately:</p>
-<ul>
-<li><strong>The interrupt</strong> runs every time A or B changes. It only updates three shared variables: <code>position</code> (signed count of steps), <code>edgeTime</code> (when the last step happened) and <code>badEdges</code> (how many edges got missed).</li>
-<li><strong>The main loop</strong> reads those variables once a second and does all the math and printing.</li>
-</ul>
-<p>The shared variables are <code>volatile</code> bc the interrupt can change them at any time, and without <code>volatile</code> the compiler could keep an old copy in a register and <code>main</code> would never see the new value. Keeping the math in <code>main</code> means the interrupt is really short, so it’s done before the next edge shows up.</p>
-</section>
-<section id="how-the-encoder-works" class="level2" data-number="2.3">
-<h2 data-number="2.3" class="anchored" data-anchor-id="how-the-encoder-works"><span class="header-section-number">2.3</span> How the Encoder Works</h2>
-<p>If you only had channel A, you could count pulses to get the speed, but you wouldn’t know which way the motor is turning. That’s what B is for. B is shifted 90° from A, so:</p>
-<ul>
-<li>Spinning one way, A changes first and then B follows.</li>
-<li>Spinning the other way, B changes first and then A follows.</li>
-</ul>
-<p>Looking at both together, the encoder goes through 4 states. Forward is AB = 00 → 10 → 11 → 01 → 00, and backwards is the same loop in reverse. Each edge on either channel moves one step around the loop, so there are 4 edges per pulse. Counting all 4 instead of just the rising edges of A gives 4x the resolution.</p>
-</section>
-<section id="quadrature-decoding" class="level2" data-number="2.4">
-<h2 data-number="2.4" class="anchored" data-anchor-id="quadrature-decoding"><span class="header-section-number">2.4</span> Quadrature Decoding</h2>
-<p>Every time the interrupt runs, it reads A and B and compares them to what they were last time. The table says which way it moved:</p>
+<section id="quadrature-encoder" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="quadrature-encoder"><span class="header-section-number">2.2</span> Quadrature Encoder</h2>
+<p>With only channel A you could count pulses to get the speed, but you wouldn’t know which way the motor is spinning. B is 90° out of phase with A, so going one way A changes first and going the other way B changes first. Together A and B go through 4 states. CW is AB = 00 → 10 → 11 → 01 → 00 and CCW is the same thing backwards. Every edge on either channel is one step, so there are 4 edges per pulse, which is 4x the resolution of only counting rising edges on A.</p>
+<p>Every time the interrupt runs it reads A and B and compares them to last time with this table:</p>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -238,102 +223,304 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 </tr>
 </tbody>
 </table>
-<p>For example, if AB was 00 and A goes high, AB is now 10. Row 00, column 10 is +1, so that’s one step forward. If B had gone high instead (00 → 01), it’s -1, one step backward.</p>
-<p>The result gets added to <code>position</code>. Going forward it counts up and going backward it counts down, so the direction is just the sign of the change.</p>
-<p>Some details:</p>
-<ul>
-<li>I read A and B in one read of <code>GPIOA-&gt;IDR</code> (both are on port A). If I read them separately, one could change in between and I’d get a state that never really happened.</li>
-<li>✗ means both A and B changed at the same time. That can’t happen with a real encoder, since they’re 90° apart. It only shows up if the MCU missed an edge in between. Those get counted in <code>badEdges</code> and <code>main</code> prints a warning, so I’d know if the interrupts ever couldn’t keep up.</li>
-<li>The table is stored as an array of 16 numbers, indexed by (old AB × 4) + new AB, so the interrupt doesn’t need any <code>if</code> statements to figure out the direction.</li>
-</ul>
+<p>So if AB was 00 and A goes high, AB is now 10. Row 00 column 10 is +1, so one step CW. If B had gone high instead (00 → 01) it’s -1, one step CCW. The step gets added to <code>position</code>, so the direction is just whether <code>position</code> went up or down.</p>
+<p>✗ means A and B both changed at once. That can’t happen with a real encoder since they’re 90° apart, so it means the MCU missed an edge. Those get counted in <code>badEdges</code> and main prints a warning if it ever goes up.</p>
+<p>I read A and B with one read of <code>GPIOA-&gt;IDR</code> since they’re both on port A. If I read them separately one could change in between and I’d get a state that never happened. The table is just an array of 16 numbers indexed by (old AB × 4) + new AB, so the handler doesn’t need any if statements to figure out the direction.</p>
 </section>
-<section id="interrupts" class="level2" data-number="2.5">
-<h2 data-number="2.5" class="anchored" data-anchor-id="interrupts"><span class="header-section-number">2.5</span> Interrupts</h2>
-<p>I used interrupts instead of checking the pins in a loop (polling). With polling, the CPU would have to keep reading the pins nonstop, and anything else it does, like printing, takes time where it isn’t looking at the pins and could miss an edge. With interrupts, the hardware notices the edge by itself and stops whatever the CPU is doing to run the handler, so no edge gets skipped even while <code>main</code> is printing.</p>
-<p>How I set it up:</p>
-<ol type="1">
-<li><strong>Turn on SYSCFG</strong> in <code>RCC-&gt;APB2ENR</code>. SYSCFG is the part that decides which port each EXTI line listens to, so its clock has to be on.</li>
-<li><strong>Route the pins</strong> with <code>SYSCFG-&gt;EXTICR</code>. EXTI line 6 can come from PA6, PB6, PC6…, so I set it to port A. Same for line 8 → PA8.</li>
-<li><strong>Pick the edges</strong> with <code>EXTI-&gt;RTSR1</code> (rising) and <code>EXTI-&gt;FTSR1</code> (falling). I set both for both lines, bc I want all 4 edges.</li>
-<li><strong>Unmask</strong> lines 6 and 8 in <code>EXTI-&gt;IMR1</code> so they’re actually allowed to cause an interrupt.</li>
-<li><strong>Turn on the interrupt in the NVIC</strong> with <code>NVIC_EnableIRQ(EXTI9_5_IRQn)</code>. Lines 5-9 all share one interrupt, so both A and B go to the same handler, <code>EXTI9_5_IRQHandler</code>.</li>
-<li><strong>Enable interrupts globally</strong> with <code>__enable_irq()</code>.</li>
-</ol>
-<p>Before turning anything on, I also read A and B once to set the starting state, so the first edge gets compared against the right thing.</p>
-<p>What the handler does every edge:</p>
-<ol type="1">
-<li>Checks which of lines 6/8 are pending in <code>EXTI-&gt;PR1</code>.</li>
-<li>Clears them with <code>EXTI-&gt;PR1 = pending</code>. PR1 clears whatever bits you write a 1 to, so using <code>|=</code> would read all the pending bits and write them all back, which clears every other pending line too.</li>
-<li>Saves the time from TIM2.</li>
-<li>Reads A and B, looks up the step in the table, and adds it to <code>position</code> (or adds 1 to <code>badEdges</code>).</li>
-</ol>
-<p>I clear the flag before reading the pins on purpose. If another edge happens right after I read the pins, it sets the flag again and the handler just runs one more time, so that edge doesn’t get lost.</p>
+<section id="interrupts" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="interrupts"><span class="header-section-number">2.3</span> Interrupts</h2>
+<p>The other option is polling, where main keeps reading the pins in a loop. The problem is anything else main does (like printf) is time it isn’t looking at the pins, so it can miss an edge. With interrupts the hardware catches the edge on its own and stops whatever the CPU is doing to run the handler, so edges don’t get missed even while main is printing.</p>
+<p>To set it up I turned on the SYSCFG clock in <code>RCC-&gt;APB2ENR</code>, then used <code>SYSCFG-&gt;EXTICR</code> to connect EXTI6 to PA6 and EXTI8 to PA8. I set both lines in <code>EXTI-&gt;RTSR1</code> and <code>EXTI-&gt;FTSR1</code> so they trigger on rising and falling edges, unmasked them in <code>EXTI-&gt;IMR1</code>, and turned on <code>EXTI9_5_IRQn</code> in the NVIC. Lines 5-9 share one interrupt so A and B both go to <code>EXTI9_5_IRQHandler</code>. Before turning anything on I read A and B once so the first edge gets compared to the right starting state.</p>
+<p>In the handler I check which of lines 6 and 8 are pending in <code>EXTI-&gt;PR1</code> and clear them with <code>EXTI-&gt;PR1 = pending</code>. It has to be <code>=</code> and not <code>|=</code> because PR1 clears any bit you write a 1 to, so <code>|=</code> would clear every other pending line too. Then it grabs the time from TIM2, reads A and B, looks up the step and adds it to <code>position</code>. I clear the flag before reading the pins so if another edge comes right after, the flag gets set again and the handler just runs one more time.</p>
 </section>
-<section id="speed" class="level2" data-number="2.6">
-<h2 data-number="2.6" class="anchored" data-anchor-id="speed"><span class="header-section-number">2.6</span> Speed</h2>
-<p>To know when each edge happened I use TIM2 as a clock. It counts at 1 MHz (PSC = 80 - 1 from the 80 MHz clock, ARR = 0xFFFFFFFF), so each count is 1 µs. It’s a 32-bit timer so it only wraps around every ~71 min, and subtracting two times with unsigned math still works when it wraps. Every edge saves the TIM2 count as <code>edgeTime</code>.</p>
-<p>Once a second, <code>main</code>:</p>
-<ol type="1">
-<li>Turns off interrupts for a moment, copies <code>position</code>, <code>edgeTime</code> and <code>badEdges</code>, and turns them back on. This makes sure <code>position</code> and <code>edgeTime</code> come from the same edge. Otherwise an interrupt could happen in between copying the two and they wouldn’t match.</li>
-<li>Calculates how many edges happened since last time, and how much time passed between the last edge last time and the last edge now.</li>
-<li>Divides to get the speed:</li>
-</ol>
-<p>speed (rev/s) = edges / (time × edges per rev)</p>
-<p>For example, if 3,400 edges came in and the time between the two edges was 1,000,500 µs:</p>
-<p>3,400 / (1.0005 s × 1632) = 2.0823 rev/s</p>
-<p>I used the time between actual edges instead of just counting edges in each 1 s bc counting in a fixed window can be off by 1 edge depending on where the window starts and ends. At my slowest speed (0.0472 rev/s) there are only 0.0472 × 1632 = 77 edges per second, so being off by 1 edge would make the speed jump around by 1.3%. Measuring from edge to edge doesn’t have that problem.</p>
-<p>Special cases:</p>
-<ul>
-<li><strong>Really slow:</strong> if a whole second goes by with no new edge, it keeps showing the last speed instead of jumping to 0. After 3 s with no edges it prints <code>0 (stopped)</code>.</li>
-<li><strong>Starting up:</strong> when the motor starts again, the last edge from before it stopped is too old to use, so the first speed is measured from the last time <code>main</code> checked instead.</li>
-<li><strong>Divide by zero:</strong> if the time is 0, the speed function returns 0 instead of dividing.</li>
-</ul>
-<p>The speed is stored as a whole number in micro-rev/s (millionths of a rev/s) and printed with 4 decimals. That way printf doesn’t need float support turned on in SEGGER.</p>
+<section id="calculating-speed" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="calculating-speed"><span class="header-section-number">2.4</span> Calculating Speed</h2>
+<p>TIM2 is a free running 32-bit timer at 1 MHz (PSC = 79, ARR = 0xFFFFFFFF), so each count is 1 µs and it only wraps every ~71 min. Unsigned subtraction still gives the right difference when it wraps.</p>
+<p>Once a second main turns off interrupts for a moment and copies <code>position</code>, <code>edgeTime</code> and <code>badEdges</code>, so <code>position</code> and <code>edgeTime</code> are always from the same edge. Then:</p>
+<p>speed (rev/s) = edges / (time × 1632)</p>
+<p>where edges is the change in <code>position</code> since last time and time is from the last edge last time to the last edge now. Ex if 3,400 edges came in over 1.0005 s:</p>
+<p>3,400 / (1.0005 × 1632) = 2.0823 rev/s</p>
+<p>I used the time between real edges instead of just counting edges in each 1 s window because the window can be off by 1 edge depending on where it starts and ends. At my slowest speed (0.0472 rev/s) that’s only 77 edges per second, so 1 edge off is 1/77 = 1.3% error. Going edge to edge doesn’t have that problem.</p>
+<p>If a whole second goes by with no new edge it keeps showing the last speed instead of jumping to 0, and after 3 s with no edges it prints <code>0 (stopped)</code>. When the motor starts again the last edge from before it stopped is too old to use, so the first speed is measured from the last time main checked instead. The speed is stored as an integer in micro-rev/s and printed with 4 decimals so I didn’t have to turn on float printf in SEGGER.</p>
+</section>
+<section id="testing-methodology" class="level2" data-number="2.5">
+<h2 data-number="2.5" class="anchored" data-anchor-id="testing-methodology"><span class="header-section-number">2.5</span> Testing Methodology</h2>
+<p>I checked the printed speed against the encoder frequency on the scope at a few different supply voltages. The scope frequency is pulses per second on one channel, so the real speed is f / 408. I also did one run speeding up and one slowing down to see what it does at the slow end and when the motor stops.</p>
 </section>
 </section>
-<section id="calculations" class="level1" data-number="3">
-<h1 data-number="3"><span class="header-section-number">3</span> Calculations</h1>
-<section id="edges-per-revolution" class="level2" data-number="3.1">
-<h2 data-number="3.1" class="anchored" data-anchor-id="edges-per-revolution"><span class="header-section-number">3.1</span> Edges per revolution</h2>
-<p>The lab page says the encoder makes 12 pulses per motor revolution on each channel. My motor is the -34 one (34:1 gearbox):</p>
-<ul>
-<li>12 × 34 = 408 pulses per output shaft revolution per channel</li>
-<li>Both edges of both channels: 4 × 408 = 1632 edges/rev</li>
-<li>360° / 1632 = 0.22° per edge</li>
-</ul>
+<section id="technical-documentation" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Technical Documentation</h1>
+<section id="code" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="code"><span class="header-section-number">3.1</span> Code</h2>
+<details id="main-c">
+<summary>
+main.c
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// main.c</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Lab 5: measures motor speed and direction with a quadrature encoder, prints once a second</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Cheyenne Trujillo, 2026-11-04</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"main.h"</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define URPS_PER_LSB   </span><span class="dv">100</span><span class="pp">     </span><span class="co">// print to 0.0001 rev/s</span></span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DECIMAL_SCALE  </span><span class="dv">10000</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a><span class="co">// prints micro-rev/s as e.g. "+2.4571"</span></span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">void</span> printSpeed<span class="op">(</span><span class="dt">int32_t</span> urps<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> sign <span class="op">=</span> <span class="op">(</span>urps <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="ch">'-'</span> <span class="op">:</span> <span class="ch">'+'</span><span class="op">;</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> mag <span class="op">=</span> <span class="op">(</span>urps <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="op">(</span><span class="dt">uint32_t</span><span class="op">)(-</span>urps<span class="op">)</span> <span class="op">:</span> <span class="op">(</span><span class="dt">uint32_t</span><span class="op">)</span>urps<span class="op">;</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    mag <span class="op">=</span> <span class="op">(</span>mag <span class="op">+</span> URPS_PER_LSB <span class="op">/</span> <span class="dv">2</span><span class="op">)</span> <span class="op">/</span> URPS_PER_LSB<span class="op">;</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>dir <span class="op">=</span> <span class="op">(</span>urps <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="st">"CW"</span> <span class="op">:</span> <span class="op">(</span>urps <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="st">"CCW"</span> <span class="op">:</span> <span class="st">"stopped"</span><span class="op">;</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">"speed: </span><span class="sc">%c%lu</span><span class="st">.</span><span class="sc">%04lu</span><span class="st"> rev/s  (</span><span class="sc">%s</span><span class="st">)</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>           sign<span class="op">,</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">long</span><span class="op">)(</span>mag <span class="op">/</span> DECIMAL_SCALE<span class="op">),</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">long</span><span class="op">)(</span>mag <span class="op">%</span> DECIMAL_SCALE<span class="op">),</span> dir<span class="op">);</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    configureFlash<span class="op">();</span></span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    configureClock<span class="op">();</span>   <span class="co">// 80 MHz from the PLL</span></span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    initEncoder<span class="op">();</span></span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    encoder_snapshot_t ref <span class="op">=</span> encoderSnapshot<span class="op">();</span></span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> lastReport    <span class="op">=</span> micros<span class="op">();</span></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> lastSnapTime  <span class="op">=</span> lastReport<span class="op">;</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> lastBadEdges  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int32_t</span>  speed_urps    <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>                  <span class="co">// micro-rev/s</span></span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span>      stopped       <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">"Lab 5 encoder: </span><span class="sc">%d</span><span class="st"> edges per output rev (gear </span><span class="sc">%d</span><span class="st">:1)</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> EDGES_PER_REV<span class="op">,</span> GEAR_RATIO<span class="op">);</span></span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span><span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>        <span class="dt">uint32_t</span> now <span class="op">=</span> micros<span class="op">();</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">((</span><span class="dt">uint32_t</span><span class="op">)(</span>now <span class="op">-</span> lastReport<span class="op">)</span> <span class="op">&lt;</span> REPORT_PERIOD_US<span class="op">)</span> <span class="cf">continue</span><span class="op">;</span></span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        lastReport <span class="op">+=</span> REPORT_PERIOD_US<span class="op">;</span></span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        encoder_snapshot_t s <span class="op">=</span> encoderSnapshot<span class="op">();</span></span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        <span class="dt">uint32_t</span> prevSnapTime <span class="op">=</span> lastSnapTime<span class="op">;</span></span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        lastSnapTime <span class="op">=</span> now<span class="op">;</span></span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int32_t</span>  dEdges <span class="op">=</span> s<span class="op">.</span>position <span class="op">-</span> ref<span class="op">.</span>position<span class="op">;</span></span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>dEdges <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>stopped<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>                <span class="co">// just started moving: measure from the last snapshot</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>                speed_urps <span class="op">=</span> velocityMicroRevPerSec<span class="op">(</span>dEdges<span class="op">,</span> s<span class="op">.</span>edgeTime <span class="op">-</span> prevSnapTime<span class="op">,</span> EDGES_PER_REV<span class="op">);</span></span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>                stopped <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>                speed_urps <span class="op">=</span> velocityMicroRevPerSec<span class="op">(</span>dEdges<span class="op">,</span> s<span class="op">.</span>edgeTime <span class="op">-</span> ref<span class="op">.</span>edgeTime<span class="op">,</span> EDGES_PER_REV<span class="op">);</span></span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>            ref <span class="op">=</span> s<span class="op">;</span></span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="cf">if</span> <span class="op">((</span><span class="dt">uint32_t</span><span class="op">)(</span>now <span class="op">-</span> ref<span class="op">.</span>edgeTime<span class="op">)</span> <span class="op">&gt;</span> STOP_TIMEOUT_US<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>            speed_urps <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a>            stopped <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>            ref <span class="op">=</span> s<span class="op">;</span></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a>        printSpeed<span class="op">(</span>speed_urps<span class="op">);</span></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>s<span class="op">.</span>badEdges <span class="op">!=</span> lastBadEdges<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>            printf<span class="op">(</span><span class="st">"  warning: </span><span class="sc">%lu</span><span class="st"> missed edges so far</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">long</span><span class="op">)</span>s<span class="op">.</span>badEdges<span class="op">);</span></span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>            lastBadEdges <span class="op">=</span> s<span class="op">.</span>badEdges<span class="op">;</span></span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="main-h">
+<summary>
+main.h
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// main.h</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Lab 5: quadrature encoder motor speed</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Cheyenne Trujillo, 2026-11-04</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef MAIN_H</span></span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MAIN_H</span></span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"STM32L432KC.h"</span></span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"encoder.h"</span></span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a><span class="co">// 25GA-370 motor, 34:1 gearbox</span></span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a><span class="pp">#define GEAR_RATIO       </span><span class="dv">34</span></span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define PULSES_PER_MOTOR_REV </span><span class="dv">12</span><span class="pp">   </span><span class="co">// per channel, motor shaft</span></span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a><span class="co">// every edge of A and B is counted (x4)</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#define EDGES_PER_REV    </span><span class="op">(</span><span class="dv">4</span><span class="pp"> </span><span class="op">*</span><span class="pp"> PULSES_PER_MOTOR_REV </span><span class="op">*</span><span class="pp"> GEAR_RATIO</span><span class="op">)</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a><span class="co">// print once a second</span></span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a><span class="pp">#define REPORT_PERIOD_US </span><span class="dv">1000000</span><span class="bu">u</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a><span class="co">// no edge for this long = stopped</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STOP_TIMEOUT_US  </span><span class="dv">3000000</span><span class="bu">u</span></span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">// MAIN_H</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="encoder-c">
+<summary>
+encoder.c
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// encoder.c</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Quadrature encoder driver: EXTI on every edge of A and B, timestamped with TIM2</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Cheyenne Trujillo, 2026-11-04</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"encoder.h"</span></span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">// both A and B changed: missed edge</span></span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#define QUAD_ILLEGAL </span><span class="dv">2</span></span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">// edges/us -&gt; micro-rev/s</span></span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="pp">#define URPS_SCALE </span><span class="dv">1000000000000</span><span class="bu">LL</span></span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="co">// shared with the ISR</span></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">int32_t</span>  position  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">uint32_t</span> edgeTime  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">uint32_t</span> badEdges  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">uint8_t</span>  lastAB    <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a><span class="co">// indexed by (prevAB &lt;&lt; 2) | newAB, CW = 00 -&gt; 10 -&gt; 11 -&gt; 01</span></span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">const</span> <span class="dt">int8_t</span> QUAD_TABLE<span class="op">[</span><span class="dv">16</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="co">//  new: 00  01  10  11      prev</span></span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>         <span class="dv">0</span><span class="op">,</span>           <span class="op">-</span><span class="dv">1</span><span class="op">,</span>           <span class="op">+</span><span class="dv">1</span><span class="op">,</span>            QUAD_ILLEGAL<span class="op">,</span>   <span class="co">// 00</span></span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span><span class="dv">1</span><span class="op">,</span>            <span class="dv">0</span><span class="op">,</span>            QUAD_ILLEGAL<span class="op">,</span> <span class="op">-</span><span class="dv">1</span><span class="op">,</span>             <span class="co">// 01</span></span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        <span class="op">-</span><span class="dv">1</span><span class="op">,</span>            QUAD_ILLEGAL<span class="op">,</span>  <span class="dv">0</span><span class="op">,</span>           <span class="op">+</span><span class="dv">1</span><span class="op">,</span>             <span class="co">// 10</span></span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>         QUAD_ILLEGAL<span class="op">,</span> <span class="op">+</span><span class="dv">1</span><span class="op">,</span>           <span class="op">-</span><span class="dv">1</span><span class="op">,</span>            <span class="dv">0</span>              <span class="co">// 11</span></span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="dt">int8_t</span> quadStep<span class="op">(</span><span class="dt">uint8_t</span> prevAB<span class="op">,</span> <span class="dt">uint8_t</span> newAB<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> QUAD_TABLE<span class="op">[((</span>prevAB <span class="op">&amp;</span> <span class="dv">3</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">2</span><span class="op">)</span> <span class="op">|</span> <span class="op">(</span>newAB <span class="op">&amp;</span> <span class="dv">3</span><span class="op">)];</span></span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a><span class="co">// speed in micro-rev/s</span></span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a><span class="dt">int32_t</span> velocityMicroRevPerSec<span class="op">(</span><span class="dt">int32_t</span> dEdges<span class="op">,</span> <span class="dt">uint32_t</span> dTimeUs<span class="op">,</span> <span class="dt">uint32_t</span> edgesPerRev<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>dTimeUs <span class="op">==</span> <span class="dv">0</span> <span class="op">||</span> edgesPerRev <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int64_t</span> num <span class="op">=</span> <span class="op">(</span><span class="dt">int64_t</span><span class="op">)</span>dEdges <span class="op">*</span> URPS_SCALE<span class="op">;</span></span>
+<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int64_t</span> den <span class="op">=</span> <span class="op">(</span><span class="dt">int64_t</span><span class="op">)</span>dTimeUs <span class="op">*</span> <span class="op">(</span><span class="dt">int64_t</span><span class="op">)</span>edgesPerRev<span class="op">;</span></span>
+<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    <span class="co">// round to nearest</span></span>
+<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>num <span class="op">&gt;=</span> <span class="dv">0</span><span class="op">)</span> <span class="cf">return</span> <span class="op">(</span><span class="dt">int32_t</span><span class="op">)((</span>num <span class="op">+</span> den <span class="op">/</span> <span class="dv">2</span><span class="op">)</span> <span class="op">/</span> den<span class="op">);</span></span>
+<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>          <span class="cf">return</span> <span class="op">(</span><span class="dt">int32_t</span><span class="op">)((</span>num <span class="op">-</span> den <span class="op">/</span> <span class="dv">2</span><span class="op">)</span> <span class="op">/</span> den<span class="op">);</span></span>
+<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">uint8_t</span> readAB<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> idr <span class="op">=</span> GPIOA<span class="op">-&gt;</span>IDR<span class="op">;</span>   <span class="co">// read both pins at once</span></span>
+<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">(</span><span class="dt">uint8_t</span><span class="op">)((((</span>idr <span class="op">&gt;&gt;</span> ENCODER_A_NUM<span class="op">)</span> <span class="op">&amp;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">|</span> <span class="op">((</span>idr <span class="op">&gt;&gt;</span> ENCODER_B_NUM<span class="op">)</span> <span class="op">&amp;</span> <span class="dv">1</span><span class="op">));</span></span>
+<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a><span class="dt">uint32_t</span> micros<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> TIMESTAMP_TIM<span class="op">-&gt;</span>CNT<span class="op">;</span></span>
+<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">void</span> initTimestampTimer<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>    RCC<span class="op">-&gt;</span>APB1ENR1 <span class="op">|=</span> RCC_APB1ENR1_TIM2EN<span class="op">;</span></span>
+<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>PSC <span class="op">=</span> <span class="op">(</span>SystemCoreClock <span class="op">/</span> TIMESTAMP_HZ<span class="op">)</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span>  <span class="co">// 80 MHz / 80 = 1 MHz</span></span>
+<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>ARR <span class="op">=</span> <span class="bn">0xFFFFFFFF</span><span class="op">;</span>                        <span class="co">// use all 32 bits</span></span>
+<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>EGR <span class="op">=</span> TIM_EGR_UG<span class="op">;</span>                        <span class="co">// load the prescaler now</span></span>
+<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>SR  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>CNT <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
+<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>CR1 <span class="op">|=</span> TIM_CR1_CEN<span class="op">;</span></span>
+<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initEncoder<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>    gpioEnable<span class="op">(</span>GPIO_PORT_A<span class="op">);</span></span>
+<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>ENCODER_A<span class="op">,</span> GPIO_INPUT<span class="op">);</span></span>
+<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>ENCODER_B<span class="op">,</span> GPIO_INPUT<span class="op">);</span></span>
+<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>    <span class="co">// no pull resistors since the encoder outputs 5 V</span></span>
+<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>    GPIOA<span class="op">-&gt;</span>PUPDR <span class="op">&amp;=</span> <span class="op">~(</span>GPIO_PUPDR_PUPD6 <span class="op">|</span> GPIO_PUPDR_PUPD8<span class="op">);</span></span>
+<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>    initTimestampTimer<span class="op">();</span></span>
+<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a>    <span class="co">// route PA6 and PA8 to EXTI6 and EXTI8</span></span>
+<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>    RCC<span class="op">-&gt;</span>APB2ENR <span class="op">|=</span> RCC_APB2ENR_SYSCFGEN<span class="op">;</span></span>
+<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a>    SYSCFG<span class="op">-&gt;</span>EXTICR<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">&amp;=</span> <span class="op">~</span>SYSCFG_EXTICR2_EXTI6<span class="op">;</span></span>
+<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>    SYSCFG<span class="op">-&gt;</span>EXTICR<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">&amp;=</span> <span class="op">~</span>SYSCFG_EXTICR3_EXTI8<span class="op">;</span></span>
+<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>    <span class="co">// trigger on both edges</span></span>
+<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> mask <span class="op">=</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_A_NUM<span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_B_NUM<span class="op">);</span></span>
+<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>RTSR1 <span class="op">|=</span> mask<span class="op">;</span></span>
+<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>FTSR1 <span class="op">|=</span> mask<span class="op">;</span></span>
+<span id="cb3-80"><a href="#cb3-80" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>PR1    <span class="op">=</span> mask<span class="op">;</span>      <span class="co">// clear pending</span></span>
+<span id="cb3-81"><a href="#cb3-81" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>IMR1  <span class="op">|=</span> mask<span class="op">;</span></span>
+<span id="cb3-82"><a href="#cb3-82" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-83"><a href="#cb3-83" aria-hidden="true" tabindex="-1"></a>    lastAB <span class="op">=</span> readAB<span class="op">();</span></span>
+<span id="cb3-84"><a href="#cb3-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-85"><a href="#cb3-85" aria-hidden="true" tabindex="-1"></a>    <span class="co">// EXTI lines 5-9 share one interrupt</span></span>
+<span id="cb3-86"><a href="#cb3-86" aria-hidden="true" tabindex="-1"></a>    NVIC_EnableIRQ<span class="op">(</span>EXTI9_5_IRQn<span class="op">);</span></span>
+<span id="cb3-87"><a href="#cb3-87" aria-hidden="true" tabindex="-1"></a>    __enable_irq<span class="op">();</span></span>
+<span id="cb3-88"><a href="#cb3-88" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-89"><a href="#cb3-89" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-90"><a href="#cb3-90" aria-hidden="true" tabindex="-1"></a><span class="co">// copy the ISR's variables with interrupts off</span></span>
+<span id="cb3-91"><a href="#cb3-91" aria-hidden="true" tabindex="-1"></a>encoder_snapshot_t encoderSnapshot<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-92"><a href="#cb3-92" aria-hidden="true" tabindex="-1"></a>    encoder_snapshot_t s<span class="op">;</span></span>
+<span id="cb3-93"><a href="#cb3-93" aria-hidden="true" tabindex="-1"></a>    __disable_irq<span class="op">();</span></span>
+<span id="cb3-94"><a href="#cb3-94" aria-hidden="true" tabindex="-1"></a>    s<span class="op">.</span>position <span class="op">=</span> position<span class="op">;</span></span>
+<span id="cb3-95"><a href="#cb3-95" aria-hidden="true" tabindex="-1"></a>    s<span class="op">.</span>edgeTime <span class="op">=</span> edgeTime<span class="op">;</span></span>
+<span id="cb3-96"><a href="#cb3-96" aria-hidden="true" tabindex="-1"></a>    s<span class="op">.</span>badEdges <span class="op">=</span> badEdges<span class="op">;</span></span>
+<span id="cb3-97"><a href="#cb3-97" aria-hidden="true" tabindex="-1"></a>    __enable_irq<span class="op">();</span></span>
+<span id="cb3-98"><a href="#cb3-98" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> s<span class="op">;</span></span>
+<span id="cb3-99"><a href="#cb3-99" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
+<span id="cb3-100"><a href="#cb3-100" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-101"><a href="#cb3-101" aria-hidden="true" tabindex="-1"></a><span class="co">// runs on every edge of A or B</span></span>
+<span id="cb3-102"><a href="#cb3-102" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> EXTI9_5_IRQHandler<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-103"><a href="#cb3-103" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> mask <span class="op">=</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_A_NUM<span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_B_NUM<span class="op">);</span></span>
+<span id="cb3-104"><a href="#cb3-104" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> pending <span class="op">=</span> EXTI<span class="op">-&gt;</span>PR1 <span class="op">&amp;</span> mask<span class="op">;</span></span>
+<span id="cb3-105"><a href="#cb3-105" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>pending<span class="op">)</span> <span class="cf">return</span><span class="op">;</span></span>
+<span id="cb3-106"><a href="#cb3-106" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-107"><a href="#cb3-107" aria-hidden="true" tabindex="-1"></a>    <span class="co">// clear before reading the pins so a new edge re-triggers the interrupt</span></span>
+<span id="cb3-108"><a href="#cb3-108" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>PR1 <span class="op">=</span> pending<span class="op">;</span></span>
+<span id="cb3-109"><a href="#cb3-109" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-110"><a href="#cb3-110" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> now <span class="op">=</span> TIMESTAMP_TIM<span class="op">-&gt;</span>CNT<span class="op">;</span></span>
+<span id="cb3-111"><a href="#cb3-111" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span>  ab  <span class="op">=</span> readAB<span class="op">();</span></span>
+<span id="cb3-112"><a href="#cb3-112" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int8_t</span>   step <span class="op">=</span> quadStep<span class="op">(</span>lastAB<span class="op">,</span> ab<span class="op">);</span></span>
+<span id="cb3-113"><a href="#cb3-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-114"><a href="#cb3-114" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>step <span class="op">==</span> QUAD_ILLEGAL<span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-115"><a href="#cb3-115" aria-hidden="true" tabindex="-1"></a>        badEdges<span class="op">++;</span></span>
+<span id="cb3-116"><a href="#cb3-116" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> <span class="cf">else</span> <span class="cf">if</span> <span class="op">(</span>step <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
+<span id="cb3-117"><a href="#cb3-117" aria-hidden="true" tabindex="-1"></a>        position <span class="op">+=</span> step<span class="op">;</span></span>
+<span id="cb3-118"><a href="#cb3-118" aria-hidden="true" tabindex="-1"></a>        edgeTime  <span class="op">=</span> now<span class="op">;</span></span>
+<span id="cb3-119"><a href="#cb3-119" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
+<span id="cb3-120"><a href="#cb3-120" aria-hidden="true" tabindex="-1"></a>    lastAB <span class="op">=</span> ab<span class="op">;</span></span>
+<span id="cb3-121"><a href="#cb3-121" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="encoder-h">
+<summary>
+encoder.h
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// encoder.h</span></span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Quadrature encoder driver</span></span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Cheyenne Trujillo, 2026-11-04</span></span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef ENCODER_H</span></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_H</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdint.h&gt;</span></span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"STM32L432KC.h"</span></span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">// encoder pins (5 V tolerant)</span></span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_A      PA6</span></span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_B      PA8</span></span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_A_NUM  </span><span class="dv">6</span></span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_B_NUM  </span><span class="dv">8</span></span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">// free-running 1 MHz timer for edge timestamps</span></span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="pp">#define TIMESTAMP_TIM  TIM2</span></span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="pp">#define TIMESTAMP_HZ   </span><span class="dv">1000000</span><span class="bu">u</span></span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> <span class="op">{</span></span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int32_t</span>  position<span class="op">;</span>   <span class="co">// signed edge count (+ = CW, - = CCW)</span></span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> edgeTime<span class="op">;</span>   <span class="co">// TIM2 time of the most recent edge (us)</span></span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> badEdges<span class="op">;</span>   <span class="co">// missed edges</span></span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> encoder_snapshot_t<span class="op">;</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span>     initEncoder<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="dt">uint32_t</span> micros<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
+<span id="cb4-29"><a href="#cb4-29" aria-hidden="true" tabindex="-1"></a>encoder_snapshot_t encoderSnapshot<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
+<span id="cb4-30"><a href="#cb4-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-31"><a href="#cb4-31" aria-hidden="true" tabindex="-1"></a><span class="dt">int8_t</span>   quadStep<span class="op">(</span><span class="dt">uint8_t</span> prevAB<span class="op">,</span> <span class="dt">uint8_t</span> newAB<span class="op">);</span></span>
+<span id="cb4-32"><a href="#cb4-32" aria-hidden="true" tabindex="-1"></a><span class="dt">int32_t</span>  velocityMicroRevPerSec<span class="op">(</span><span class="dt">int32_t</span> dEdges<span class="op">,</span> <span class="dt">uint32_t</span> dTimeUs<span class="op">,</span> <span class="dt">uint32_t</span> edgesPerRev<span class="op">);</span></span>
+<span id="cb4-33"><a href="#cb4-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-34"><a href="#cb4-34" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">// ENCODER_H</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
 </section>
-<section id="update-rate" class="level2" data-number="3.2">
-<h2 data-number="3.2" class="anchored" data-anchor-id="update-rate"><span class="header-section-number">3.2</span> Update rate</h2>
-<p><code>main</code> prints every 1,000,000 µs on TIM2 = 1 Hz, which meets the 1 Hz requirement. It adds 1 s to the last print time instead of using “now”, so the prints don’t drift.</p>
-</section>
-<section id="slowest-speed" class="level2" data-number="3.3">
-<h2 data-number="3.3" class="anchored" data-anchor-id="slowest-speed"><span class="header-section-number">3.3</span> Slowest speed</h2>
-<p>The motor counts as stopped after 3 s with no edge, so the slowest speed that still shows up is 1 edge every 3 s:</p>
-<p>1 / (3 × 1632) = 0.0002 rev/s</p>
-<p>The slowest I actually got the motor to spin was 0.0472 rev/s (turning the supply down to ~0.25 V). Below that the motor just stalls, so the code can go way slower than the motor can.</p>
-</section>
-<section id="fastest-speed" class="level2" data-number="3.4">
-<h2 data-number="3.4" class="anchored" data-anchor-id="fastest-speed"><span class="header-section-number">3.4</span> Fastest speed</h2>
-<p>Every edge is one interrupt. Getting in and out of an interrupt on the Cortex-M4 is about 24 cycles and my handler is maybe 40-60 more, so call it ~100 cycles = 1.25 µs at 80 MHz. The next edge has to come after the handler is done, so the max is about:</p>
-<p>1 / 1.25 µs = 800,000 edges/s → 800,000 / 1632 ≈ 490 rev/s</p>
-<p>The fastest I measured on the scope was 845.5 Hz on each channel (scope_71), which is:</p>
-<p>845.5 / 408 = 2.07 rev/s → 4 × 845.5 = 3,382 edges/s, one edge every ~296 µs</p>
-<p>So the motor is ~240x slower than the limit, and the CPU is only in the interrupt about 1.25 / 296 = 0.4% of the time. The missed edge warning never printed in any of my runs.</p>
-</section>
-<section id="resolution-and-accuracy" class="level2" data-number="3.5">
-<h2 data-number="3.5" class="anchored" data-anchor-id="resolution-and-accuracy"><span class="header-section-number">3.5</span> Resolution and accuracy</h2>
-<ul>
-<li>Position: 1 edge = 1/1632 rev = 0.22°</li>
-<li>Printed speed: 0.0001 rev/s</li>
-<li>Timer: 1 µs over ~1 s → about 0.0001%</li>
-<li>Clock: the internal clock is only good to about 1%, so that’s the real limit (in lab 4 the scope read 0.83% off)</li>
-</ul>
-</section>
-</section>
-<section id="hardware" class="level1" data-number="4">
-<h1 data-number="4"><span class="header-section-number">4</span> Hardware</h1>
-<section id="pin-assignments" class="level2" data-number="4.1">
-<h2 data-number="4.1" class="anchored" data-anchor-id="pin-assignments"><span class="header-section-number">4.1</span> Pin Assignments</h2>
+<section id="pin-assignments" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="pin-assignments"><span class="header-section-number">3.2</span> Pin Assignments</h2>
 <table class="caption-top table">
 <thead>
 <tr class="header">
@@ -364,24 +551,66 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td></td>
 </tr>
 <tr class="odd">
-<td>Motor + / -</td>
-<td>12 V bench supply</td>
+<td>Motor M+ / M-</td>
+<td>0-12 V bench supply</td>
 <td>not connected to the MCU</td>
 </tr>
 </tbody>
 </table>
-<p>The encoder puts out 5 V but the MCU runs at 3.3 V, so A and B go to pins that are 5 V tolerant (STM32L432KC datasheet Table 14). I turned the internal pull-up and pull-down off on those pins bc the datasheet says a 5 V tolerant pin can only go above V<sub>DD</sub> + 0.3 V when its pull resistors are off. ## Schematic</p>
+<p>The encoder outputs 5 V but the MCU runs at 3.3 V, so A and B go to 5 V tolerant pins (STM32L432KC datasheet Table 14). I turned off the internal pull-up and pull-down on those pins because the datasheet says a 5 V tolerant pin can only go above V<sub>DD</sub> + 0.3 V with its pull resistors off.</p>
+</section>
+<section id="hardware-schematic" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="hardware-schematic"><span class="header-section-number">3.3</span> Hardware Schematic</h2>
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="schematic.jpeg" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption>Schematic: 25GA-370 motor encoder to the STM32L432KC, motor powered by the bench supply</figcaption>
+<figcaption>Schematic of the motor and encoder wiring to the STM32L432KC</figcaption>
 </figure>
 </div>
-<p>The MCU is on the E155 dev board, see the <a href="https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf">E155 Development Board Schematic</a>. The encoder and motor wiring above is what I added.</p>
+<p>The MCU is on the E155 dev board, so I only drew what I added. See the <a href="https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf">E155 Development Board Schematic</a> for the rest.</p>
 </section>
-<section id="testing" class="level2" data-number="4.2">
-<h2 data-number="4.2" class="anchored" data-anchor-id="testing"><span class="header-section-number">4.2</span> Testing</h2>
-<p>I checked the printed speed against the scope. The frequency of an encoder channel on the scope is pulses per second, so the real speed is f / 408. I used the average of the two channels’ frequencies.</p>
+<section id="calculations" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="calculations"><span class="header-section-number">3.4</span> Calculations</h2>
+<section id="edges-per-revolution" class="level3" data-number="3.4.1">
+<h3 data-number="3.4.1" class="anchored" data-anchor-id="edges-per-revolution"><span class="header-section-number">3.4.1</span> Edges per Revolution</h3>
+<p>The lab page says 12 pulses per motor rev on each channel, and my motor has a 34:1 gearbox.</p>
+<p>12 × 34 = 408 pulses per output rev per channel</p>
+<p>4 edges per pulse: 4 × 408 = 1632 edges per output rev</p>
+<p>360° / 1632 = 0.22° per edge</p>
+</section>
+<section id="update-rate" class="level3" data-number="3.4.2">
+<h3 data-number="3.4.2" class="anchored" data-anchor-id="update-rate"><span class="header-section-number">3.4.2</span> Update Rate</h3>
+<p>main prints every 1,000,000 TIM2 counts = 1 s, so 1 Hz. It adds 1 s to the last print time instead of using the current time so the prints don’t drift.</p>
+</section>
+<section id="slowest-speed" class="level3" data-number="3.4.3">
+<h3 data-number="3.4.3" class="anchored" data-anchor-id="slowest-speed"><span class="header-section-number">3.4.3</span> Slowest Speed</h3>
+<p>It counts as stopped after 3 s with no edge, so the slowest it can show is 1 edge in 3 s:</p>
+<p>1 / (3 × 1632) = 0.0002 rev/s</p>
+<p>The slowest I got the motor to actually spin was 0.0472 rev/s at ~0.25 V, and below that it stalls. So the code can go way slower than the motor can.</p>
+</section>
+<section id="fastest-speed" class="level3" data-number="3.4.4">
+<h3 data-number="3.4.4" class="anchored" data-anchor-id="fastest-speed"><span class="header-section-number">3.4.4</span> Fastest Speed</h3>
+<p>Getting in and out of an interrupt on the Cortex-M4 is ~24 cycles and my handler is maybe 40-60 more, so ~100 cycles.</p>
+<p>100 cycles × 12.5 ns = 1.25 µs per edge</p>
+<p>1 / 1.25 µs = 800,000 edges/s → 800,000 / 1632 ≈ 490 rev/s</p>
+<p>The fastest I measured was 1134.6 Hz on each channel (scope_72):</p>
+<p>1134.6 / 408 = 2.78 rev/s</p>
+<p>4 × 1134.6 = 4,538 edges/s, so one edge every 220 µs</p>
+<p>The motor is ~175x slower than the limit and the CPU is only in the handler 1.25 / 220 = 0.6% of the time!</p>
+</section>
+<section id="resolution-and-accuracy" class="level3" data-number="3.4.5">
+<h3 data-number="3.4.5" class="anchored" data-anchor-id="resolution-and-accuracy"><span class="header-section-number">3.4.5</span> Resolution and Accuracy</h3>
+<p>Position: 1/1632 rev = 0.22°</p>
+<p>Printed speed: 0.0001 rev/s</p>
+<p>Timer: 1 µs out of ~1 s, about 0.0001%</p>
+<p>The MCU clock is only good to about 1%, so that’s the real limit (in lab 4 it was 0.83% off on the scope).</p>
+</section>
+</section>
+</section>
+<section id="results" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Results</h1>
+<section id="scope-comparison" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="scope-comparison"><span class="header-section-number">4.1</span> Scope Comparison</h2>
 <table class="caption-top table">
 <colgroup>
 <col style="width: 20%">
@@ -421,10 +650,17 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
 <td>2.0860</td>
 <td>+0.65%</td>
 </tr>
+<tr class="even">
+<td>scope_72</td>
+<td>1134.6</td>
+<td>2.7808</td>
+<td>2.8030</td>
+<td>+0.80%</td>
+</tr>
 </tbody>
 </table>
-<p>The printed speed is the average of the steady readings at that speed. All three are within 1%. The printed speed comes out a little high, which makes sense if the MCU clock runs a bit slow: TIM2 counts fewer µs than really went by, so the speed looks faster. In lab 4 the clock was also off by about 0.8% in the same direction.</p>
-<p>In the captures you can see the two channels are offset by about a quarter of a period (90°), which is what makes the direction work.</p>
+<p>Scope freq is the average of the two channels and printed speed is the average of the steady readings at that speed. Error is (printed - scope) / scope. Ex for scope_71, 845.5 / 408 = 2.0724 rev/s and the MCU printed 2.0860, so +0.65%.</p>
+<p>All within 1%! The MCU reads a little high every time, which makes sense if the clock runs a bit slow since TIM2 would count fewer µs than really went by. In lab 4 the clock was off by about 0.8% in the same direction. You can also see in the captures that A and B are offset by about a quarter period (90°).</p>
 <details>
 <summary>
 Scope captures
@@ -444,18 +680,20 @@ Scope captures
 <div class="quarto-figure quarto-figure-center">
 <figure class="figure">
 <p><img src="scope_71.png" class="img-fluid figure-img" style="width:100.0%"></p>
-<figcaption>scope_71: 842.3 Hz / 848.8 Hz → ~2.07 rev/s, fastest</figcaption>
+<figcaption>scope_71: 842.3 Hz / 848.8 Hz → ~2.07 rev/s</figcaption>
+</figure>
+</div>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scope_72.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>scope_72: 1141.8 Hz / 1127.3 Hz → ~2.78 rev/s, fastest</figcaption>
 </figure>
 </div>
 </details>
-<p>I also did a run going up in steps and one going down from 1 V to 0.25 V.</p>
-<ul>
-<li>It says <code>0 (stopped)</code> when the motor is off.</li>
-<li>The first reading after a speed change is in between (like 0.4169 or 1.2140) bc that second has some of the old speed and some of the new speed, then it settles.</li>
-<li>At the slowest it still showed 0.0472 rev/s before the motor stalled.</li>
-<li>When I cut the power it kept showing the last speed (1.8775) for 3 s before it switched to 0, bc that’s the stop timeout.</li>
-<li>No missed edge warnings in either run.</li>
-</ul>
+</section>
+<section id="speeding-up-and-slowing-down" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="speeding-up-and-slowing-down"><span class="header-section-number">4.2</span> Speeding Up and Slowing Down</h2>
+<p>It says <code>0 (stopped)</code> when the motor is off. The first reading after each speed change is somewhere in between (like 0.4169 or 1.2140) since that second has some of the old speed and some of the new one, then it settles. When I cut the power it kept showing 1.8775 for 3 s and then went to 0, which is the stop timeout. Slowing down from 1 V to 0.25 V it got down to 0.0472 rev/s before the motor stalled. No missed edge warnings in either run.</p>
 <details>
 <summary>
 Run 1: speeding up
@@ -533,343 +771,34 @@ speed: +0.0000 rev/s  (stopped)
 speed: +0.0000 rev/s  (stopped)
 speed: +0.0000 rev/s  (stopped)</code></pre>
 </details>
-<!-- TODO: spin it backwards (swap the motor leads) and check it says CCW -->
+</section>
+<section id="direction" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="direction"><span class="header-section-number">4.3</span> Direction</h2>
+<p>Both runs are CW. I’ll show CCW at checkoff by swapping the motor leads, which flips the order of A and B so <code>position</code> counts down and it prints a negative speed with (CCW).</p>
 </section>
 </section>
-<section id="results" class="level1" data-number="5">
-<h1 data-number="5"><span class="header-section-number">5</span> Results</h1>
-<p>My design meets the proficiency requirements! The speed matches the scope within 1%, it never missed an edge, and it goes all the way down to 0.0472 rev/s and back to 0 when stopped. The one thing is that when the motor stops it can take up to 3 s for the display to say 0.</p>
+<section id="requirements" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Requirements</h1>
+<p>This design meets all proficiency specifications. CCW isn’t in the logs, I’m showing it at checkoff. It also takes up to 3 s to say 0 after the motor stops. I didn’t do the excellence documentation (flowchart and the interrupt vs.&nbsp;polling comparison).</p>
 </section>
-<section id="requirements-checklist" class="level1" data-number="6">
-<h1 data-number="6"><span class="header-section-number">6</span> Requirements Checklist</h1>
-<ul>
-<li>Uses interrupts to detect encoder pulses: EXTI on both edges of A and B</li>
-<li>Direction and speed in rev/s printed every 1 s</li>
-<li>Says 0 when the motor isn’t spinning (after 3 s with no edges)</li>
-<li>Doesn’t miss pulses: the missed edge warning never printed</li>
-<li>Encoder only connected to 5 V tolerant pins (PA6, PA8)</li>
-<li>Measured speed matches the scope within 1%</li>
-</ul>
+<section id="conclusion" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Conclusion</h1>
+<p>Met all proficiency specifications. Spent ~7 hours on this lab.</p>
 </section>
-<section id="ai-prototype" class="level1" data-number="7">
-<h1 data-number="7"><span class="header-section-number">7</span> AI Prototype</h1>
+<section id="ai-prototype-and-reflection" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> AI Prototype and Reflection</h1>
+<section id="ai-prototype" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="ai-prototype"><span class="header-section-number">7.1</span> AI Prototype</h2>
 <p>I prompted Claude:</p>
 <blockquote class="blockquote">
 <p>Write me interrupt handlers to interface with a quadrature encoder. I’m using the STM32L432KC, what pins should I connect the encoder to in order to allow it to easily trigger the interrupts?</p>
 </blockquote>
-<p>It picked PA0 (EXTI0) and PA1 (EXTI1) and wrote an x4 decoder with a lookup table, which is basically the same idea as mine. But it was written for the STM32 HAL library (<code>stm32l4xx_hal.h</code>, <code>HAL_GPIO_Init</code>, <code>HAL_GPIO_EXTI_Callback</code>), which isn’t in my project since I use the course <code>lib/</code> drivers. So it wasn’t usable without adding a whole new library, and I didn’t swap it in. It also said to power the encoder from 3.3 V, but mine needs 5 V. It did point out that TIM2 has a hardware encoder mode, which I didn’t know.</p>
-<p><strong>Reflection:</strong></p>
+<p>It picked PA0 (EXTI0) and PA1 (EXTI1) and wrote an x4 decoder with a lookup table, which is basically the same idea as mine. But it was written for the STM32 HAL library (<code>stm32l4xx_hal.h</code>, <code>HAL_GPIO_Init</code>, <code>HAL_GPIO_EXTI_Callback</code>), which isn’t in my project since I use the course <code>lib/</code> drivers. So it wasn’t usable without adding a whole new library and I didn’t swap it in. It also said to power the encoder from 3.3 V, but mine needs 5 V. It did point out that TIM2 has a hardware encoder mode, which I didn’t know.</p>
+</section>
+<section id="reflection" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="reflection"><span class="header-section-number">7.2</span> Reflection</h2>
 <p>The decoding logic was right, but the code depended on a library I wasn’t using, so I couldn’t just drop it in. Next time I’d tell it to use registers directly or my own drivers.</p>
 </section>
-<section id="hours" class="level1" data-number="8">
-<h1 data-number="8"><span class="header-section-number">8</span> Hours</h1>
-<p>Spent like 7 hours on this lab.</p>
-</section>
-<section id="code-1" class="level1" data-number="9">
-<h1 data-number="9"><span class="header-section-number">9</span> Code</h1>
-<details>
-<summary>
-main.c
-</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// main.c</span></span>
-<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Lab 5: Interrupts — measure a DC motor's speed and direction with a quadrature encoder.</span></span>
-<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Cheyenne Trujillo</span></span>
-<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">//</span></span>
-<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Every REPORT_PERIOD_US (1 s) this prints something like</span></span>
-<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a><span class="co">//     speed: +2.4571 rev/s  (CW)</span></span>
-<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a><span class="co">// to the SEGGER debug terminal through printf (course printf tutorial).</span></span>
-<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a><span class="co">//</span></span>
-<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a><span class="co">// Speed = (edges counted) / (time between the first and last of those edges).</span></span>
-<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Using the edge timestamps instead of "edges in the last 1 s" removes the</span></span>
-<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a><span class="co">// +/- 1 edge rounding error, which matters a lot at low speeds.</span></span>
-<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"main.h"</span></span>
-<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdio.h&gt;</span></span>
-<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a><span class="co">// Speed is kept in micro-rev/s and printed with 4 decimals (0.0001 rev/s)</span></span>
-<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a><span class="pp">#define URPS_PER_LSB   </span><span class="dv">100</span><span class="pp">     </span><span class="co">// 1 printed LSB = 0.0001 rev/s = 100 micro-rev/s</span></span>
-<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a><span class="pp">#define DECIMAL_SCALE  </span><span class="dv">10000</span><span class="pp">   </span><span class="co">// 10^4 -&gt; 4 digits after the decimal point</span></span>
-<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a><span class="co">// Print an integer number of micro-rev/s as e.g. "+2.4571" (4 decimals) without float printf.</span></span>
-<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">void</span> printSpeed<span class="op">(</span><span class="dt">int32_t</span> urps<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>    <span class="dt">char</span> sign <span class="op">=</span> <span class="op">(</span>urps <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="ch">'-'</span> <span class="op">:</span> <span class="ch">'+'</span><span class="op">;</span></span>
-<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> mag <span class="op">=</span> <span class="op">(</span>urps <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="op">(</span><span class="dt">uint32_t</span><span class="op">)(-</span>urps<span class="op">)</span> <span class="op">:</span> <span class="op">(</span><span class="dt">uint32_t</span><span class="op">)</span>urps<span class="op">;</span></span>
-<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>    mag <span class="op">=</span> <span class="op">(</span>mag <span class="op">+</span> URPS_PER_LSB <span class="op">/</span> <span class="dv">2</span><span class="op">)</span> <span class="op">/</span> URPS_PER_LSB<span class="op">;</span>   <span class="co">// round to 0.0001 rev/s</span></span>
-<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">const</span> <span class="dt">char</span> <span class="op">*</span>dir <span class="op">=</span> <span class="op">(</span>urps <span class="op">&gt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="st">"CW"</span> <span class="op">:</span> <span class="op">(</span>urps <span class="op">&lt;</span> <span class="dv">0</span><span class="op">)</span> <span class="op">?</span> <span class="st">"CCW"</span> <span class="op">:</span> <span class="st">"stopped"</span><span class="op">;</span></span>
-<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">"speed: </span><span class="sc">%c%lu</span><span class="st">.</span><span class="sc">%04lu</span><span class="st"> rev/s  (</span><span class="sc">%s</span><span class="st">)</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span></span>
-<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>           sign<span class="op">,</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">long</span><span class="op">)(</span>mag <span class="op">/</span> DECIMAL_SCALE<span class="op">),</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">long</span><span class="op">)(</span>mag <span class="op">%</span> DECIMAL_SCALE<span class="op">),</span> dir<span class="op">);</span></span>
-<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a><span class="dt">int</span> main<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>    configureFlash<span class="op">();</span></span>
-<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>    configureClock<span class="op">();</span>   <span class="co">// 80 MHz from the PLL</span></span>
-<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a>    initEncoder<span class="op">();</span></span>
-<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-35"><a href="#cb3-35" aria-hidden="true" tabindex="-1"></a>    encoder_snapshot_t ref <span class="op">=</span> encoderSnapshot<span class="op">();</span>  <span class="co">// last edge used for the previous speed</span></span>
-<span id="cb3-36"><a href="#cb3-36" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> lastReport    <span class="op">=</span> micros<span class="op">();</span></span>
-<span id="cb3-37"><a href="#cb3-37" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> lastSnapTime  <span class="op">=</span> lastReport<span class="op">;</span>         <span class="co">// when the previous snapshot was taken</span></span>
-<span id="cb3-38"><a href="#cb3-38" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> lastBadEdges  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb3-39"><a href="#cb3-39" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int32_t</span>  speed_urps    <span class="op">=</span> <span class="dv">0</span><span class="op">;</span>                  <span class="co">// micro-rev/s, signed</span></span>
-<span id="cb3-40"><a href="#cb3-40" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int</span>      stopped       <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb3-41"><a href="#cb3-41" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-42"><a href="#cb3-42" aria-hidden="true" tabindex="-1"></a>    printf<span class="op">(</span><span class="st">"Lab 5 encoder: </span><span class="sc">%d</span><span class="st"> edges per output rev (gear </span><span class="sc">%d</span><span class="st">:1)</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> EDGES_PER_REV<span class="op">,</span> GEAR_RATIO<span class="op">);</span></span>
-<span id="cb3-43"><a href="#cb3-43" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-44"><a href="#cb3-44" aria-hidden="true" tabindex="-1"></a>    <span class="cf">while</span> <span class="op">(</span><span class="dv">1</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-45"><a href="#cb3-45" aria-hidden="true" tabindex="-1"></a>        <span class="dt">uint32_t</span> now <span class="op">=</span> micros<span class="op">();</span></span>
-<span id="cb3-46"><a href="#cb3-46" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">((</span><span class="dt">uint32_t</span><span class="op">)(</span>now <span class="op">-</span> lastReport<span class="op">)</span> <span class="op">&lt;</span> REPORT_PERIOD_US<span class="op">)</span> <span class="cf">continue</span><span class="op">;</span></span>
-<span id="cb3-47"><a href="#cb3-47" aria-hidden="true" tabindex="-1"></a>        lastReport <span class="op">+=</span> REPORT_PERIOD_US<span class="op">;</span>   <span class="co">// fixed 1 Hz cadence, no drift</span></span>
-<span id="cb3-48"><a href="#cb3-48" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-49"><a href="#cb3-49" aria-hidden="true" tabindex="-1"></a>        encoder_snapshot_t s <span class="op">=</span> encoderSnapshot<span class="op">();</span></span>
-<span id="cb3-50"><a href="#cb3-50" aria-hidden="true" tabindex="-1"></a>        <span class="dt">uint32_t</span> prevSnapTime <span class="op">=</span> lastSnapTime<span class="op">;</span></span>
-<span id="cb3-51"><a href="#cb3-51" aria-hidden="true" tabindex="-1"></a>        lastSnapTime <span class="op">=</span> now<span class="op">;</span></span>
-<span id="cb3-52"><a href="#cb3-52" aria-hidden="true" tabindex="-1"></a>        <span class="dt">int32_t</span>  dEdges <span class="op">=</span> s<span class="op">.</span>position <span class="op">-</span> ref<span class="op">.</span>position<span class="op">;</span></span>
-<span id="cb3-53"><a href="#cb3-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-54"><a href="#cb3-54" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>dEdges <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-55"><a href="#cb3-55" aria-hidden="true" tabindex="-1"></a>            <span class="cf">if</span> <span class="op">(</span>stopped<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-56"><a href="#cb3-56" aria-hidden="true" tabindex="-1"></a>                <span class="co">// Just started moving. The old reference edge is from before the</span></span>
-<span id="cb3-57"><a href="#cb3-57" aria-hidden="true" tabindex="-1"></a>                <span class="co">// stop, so measure from the previous snapshot instead.</span></span>
-<span id="cb3-58"><a href="#cb3-58" aria-hidden="true" tabindex="-1"></a>                speed_urps <span class="op">=</span> velocityMicroRevPerSec<span class="op">(</span>dEdges<span class="op">,</span> s<span class="op">.</span>edgeTime <span class="op">-</span> prevSnapTime<span class="op">,</span> EDGES_PER_REV<span class="op">);</span></span>
-<span id="cb3-59"><a href="#cb3-59" aria-hidden="true" tabindex="-1"></a>                stopped <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb3-60"><a href="#cb3-60" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span> <span class="cf">else</span> <span class="op">{</span></span>
-<span id="cb3-61"><a href="#cb3-61" aria-hidden="true" tabindex="-1"></a>                speed_urps <span class="op">=</span> velocityMicroRevPerSec<span class="op">(</span>dEdges<span class="op">,</span> s<span class="op">.</span>edgeTime <span class="op">-</span> ref<span class="op">.</span>edgeTime<span class="op">,</span> EDGES_PER_REV<span class="op">);</span></span>
-<span id="cb3-62"><a href="#cb3-62" aria-hidden="true" tabindex="-1"></a>            <span class="op">}</span></span>
-<span id="cb3-63"><a href="#cb3-63" aria-hidden="true" tabindex="-1"></a>            ref <span class="op">=</span> s<span class="op">;</span></span>
-<span id="cb3-64"><a href="#cb3-64" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span> <span class="cf">else</span> <span class="cf">if</span> <span class="op">((</span><span class="dt">uint32_t</span><span class="op">)(</span>now <span class="op">-</span> ref<span class="op">.</span>edgeTime<span class="op">)</span> <span class="op">&gt;</span> STOP_TIMEOUT_US<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-65"><a href="#cb3-65" aria-hidden="true" tabindex="-1"></a>            <span class="co">// No edge in a long time -&gt; stopped</span></span>
-<span id="cb3-66"><a href="#cb3-66" aria-hidden="true" tabindex="-1"></a>            speed_urps <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb3-67"><a href="#cb3-67" aria-hidden="true" tabindex="-1"></a>            stopped <span class="op">=</span> <span class="dv">1</span><span class="op">;</span></span>
-<span id="cb3-68"><a href="#cb3-68" aria-hidden="true" tabindex="-1"></a>            ref <span class="op">=</span> s<span class="op">;</span></span>
-<span id="cb3-69"><a href="#cb3-69" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
-<span id="cb3-70"><a href="#cb3-70" aria-hidden="true" tabindex="-1"></a>        <span class="co">// else: very slow, no edge this second -&gt; keep showing the last speed</span></span>
-<span id="cb3-71"><a href="#cb3-71" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-72"><a href="#cb3-72" aria-hidden="true" tabindex="-1"></a>        printSpeed<span class="op">(</span>speed_urps<span class="op">);</span></span>
-<span id="cb3-73"><a href="#cb3-73" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb3-74"><a href="#cb3-74" aria-hidden="true" tabindex="-1"></a>        <span class="cf">if</span> <span class="op">(</span>s<span class="op">.</span>badEdges <span class="op">!=</span> lastBadEdges<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb3-75"><a href="#cb3-75" aria-hidden="true" tabindex="-1"></a>            printf<span class="op">(</span><span class="st">"  warning: </span><span class="sc">%lu</span><span class="st"> missed edges so far</span><span class="sc">\n</span><span class="st">"</span><span class="op">,</span> <span class="op">(</span><span class="dt">unsigned</span> <span class="dt">long</span><span class="op">)</span>s<span class="op">.</span>badEdges<span class="op">);</span></span>
-<span id="cb3-76"><a href="#cb3-76" aria-hidden="true" tabindex="-1"></a>            lastBadEdges <span class="op">=</span> s<span class="op">.</span>badEdges<span class="op">;</span></span>
-<span id="cb3-77"><a href="#cb3-77" aria-hidden="true" tabindex="-1"></a>        <span class="op">}</span></span>
-<span id="cb3-78"><a href="#cb3-78" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb3-79"><a href="#cb3-79" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<details>
-<summary>
-main.h
-</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="co">// main.h</span></span>
-<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Lab 5: Interrupts — quadrature encoder motor speed</span></span>
-<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a><span class="co">// Cheyenne Trujillo</span></span>
-<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef MAIN_H</span></span>
-<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a><span class="pp">#define MAIN_H</span></span>
-<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"STM32L432KC.h"</span></span>
-<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"encoder.h"</span></span>
-<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a><span class="co">// ---------------------------------------------------------------</span></span>
-<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a><span class="co">// Motor settings: 25GA-370 with a 34:1 gearbox</span></span>
-<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a><span class="co">// ---------------------------------------------------------------</span></span>
-<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#define GEAR_RATIO       </span><span class="dv">34</span></span>
-<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#define PULSES_PER_MOTOR_REV </span><span class="dv">12</span><span class="pp">   </span><span class="co">// per channel, on the motor shaft (from lab page)</span></span>
-<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a><span class="co">// We count every rising AND falling edge of both A and B ("x4 decoding"),</span></span>
-<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a><span class="co">// so each output-shaft revolution is 4 * 12 * gear ratio edges.</span></span>
-<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a><span class="pp">#define EDGES_PER_REV    </span><span class="op">(</span><span class="dv">4</span><span class="pp"> </span><span class="op">*</span><span class="pp"> PULSES_PER_MOTOR_REV </span><span class="op">*</span><span class="pp"> GEAR_RATIO</span><span class="op">)</span></span>
-<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a><span class="co">// How often the speed is printed (spec: at least 1 Hz)</span></span>
-<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a><span class="pp">#define REPORT_PERIOD_US </span><span class="dv">1000000</span><span class="bu">u</span></span>
-<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a><span class="co">// If no edge shows up for this long, call the motor stopped.</span></span>
-<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a><span class="co">// Slowest speed we can report = 1 edge / STOP_TIMEOUT_US.</span></span>
-<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a><span class="pp">#define STOP_TIMEOUT_US  </span><span class="dv">3000000</span><span class="bu">u</span></span>
-<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">// MAIN_H</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<details>
-<summary>
-encoder.c
-</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// encoder.c</span></span>
-<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Quadrature encoder driver for Lab 5.</span></span>
-<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="co">//</span></span>
-<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a><span class="co">// How it works:</span></span>
-<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a><span class="co">//   - PA6 (A) and PA8 (B) fire an EXTI interrupt on every rising and falling edge.</span></span>
-<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a><span class="co">//   - The ISR reads A and B together, and a lookup table turns (old AB, new AB)</span></span>
-<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a><span class="co">//     into +1, -1 or 0. Adding that to `position` gives a signed count, so</span></span>
-<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a><span class="co">//     direction falls out of the sign; no separate direction flag needed.</span></span>
-<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a><span class="co">//   - The ISR also stamps the time of the edge from a 1 MHz free-running TIM2.</span></span>
-<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a><span class="co">//     main() divides edges by the time between the first and last edge it saw,</span></span>
-<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a><span class="co">//     which keeps the speed accurate at very low speeds (see report).</span></span>
-<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"encoder.h"</span></span>
-<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a><span class="co">// QUAD_TABLE value for an illegal transition (A and B both changed -&gt; missed edge)</span></span>
-<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a><span class="pp">#define QUAD_ILLEGAL </span><span class="dv">2</span></span>
-<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a><span class="co">// edges/us -&gt; micro-rev/s needs a factor of (1e6 us/s) * (1e6 micro-rev/rev)</span></span>
-<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a><span class="pp">#define URPS_SCALE </span><span class="dv">1000000000000</span><span class="bu">LL</span></span>
-<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a><span class="co">// Shared with the ISR -&gt; volatile</span></span>
-<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">int32_t</span>  position  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">uint32_t</span> edgeTime  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">uint32_t</span> badEdges  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">volatile</span> <span class="dt">uint8_t</span>  lastAB    <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a><span class="co">// Quadrature lookup table, indexed by (prevAB &lt;&lt; 2) | newAB.</span></span>
-<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a><span class="co">// Forward (CW) sequence is AB = 00 -&gt; 10 -&gt; 11 -&gt; 01 -&gt; 00 (A leads B).</span></span>
-<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a><span class="co">//   +1 = one step CW, -1 = one step CCW, 0 = no change,</span></span>
-<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a><span class="co">//    QUAD_ILLEGAL = both bits flipped: we missed an edge</span></span>
-<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">const</span> <span class="dt">int8_t</span> QUAD_TABLE<span class="op">[</span><span class="dv">16</span><span class="op">]</span> <span class="op">=</span> <span class="op">{</span></span>
-<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a><span class="co">//  new: 00  01  10  11      prev</span></span>
-<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>         <span class="dv">0</span><span class="op">,</span>           <span class="op">-</span><span class="dv">1</span><span class="op">,</span>           <span class="op">+</span><span class="dv">1</span><span class="op">,</span>            QUAD_ILLEGAL<span class="op">,</span>   <span class="co">// 00</span></span>
-<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>        <span class="op">+</span><span class="dv">1</span><span class="op">,</span>            <span class="dv">0</span><span class="op">,</span>            QUAD_ILLEGAL<span class="op">,</span> <span class="op">-</span><span class="dv">1</span><span class="op">,</span>             <span class="co">// 01</span></span>
-<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>        <span class="op">-</span><span class="dv">1</span><span class="op">,</span>            QUAD_ILLEGAL<span class="op">,</span>  <span class="dv">0</span><span class="op">,</span>           <span class="op">+</span><span class="dv">1</span><span class="op">,</span>             <span class="co">// 10</span></span>
-<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>         QUAD_ILLEGAL<span class="op">,</span> <span class="op">+</span><span class="dv">1</span><span class="op">,</span>           <span class="op">-</span><span class="dv">1</span><span class="op">,</span>            <span class="dv">0</span>              <span class="co">// 11</span></span>
-<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a><span class="op">};</span></span>
-<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a><span class="dt">int8_t</span> quadStep<span class="op">(</span><span class="dt">uint8_t</span> prevAB<span class="op">,</span> <span class="dt">uint8_t</span> newAB<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> QUAD_TABLE<span class="op">[((</span>prevAB <span class="op">&amp;</span> <span class="dv">3</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">2</span><span class="op">)</span> <span class="op">|</span> <span class="op">(</span>newAB <span class="op">&amp;</span> <span class="dv">3</span><span class="op">)];</span></span>
-<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a><span class="co">// Speed in millionths of a rev/s (integer, so printf doesn't need float support).</span></span>
-<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a><span class="co">// 64-bit math: dEdges * 1e12 is ~1e17 at full speed, still fits in int64.</span></span>
-<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a><span class="dt">int32_t</span> velocityMicroRevPerSec<span class="op">(</span><span class="dt">int32_t</span> dEdges<span class="op">,</span> <span class="dt">uint32_t</span> dTimeUs<span class="op">,</span> <span class="dt">uint32_t</span> edgesPerRev<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>dTimeUs <span class="op">==</span> <span class="dv">0</span> <span class="op">||</span> edgesPerRev <span class="op">==</span> <span class="dv">0</span><span class="op">)</span> <span class="cf">return</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int64_t</span> num <span class="op">=</span> <span class="op">(</span><span class="dt">int64_t</span><span class="op">)</span>dEdges <span class="op">*</span> URPS_SCALE<span class="op">;</span></span>
-<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int64_t</span> den <span class="op">=</span> <span class="op">(</span><span class="dt">int64_t</span><span class="op">)</span>dTimeUs <span class="op">*</span> <span class="op">(</span><span class="dt">int64_t</span><span class="op">)</span>edgesPerRev<span class="op">;</span></span>
-<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a>    <span class="co">// round to nearest instead of truncating</span></span>
-<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>num <span class="op">&gt;=</span> <span class="dv">0</span><span class="op">)</span> <span class="cf">return</span> <span class="op">(</span><span class="dt">int32_t</span><span class="op">)((</span>num <span class="op">+</span> den <span class="op">/</span> <span class="dv">2</span><span class="op">)</span> <span class="op">/</span> den<span class="op">);</span></span>
-<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>    <span class="cf">else</span>          <span class="cf">return</span> <span class="op">(</span><span class="dt">int32_t</span><span class="op">)((</span>num <span class="op">-</span> den <span class="op">/</span> <span class="dv">2</span><span class="op">)</span> <span class="op">/</span> den<span class="op">);</span></span>
-<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">uint8_t</span> readAB<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> idr <span class="op">=</span> GPIOA<span class="op">-&gt;</span>IDR<span class="op">;</span>   <span class="co">// read both pins in ONE register read</span></span>
-<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> <span class="op">(</span><span class="dt">uint8_t</span><span class="op">)((((</span>idr <span class="op">&gt;&gt;</span> ENCODER_A_NUM<span class="op">)</span> <span class="op">&amp;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">&lt;&lt;</span> <span class="dv">1</span><span class="op">)</span> <span class="op">|</span> <span class="op">((</span>idr <span class="op">&gt;&gt;</span> ENCODER_B_NUM<span class="op">)</span> <span class="op">&amp;</span> <span class="dv">1</span><span class="op">));</span></span>
-<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a><span class="dt">uint32_t</span> micros<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> TIMESTAMP_TIM<span class="op">-&gt;</span>CNT<span class="op">;</span></span>
-<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a><span class="dt">static</span> <span class="dt">void</span> initTimestampTimer<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>    RCC<span class="op">-&gt;</span>APB1ENR1 <span class="op">|=</span> RCC_APB1ENR1_TIM2EN<span class="op">;</span></span>
-<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>PSC <span class="op">=</span> <span class="op">(</span>SystemCoreClock <span class="op">/</span> TIMESTAMP_HZ<span class="op">)</span> <span class="op">-</span> <span class="dv">1</span><span class="op">;</span>  <span class="co">// 80 MHz / 80 = 1 MHz</span></span>
-<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>ARR <span class="op">=</span> <span class="bn">0xFFFFFFFF</span><span class="op">;</span>                        <span class="co">// use all 32 bits</span></span>
-<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>EGR <span class="op">=</span> TIM_EGR_UG<span class="op">;</span>                        <span class="co">// load the prescaler now</span></span>
-<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>SR  <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>CNT <span class="op">=</span> <span class="dv">0</span><span class="op">;</span></span>
-<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>    TIMESTAMP_TIM<span class="op">-&gt;</span>CR1 <span class="op">|=</span> TIM_CR1_CEN<span class="op">;</span></span>
-<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> initEncoder<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>    <span class="co">// GPIO: A and B are plain inputs.</span></span>
-<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>    gpioEnable<span class="op">(</span>GPIO_PORT_A<span class="op">);</span></span>
-<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>ENCODER_A<span class="op">,</span> GPIO_INPUT<span class="op">);</span></span>
-<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>    pinMode<span class="op">(</span>ENCODER_B<span class="op">,</span> GPIO_INPUT<span class="op">);</span></span>
-<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>    <span class="co">// No internal pull-up/pull-down: the encoder drives 5 V, and the datasheet</span></span>
-<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>    <span class="co">// says a FT pin can only take &gt; VDD + 0.3 V with its pull resistors OFF.</span></span>
-<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>    GPIOA<span class="op">-&gt;</span>PUPDR <span class="op">&amp;=</span> <span class="op">~(</span>GPIO_PUPDR_PUPD6 <span class="op">|</span> GPIO_PUPDR_PUPD8<span class="op">);</span></span>
-<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>    initTimestampTimer<span class="op">();</span></span>
-<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>    <span class="co">// SYSCFG: route port A to EXTI6 and EXTI8 (0b000 = port A)</span></span>
-<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>    RCC<span class="op">-&gt;</span>APB2ENR <span class="op">|=</span> RCC_APB2ENR_SYSCFGEN<span class="op">;</span></span>
-<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>    SYSCFG<span class="op">-&gt;</span>EXTICR<span class="op">[</span><span class="dv">1</span><span class="op">]</span> <span class="op">&amp;=</span> <span class="op">~</span>SYSCFG_EXTICR2_EXTI6<span class="op">;</span>   <span class="co">// EXTICR2 holds EXTI4..7</span></span>
-<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>    SYSCFG<span class="op">-&gt;</span>EXTICR<span class="op">[</span><span class="dv">2</span><span class="op">]</span> <span class="op">&amp;=</span> <span class="op">~</span>SYSCFG_EXTICR3_EXTI8<span class="op">;</span>   <span class="co">// EXTICR3 holds EXTI8..11</span></span>
-<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>    <span class="co">// EXTI: unmask, and trigger on both edges</span></span>
-<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> mask <span class="op">=</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_A_NUM<span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_B_NUM<span class="op">);</span></span>
-<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>RTSR1 <span class="op">|=</span> mask<span class="op">;</span></span>
-<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>FTSR1 <span class="op">|=</span> mask<span class="op">;</span></span>
-<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>PR1    <span class="op">=</span> mask<span class="op">;</span>      <span class="co">// clear anything stale (write-1-to-clear)</span></span>
-<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>IMR1  <span class="op">|=</span> mask<span class="op">;</span></span>
-<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a>    lastAB <span class="op">=</span> readAB<span class="op">();</span>        <span class="co">// start the state machine from where the shaft is now</span></span>
-<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-99"><a href="#cb5-99" aria-hidden="true" tabindex="-1"></a>    <span class="co">// NVIC: EXTI lines 5..9 share one interrupt</span></span>
-<span id="cb5-100"><a href="#cb5-100" aria-hidden="true" tabindex="-1"></a>    NVIC_EnableIRQ<span class="op">(</span>EXTI9_5_IRQn<span class="op">);</span></span>
-<span id="cb5-101"><a href="#cb5-101" aria-hidden="true" tabindex="-1"></a>    __enable_irq<span class="op">();</span></span>
-<span id="cb5-102"><a href="#cb5-102" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb5-103"><a href="#cb5-103" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-104"><a href="#cb5-104" aria-hidden="true" tabindex="-1"></a><span class="co">// Copy the ISR's variables with interrupts off for a moment, so position and</span></span>
-<span id="cb5-105"><a href="#cb5-105" aria-hidden="true" tabindex="-1"></a><span class="co">// edgeTime always belong to the same edge.</span></span>
-<span id="cb5-106"><a href="#cb5-106" aria-hidden="true" tabindex="-1"></a>encoder_snapshot_t encoderSnapshot<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-107"><a href="#cb5-107" aria-hidden="true" tabindex="-1"></a>    encoder_snapshot_t s<span class="op">;</span></span>
-<span id="cb5-108"><a href="#cb5-108" aria-hidden="true" tabindex="-1"></a>    __disable_irq<span class="op">();</span></span>
-<span id="cb5-109"><a href="#cb5-109" aria-hidden="true" tabindex="-1"></a>    s<span class="op">.</span>position <span class="op">=</span> position<span class="op">;</span></span>
-<span id="cb5-110"><a href="#cb5-110" aria-hidden="true" tabindex="-1"></a>    s<span class="op">.</span>edgeTime <span class="op">=</span> edgeTime<span class="op">;</span></span>
-<span id="cb5-111"><a href="#cb5-111" aria-hidden="true" tabindex="-1"></a>    s<span class="op">.</span>badEdges <span class="op">=</span> badEdges<span class="op">;</span></span>
-<span id="cb5-112"><a href="#cb5-112" aria-hidden="true" tabindex="-1"></a>    __enable_irq<span class="op">();</span></span>
-<span id="cb5-113"><a href="#cb5-113" aria-hidden="true" tabindex="-1"></a>    <span class="cf">return</span> s<span class="op">;</span></span>
-<span id="cb5-114"><a href="#cb5-114" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span>
-<span id="cb5-115"><a href="#cb5-115" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-116"><a href="#cb5-116" aria-hidden="true" tabindex="-1"></a><span class="co">// Runs on every edge of A or B.</span></span>
-<span id="cb5-117"><a href="#cb5-117" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span> EXTI9_5_IRQHandler<span class="op">(</span><span class="dt">void</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-118"><a href="#cb5-118" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> mask <span class="op">=</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_A_NUM<span class="op">)</span> <span class="op">|</span> <span class="op">(</span><span class="dv">1</span><span class="bu">u</span> <span class="op">&lt;&lt;</span> ENCODER_B_NUM<span class="op">);</span></span>
-<span id="cb5-119"><a href="#cb5-119" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> pending <span class="op">=</span> EXTI<span class="op">-&gt;</span>PR1 <span class="op">&amp;</span> mask<span class="op">;</span></span>
-<span id="cb5-120"><a href="#cb5-120" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(!</span>pending<span class="op">)</span> <span class="cf">return</span><span class="op">;</span></span>
-<span id="cb5-121"><a href="#cb5-121" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-122"><a href="#cb5-122" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Clear FIRST, then read the pins. If another edge lands after this read,</span></span>
-<span id="cb5-123"><a href="#cb5-123" aria-hidden="true" tabindex="-1"></a>    <span class="co">// it sets the flag again and we come right back in, so nothing is lost.</span></span>
-<span id="cb5-124"><a href="#cb5-124" aria-hidden="true" tabindex="-1"></a>    <span class="co">// Note: plain "=" not "|=". PR1 is write-1-to-clear, so "|=" would also</span></span>
-<span id="cb5-125"><a href="#cb5-125" aria-hidden="true" tabindex="-1"></a>    <span class="co">// clear every other pending EXTI line.</span></span>
-<span id="cb5-126"><a href="#cb5-126" aria-hidden="true" tabindex="-1"></a>    EXTI<span class="op">-&gt;</span>PR1 <span class="op">=</span> pending<span class="op">;</span></span>
-<span id="cb5-127"><a href="#cb5-127" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-128"><a href="#cb5-128" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> now <span class="op">=</span> TIMESTAMP_TIM<span class="op">-&gt;</span>CNT<span class="op">;</span></span>
-<span id="cb5-129"><a href="#cb5-129" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint8_t</span>  ab  <span class="op">=</span> readAB<span class="op">();</span></span>
-<span id="cb5-130"><a href="#cb5-130" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int8_t</span>   step <span class="op">=</span> quadStep<span class="op">(</span>lastAB<span class="op">,</span> ab<span class="op">);</span></span>
-<span id="cb5-131"><a href="#cb5-131" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb5-132"><a href="#cb5-132" aria-hidden="true" tabindex="-1"></a>    <span class="cf">if</span> <span class="op">(</span>step <span class="op">==</span> QUAD_ILLEGAL<span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-133"><a href="#cb5-133" aria-hidden="true" tabindex="-1"></a>        badEdges<span class="op">++;</span>            <span class="co">// both changed: an edge was missed, direction unknown</span></span>
-<span id="cb5-134"><a href="#cb5-134" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span> <span class="cf">else</span> <span class="cf">if</span> <span class="op">(</span>step <span class="op">!=</span> <span class="dv">0</span><span class="op">)</span> <span class="op">{</span></span>
-<span id="cb5-135"><a href="#cb5-135" aria-hidden="true" tabindex="-1"></a>        position <span class="op">+=</span> step<span class="op">;</span></span>
-<span id="cb5-136"><a href="#cb5-136" aria-hidden="true" tabindex="-1"></a>        edgeTime  <span class="op">=</span> now<span class="op">;</span></span>
-<span id="cb5-137"><a href="#cb5-137" aria-hidden="true" tabindex="-1"></a>    <span class="op">}</span></span>
-<span id="cb5-138"><a href="#cb5-138" aria-hidden="true" tabindex="-1"></a>    lastAB <span class="op">=</span> ab<span class="op">;</span></span>
-<span id="cb5-139"><a href="#cb5-139" aria-hidden="true" tabindex="-1"></a><span class="op">}</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
-<details>
-<summary>
-encoder.h
-</summary>
-<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode c code-with-copy"><code class="sourceCode c"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// encoder.h</span></span>
-<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Quadrature encoder driver: EXTI interrupts on both channels + a 1 MHz timestamp timer.</span></span>
-<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="pp">#ifndef ENCODER_H</span></span>
-<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_H</span></span>
-<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">&lt;stdint.h&gt;</span></span>
-<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a><span class="pp">#include </span><span class="im">"STM32L432KC.h"</span></span>
-<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a><span class="co">// Encoder pins. Both are 5 V tolerant (FT) on the STM32L432KC</span></span>
-<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a><span class="co">// (datasheet Table 14), and both land on the same EXTI9_5 interrupt line.</span></span>
-<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_A      PA6</span></span>
-<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_B      PA8</span></span>
-<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_A_NUM  </span><span class="dv">6</span></span>
-<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a><span class="pp">#define ENCODER_B_NUM  </span><span class="dv">8</span></span>
-<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a><span class="co">// 32-bit TIM2 runs free at 1 MHz -&gt; 1 count = 1 us, wraps every ~71 min.</span></span>
-<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a><span class="co">// Unsigned subtraction (later - earlier) handles the wrap.</span></span>
-<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a><span class="pp">#define TIMESTAMP_TIM  TIM2</span></span>
-<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a><span class="pp">#define TIMESTAMP_HZ   </span><span class="dv">1000000</span><span class="bu">u</span><span class="pp">   </span><span class="co">// 1 count = 1 us</span></span>
-<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a><span class="co">// A consistent copy of what the ISR has counted so far.</span></span>
-<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a><span class="kw">typedef</span> <span class="kw">struct</span> <span class="op">{</span></span>
-<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    <span class="dt">int32_t</span>  position<span class="op">;</span>   <span class="co">// signed edge count (+ = CW, - = CCW)</span></span>
-<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> edgeTime<span class="op">;</span>   <span class="co">// TIM2 time of the most recent edge (us)</span></span>
-<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="dt">uint32_t</span> badEdges<span class="op">;</span>   <span class="co">// transitions where A and B both changed (missed edge)</span></span>
-<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a><span class="op">}</span> encoder_snapshot_t<span class="op">;</span></span>
-<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a><span class="dt">void</span>     initEncoder<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
-<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a><span class="dt">uint32_t</span> micros<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
-<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a>encoder_snapshot_t encoderSnapshot<span class="op">(</span><span class="dt">void</span><span class="op">);</span></span>
-<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a><span class="co">// Pure helpers (no hardware) so they can be checked on a laptop</span></span>
-<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a><span class="dt">int8_t</span>   quadStep<span class="op">(</span><span class="dt">uint8_t</span> prevAB<span class="op">,</span> <span class="dt">uint8_t</span> newAB<span class="op">);</span></span>
-<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a><span class="dt">int32_t</span>  velocityMicroRevPerSec<span class="op">(</span><span class="dt">int32_t</span> dEdges<span class="op">,</span> <span class="dt">uint32_t</span> dTimeUs<span class="op">,</span> <span class="dt">uint32_t</span> edgesPerRev<span class="op">);</span></span>
-<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a></span>
-<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a><span class="pp">#endif </span><span class="co">// ENCODER_H</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
-</details>
 </section>
 
 </main>

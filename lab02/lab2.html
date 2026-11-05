@@ -107,11 +107,7 @@ pre > code.sourceCode > span > a:first-child::before { text-decoration: underlin
   </ul></li>
   <li><a href="#requirements" id="toc-requirements" class="nav-link" data-scroll-target="#requirements"><span class="header-section-number">4</span> Requirements</a></li>
   <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">5</span> Conclusion</a></li>
-  <li><a href="#ai-prototype-and-reflection" id="toc-ai-prototype-and-reflection" class="nav-link" data-scroll-target="#ai-prototype-and-reflection"><span class="header-section-number">6</span> AI Prototype and Reflection</a>
-  <ul class="collapse">
-  <li><a href="#ai-prototype" id="toc-ai-prototype" class="nav-link" data-scroll-target="#ai-prototype"><span class="header-section-number">6.1</span> AI Prototype</a></li>
-  <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection"><span class="header-section-number">6.2</span> Reflection</a></li>
-  </ul></li>
+  <li><a href="#ai-prototype-and-reflection" id="toc-ai-prototype-and-reflection" class="nav-link" data-scroll-target="#ai-prototype-and-reflection"><span class="header-section-number">6</span> AI Prototype and Reflection</a></li>
   </ul>
 </nav>
 </div>
@@ -864,16 +860,57 @@ pins.pdc
 </section>
 <section id="ai-prototype-and-reflection" class="level1" data-number="6">
 <h1 data-number="6"><span class="header-section-number">6</span> AI Prototype and Reflection</h1>
-<section id="ai-prototype" class="level2" data-number="6.1">
-<h2 data-number="6.1" class="anchored" data-anchor-id="ai-prototype"><span class="header-section-number">6.1</span> AI Prototype</h2>
-</section>
-<section id="reflection" class="level2" data-number="6.2">
-<h2 data-number="6.2" class="anchored" data-anchor-id="reflection"><span class="header-section-number">6.2</span> Reflection</h2>
-<p><strong>How would you rate the quality of the output and why?</strong></p>
-<p><strong>What SystemVerilog constructs/syntax did the LLM generate that were new to you?</strong></p>
-<p><strong>Did the LLM-generated code synthesize the first time around? If not, what were the issues? What error or warning messages did Radiant output?</strong></p>
-<p><strong>What would you do differently the next time you use an LLM in your workflow?</strong></p>
-</section>
+<p>I prompted ChatGPT both with and without context:</p>
+<blockquote class="blockquote">
+<p>Write SystemVerilog HDL to time multiplex a single seven segment decoder (that decodes from four bits to a common anode seven segment display) to decode two sets of input bits and drive two sets of seven output bits.</p>
+</blockquote>
+<p><strong>First try:</strong> It doesn’t actually multiplex. <code>select</code> is just set to 0 inside an <code>always_comb</code>, so it never changes. That means only <code>input1</code> ever gets shown and <code>seg2</code> stays blank forever. There’s no clock either, so nothing could switch over time anyway. The AI caught this eventually but this was the initial response.</p>
+<details>
+<summary>
+First try: select is stuck at 0
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb9"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb9-1"><a href="#cb9-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Alternate between the two inputs</span></span>
+<span id="cb9-2"><a href="#cb9-2" aria-hidden="true" tabindex="-1"></a><span class="kw">always_comb</span> <span class="kw">begin</span></span>
+<span id="cb9-3"><a href="#cb9-3" aria-hidden="true" tabindex="-1"></a>    select = <span class="bn">1'b0</span>;</span>
+<span id="cb9-4"><a href="#cb9-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb9-5"><a href="#cb9-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> (select == <span class="bn">1'b0</span>)</span>
+<span id="cb9-6"><a href="#cb9-6" aria-hidden="true" tabindex="-1"></a>        decoder_input = input1;</span>
+<span id="cb9-7"><a href="#cb9-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb9-8"><a href="#cb9-8" aria-hidden="true" tabindex="-1"></a>        decoder_input = input2;</span>
+<span id="cb9-9"><a href="#cb9-9" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<p><strong>Second try:</strong> It adds a clock and a flip-flop that flips <code>select</code>, so now it actually switches. The layout makes sense (mux into one decoder, then route the output), and the decoder table looks right for common anode. Still some problems though:</p>
+<details>
+<summary>
+Second try: select toggles every clock, outputs on separate buses
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb10"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb10-1"><a href="#cb10-1" aria-hidden="true" tabindex="-1"></a><span class="co">// Toggle display selection on every clock cycle</span></span>
+<span id="cb10-2"><a href="#cb10-2" aria-hidden="true" tabindex="-1"></a><span class="kw">always_ff</span> @(<span class="kw">posedge</span> clk) <span class="kw">begin</span></span>
+<span id="cb10-3"><a href="#cb10-3" aria-hidden="true" tabindex="-1"></a>    select &lt;= ~select;          <span class="co">// no reset, no clock divider</span></span>
+<span id="cb10-4"><a href="#cb10-4" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb10-5"><a href="#cb10-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-6"><a href="#cb10-6" aria-hidden="true" tabindex="-1"></a><span class="co">// Select which input goes to the decoder</span></span>
+<span id="cb10-7"><a href="#cb10-7" aria-hidden="true" tabindex="-1"></a><span class="kw">always_comb</span> <span class="kw">begin</span></span>
+<span id="cb10-8"><a href="#cb10-8" aria-hidden="true" tabindex="-1"></a>    decoder_input = select ? input2 : input1;</span>
+<span id="cb10-9"><a href="#cb10-9" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span>
+<span id="cb10-10"><a href="#cb10-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-11"><a href="#cb10-11" aria-hidden="true" tabindex="-1"></a><span class="co">// Send decoder output to the selected display</span></span>
+<span id="cb10-12"><a href="#cb10-12" aria-hidden="true" tabindex="-1"></a><span class="kw">always_comb</span> <span class="kw">begin</span></span>
+<span id="cb10-13"><a href="#cb10-13" aria-hidden="true" tabindex="-1"></a>    seg1 = <span class="bn">7'b1111111</span>;</span>
+<span id="cb10-14"><a href="#cb10-14" aria-hidden="true" tabindex="-1"></a>    seg2 = <span class="bn">7'b1111111</span>;</span>
+<span id="cb10-15"><a href="#cb10-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb10-16"><a href="#cb10-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">if</span> (select == <span class="bn">1'b0</span>)</span>
+<span id="cb10-17"><a href="#cb10-17" aria-hidden="true" tabindex="-1"></a>        seg1 = decoder_output;</span>
+<span id="cb10-18"><a href="#cb10-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">else</span></span>
+<span id="cb10-19"><a href="#cb10-19" aria-hidden="true" tabindex="-1"></a>        seg2 = decoder_output;</span>
+<span id="cb10-20"><a href="#cb10-20" aria-hidden="true" tabindex="-1"></a><span class="kw">end</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<ul>
+<li><code>select</code> never gets reset, so in simulation it starts as X and stays X forever (flipping X just gives X)</li>
+<li>It switches every clock cycle, which is way too fast for a display. The AI even says to use a clock divider but then doesn’t add one</li>
+<li>It uses two separate 7-bit outputs and just blanks each one half the time. That’s not how real multiplexing works. Normally both digits share the same segment pins and you pick which digit is on with the anode enables (through transistors), which is the whole point because it saves pins. With the AI’s version you use the same number of pins and the displays are just dimmer. To be fair, my prompt literally said “two sets of seven output bits”</li>
+</ul>
+<p>Overall the structure was fine, but it needs more to actually be able to pu tit on the board Next time I’d give more details on the board and oscillator and that both digits share the same segment pins.</p>
 </section>
 
 </main>

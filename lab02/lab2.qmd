@@ -93,27 +93,6 @@ I simulated the counter, the scanner and the top level in QuestaSim, each with a
 ```
 </details>
 
-<details>
-<summary>counter_tb.sv</summary>
-```{.systemverilog}
-{{< include tb/counter_tb.sv >}}
-```
-</details>
-
-<details>
-<summary>scanner_tb.sv</summary>
-```{.systemverilog}
-{{< include tb/scanner_tb.sv >}}
-```
-</details>
-
-<details>
-<summary>lab02_ct_tb.sv</summary>
-```{.systemverilog}
-{{< include tb/lab02_ct_tb.sv >}}
-```
-</details>
-
 ## Pin Assignments
 
 <details>
@@ -173,24 +152,62 @@ Met all proficiency specifications. Spent ~21 hours on this lab.
 
 # AI Prototype and Reflection
 
-## AI Prototype
+I prompted ChatGPT both with and without context:
+
+> Write SystemVerilog HDL to time multiplex a single seven segment decoder (that decodes from four bits to a common anode seven segment display) to decode two sets of input bits and drive two sets of seven output bits.
+
+**First try:** It doesn't actually multiplex. `select` is just set to 0 inside an `always_comb`, so it never changes. That means only `input1` ever gets shown and `seg2` stays blank forever. There's no clock either, so nothing could switch over time anyway. The AI caught this eventually but this was the initial response.
+
+<details>
+<summary>First try: select is stuck at 0</summary>
+
+```systemverilog
+// Alternate between the two inputs
+always_comb begin
+    select = 1'b0;
+
+    if (select == 1'b0)
+        decoder_input = input1;
+    else
+        decoder_input = input2;
+end
+```
+
+</details>
+
+**Second try:** It adds a clock and a flip-flop that flips `select`, so now it actually switches. The layout makes sense (mux into one decoder, then route the output), and the decoder table looks right for common anode. Still some problems though:
+
+<details>
+<summary>Second try: select toggles every clock, outputs on separate buses</summary>
+
+```systemverilog
+// Toggle display selection on every clock cycle
+always_ff @(posedge clk) begin
+    select <= ~select;          // no reset, no clock divider
+end
+
+// Select which input goes to the decoder
+always_comb begin
+    decoder_input = select ? input2 : input1;
+end
+
+// Send decoder output to the selected display
+always_comb begin
+    seg1 = 7'b1111111;
+    seg2 = 7'b1111111;
+
+    if (select == 1'b0)
+        seg1 = decoder_output;
+    else
+        seg2 = decoder_output;
+end
+```
+
+</details>
+
+- `select` never gets reset, so in simulation it starts as X and stays X forever (flipping X just gives X)
+- It switches every clock cycle, which is way too fast for a display. The AI even says to use a clock divider but then doesn't add one
+- It uses two separate 7-bit outputs and just blanks each one half the time. That's not how real multiplexing works. Normally both digits share the same segment pins and you pick which digit is on with the anode enables (through transistors), which is the whole point because it saves pins. With the AI's version you use the same number of pins and the displays are just dimmer. To be fair, my prompt literally said "two sets of seven output bits"
 
 
-
-## Reflection
-
-**How would you rate the quality of the output and why?**
-
-
-
-**What SystemVerilog constructs/syntax did the LLM generate that were new to you?**
-
-
-
-**Did the LLM-generated code synthesize the first time around? If not, what were the issues? What error or warning messages did Radiant output?**
-
-
-
-**What would you do differently the next time you use an LLM in your workflow?**
-
-
+Overall the structure was fine, but it needs more to actually be able to pu tit on the board. Next time I'd give more details on the board and oscillator and that both digits share the same segment pins.

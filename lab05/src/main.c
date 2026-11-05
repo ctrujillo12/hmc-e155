@@ -1,27 +1,18 @@
 // main.c
-// Lab 5: Interrupts — measure a DC motor's speed and direction with a quadrature encoder.
-// Cheyenne Trujillo
-//
-// Every REPORT_PERIOD_US (1 s) this prints something like
-//     speed: +2.4571 rev/s  (CW)
-// to the SEGGER debug terminal through printf (course printf tutorial).
-//
-// Speed = (edges counted) / (time between the first and last of those edges).
-// Using the edge timestamps instead of "edges in the last 1 s" removes the
-// +/- 1 edge rounding error, which matters a lot at low speeds.
+// Lab 5: measures motor speed and direction with a quadrature encoder, prints once a second
+// Cheyenne Trujillo, 2026-11-04
 
 #include "main.h"
 #include <stdio.h>
 
-// Speed is kept in micro-rev/s and printed with 4 decimals (0.0001 rev/s)
-#define URPS_PER_LSB   100     // 1 printed LSB = 0.0001 rev/s = 100 micro-rev/s
-#define DECIMAL_SCALE  10000   // 10^4 -> 4 digits after the decimal point
+#define URPS_PER_LSB   100     // print to 0.0001 rev/s
+#define DECIMAL_SCALE  10000
 
-// Print an integer number of micro-rev/s as e.g. "+2.4571" (4 decimals) without float printf.
+// prints micro-rev/s as e.g. "+2.4571"
 static void printSpeed(int32_t urps) {
     char sign = (urps < 0) ? '-' : '+';
     uint32_t mag = (urps < 0) ? (uint32_t)(-urps) : (uint32_t)urps;
-    mag = (mag + URPS_PER_LSB / 2) / URPS_PER_LSB;   // round to 0.0001 rev/s
+    mag = (mag + URPS_PER_LSB / 2) / URPS_PER_LSB;
     const char *dir = (urps > 0) ? "CW" : (urps < 0) ? "CCW" : "stopped";
     printf("speed: %c%lu.%04lu rev/s  (%s)\n",
            sign, (unsigned long)(mag / DECIMAL_SCALE), (unsigned long)(mag % DECIMAL_SCALE), dir);
@@ -32,11 +23,11 @@ int main(void) {
     configureClock();   // 80 MHz from the PLL
     initEncoder();
 
-    encoder_snapshot_t ref = encoderSnapshot();  // last edge used for the previous speed
+    encoder_snapshot_t ref = encoderSnapshot();
     uint32_t lastReport    = micros();
-    uint32_t lastSnapTime  = lastReport;         // when the previous snapshot was taken
+    uint32_t lastSnapTime  = lastReport;
     uint32_t lastBadEdges  = 0;
-    int32_t  speed_urps    = 0;                  // micro-rev/s, signed
+    int32_t  speed_urps    = 0;                  // micro-rev/s
     int      stopped       = 1;
 
     printf("Lab 5 encoder: %d edges per output rev (gear %d:1)\n", EDGES_PER_REV, GEAR_RATIO);
@@ -44,7 +35,7 @@ int main(void) {
     while (1) {
         uint32_t now = micros();
         if ((uint32_t)(now - lastReport) < REPORT_PERIOD_US) continue;
-        lastReport += REPORT_PERIOD_US;   // fixed 1 Hz cadence, no drift
+        lastReport += REPORT_PERIOD_US;
 
         encoder_snapshot_t s = encoderSnapshot();
         uint32_t prevSnapTime = lastSnapTime;
@@ -53,8 +44,7 @@ int main(void) {
 
         if (dEdges != 0) {
             if (stopped) {
-                // Just started moving. The old reference edge is from before the
-                // stop, so measure from the previous snapshot instead.
+                // just started moving: measure from the last snapshot
                 speed_urps = velocityMicroRevPerSec(dEdges, s.edgeTime - prevSnapTime, EDGES_PER_REV);
                 stopped = 0;
             } else {
@@ -62,12 +52,10 @@ int main(void) {
             }
             ref = s;
         } else if ((uint32_t)(now - ref.edgeTime) > STOP_TIMEOUT_US) {
-            // No edge in a long time -> stopped
             speed_urps = 0;
             stopped = 1;
             ref = s;
         }
-        // else: very slow, no edge this second -> keep showing the last speed
 
         printSpeed(speed_urps);
 

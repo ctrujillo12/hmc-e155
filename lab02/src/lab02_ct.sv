@@ -51,8 +51,8 @@ module lab02_ct #(
     );
 
     // multiplexing
-    assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n;
-    assign digits = digit_sel ? 2'b01 : 2'b10;
+    assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n; // keeps last value
+    assign digits = digit_sel ? 2'b01 : 2'b10; // just enable signal
 
     // single decoder
     seven_segment display_decoder (
@@ -60,10 +60,10 @@ module lab02_ct #(
         .segment(segment)
     );
 
-    // PMOS gates are active-low
+    // for PMOS flip row_active (1 = on) to row_n (0 = on)
     assign row_n = ~row_active;
 
-    // LED pass-through
+    // same as other PMOS so no changes
     assign led = col[2:0];
 
 endmodule
