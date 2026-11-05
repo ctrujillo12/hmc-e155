@@ -14,9 +14,11 @@ ldc_set_location -site {19} [get_ports {switch_n[2]}]
 ldc_set_location -site {11} [get_ports {switch_n[1]}]
 ldc_set_location -site {6}  [get_ports {switch_n[0]}]
 
-# onboard pushbuttons SW0, SW1 (button to GND, internal pull-ups)
-ldc_set_location -site {34} [get_ports {button_n[0]}]
-ldc_set_location -site {43} [get_ports {button_n[1]}]
+# development board DIP switch SW6 (same pins as lab 1), ON = 1; P37 = MSB
+ldc_set_location -site {37} [get_ports {sw6[3]}]
+ldc_set_location -site {31} [get_ports {sw6[2]}]
+ldc_set_location -site {35} [get_ports {sw6[1]}]
+ldc_set_location -site {32} [get_ports {sw6[0]}]
 
 # keypad columns (inputs, external 10k pull-downs to GND; they overpower the internal 100k pull-ups)
 ldc_set_location -site {3}  [get_ports {col[0]}]
@@ -35,7 +37,7 @@ ldc_set_location -site {42} [get_ports {led[0]}]
 ldc_set_location -site {38} [get_ports {led[1]}]
 ldc_set_location -site {28} [get_ports {led[2]}]
 
-# digit enables (to 2N3906 bases through 1k, low = digit on)
+# digit enables (to 2N3906 bases through 330 ohm, low = digit on)
 ldc_set_location -site {20} [get_ports {anode_en_n[0]}]
 ldc_set_location -site {12} [get_ports {anode_en_n[1]}]
 
@@ -48,11 +50,9 @@ ldc_set_location -site {18} [get_ports {segment[4]}]
 ldc_set_location -site {48} [get_ports {segment[5]}]
 ldc_set_location -site {9}  [get_ports {segment[6]}]
 
-# internal 100k pull-ups on all inputs
+# internal 100k pull-ups on reset and the breadboard DIP switch
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports reset_n]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[0]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[1]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[2]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[3]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[0]}]
-ldc_set_port -iobuf {PULLMODE=100K} [get_ports {button_n[1]}]

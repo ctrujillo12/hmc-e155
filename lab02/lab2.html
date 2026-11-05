@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html xmlns="http://www.w3.org/1999/xhtml" lang="en" xml:lang="en"><head>
+
+<meta charset="utf-8">
+<meta name="generator" content="quarto-1.10.18">
+
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=yes">
+
+<meta name="author" content="Cheyenne Trujillo">
+<meta name="dcterms.date" content="2026-11-04">
+
+<title>HMC E155 — Lab 2: Multiplexed 7-Segment Display and Keypad Scanning</title>
+<style>
+/* Default styles provided by pandoc.
+** See https://pandoc.org/MANUAL.html#variables-for-html for config info.
+*/
+span.smallcaps{font-variant: small-caps;}
+div.columns{display: flex; gap: 1.5em;}
+div.column{flex: auto;}
+@media screen {
+div.columns{gap: min(4vw, 1.5em);}
+div.column{overflow-x: auto;}
+}
+div.hanging-indent{margin-left: 1.5em; text-indent: -1.5em;}
+ul.task-list{list-style: none;}
+ul.task-list li input[type="checkbox"] {
+  width: 0.8em;
+  margin: 0 0.8em 0.2em -1em; /* quarto-specific, see https://github.com/quarto-dev/quarto-cli/issues/4556 */ 
+  vertical-align: middle;
+}
+/* CSS for syntax highlighting */
+html { -webkit-text-size-adjust: 100%; }
+pre > code.sourceCode { white-space: pre; position: relative; }
+pre > code.sourceCode > span { display: inline-block; line-height: 1.25; }
+pre > code.sourceCode > span:empty { height: 1.2em; }
+.sourceCode { overflow: visible; }
+code.sourceCode > span { color: inherit; text-decoration: inherit; }
+div.sourceCode { margin: 1em 0; }
+pre.sourceCode { margin: 0; }
+@media screen {
+div.sourceCode { overflow: auto; }
+}
+@media print {
+pre > code.sourceCode { white-space: pre-wrap; }
+pre > code.sourceCode > span { text-indent: -5em; padding-left: 5em; }
+}
+pre.numberSource code
+  { counter-reset: source-line 0; }
+pre.numberSource code > span
+  { position: relative; left: -4em; counter-increment: source-line; }
+pre.numberSource code > span > a:first-child::before
+  { content: counter(source-line);
+    position: relative; left: -1em; text-align: right; vertical-align: baseline;
+    border: none; display: inline-block;
+    -webkit-touch-callout: none; -webkit-user-select: none;
+    -khtml-user-select: none; -moz-user-select: none;
+    -ms-user-select: none; user-select: none;
+    padding: 0 4px; width: 4em;
+  }
+pre.numberSource { margin-left: 3em;  padding-left: 4px; }
+div.sourceCode
+  {   }
+@media screen {
+pre > code.sourceCode > span > a:first-child::before { text-decoration: underline; }
+}
+</style>
+
+
+<script src="lab2_files/libs/clipboard/clipboard.min.js"></script>
+<script src="lab2_files/libs/quarto-html/quarto.js" type="module"></script>
+<script src="lab2_files/libs/quarto-html/tabsets/tabsets.js" type="module"></script>
+<script src="lab2_files/libs/quarto-html/popper.min.js"></script>
+<script src="lab2_files/libs/quarto-html/tippy.umd.min.js"></script>
+<script src="lab2_files/libs/quarto-html/anchor.min.js"></script>
+<link href="lab2_files/libs/quarto-html/tippy.css" rel="stylesheet">
+<link href="lab2_files/libs/quarto-html/quarto-syntax-highlighting-64a204ab8560d761af7679ceaba22944.css" rel="stylesheet" id="quarto-text-highlighting-styles">
+<script src="lab2_files/libs/bootstrap/bootstrap.min.js"></script>
+<link href="lab2_files/libs/bootstrap/bootstrap-icons.css" rel="stylesheet">
+<link href="lab2_files/libs/bootstrap/bootstrap-917079515d91bccb85b543faf8aa8bb6.min.css" rel="stylesheet" append-hash="true" id="quarto-bootstrap" data-mode="light">
+
+
+</head>
+
+<body class="quarto-light">
+
+<div id="quarto-content" class="page-columns page-rows-contents page-layout-article">
+<div id="quarto-margin-sidebar" class="sidebar margin-sidebar">
+  <nav id="TOC" role="doc-toc" class="toc-active">
+    <h2 id="toc-title">Table of contents</h2>
+   
+  <ul>
+  <li><a href="#introduction" id="toc-introduction" class="nav-link active" data-scroll-target="#introduction"><span class="header-section-number">1</span> Introduction</a></li>
+  <li><a href="#design-and-testing-methodology" id="toc-design-and-testing-methodology" class="nav-link" data-scroll-target="#design-and-testing-methodology"><span class="header-section-number">2</span> Design and Testing Methodology</a>
+  <ul class="collapse">
+  <li><a href="#overall-design" id="toc-overall-design" class="nav-link" data-scroll-target="#overall-design"><span class="header-section-number">2.1</span> Overall Design</a></li>
+  <li><a href="#time-multiplexing" id="toc-time-multiplexing" class="nav-link" data-scroll-target="#time-multiplexing"><span class="header-section-number">2.2</span> Time Multiplexing</a></li>
+  <li><a href="#keypad-scanning" id="toc-keypad-scanning" class="nav-link" data-scroll-target="#keypad-scanning"><span class="header-section-number">2.3</span> Keypad Scanning</a></li>
+  <li><a href="#testing-methodology" id="toc-testing-methodology" class="nav-link" data-scroll-target="#testing-methodology"><span class="header-section-number">2.4</span> Testing Methodology</a></li>
+  </ul></li>
+  <li><a href="#technical-documentation" id="toc-technical-documentation" class="nav-link" data-scroll-target="#technical-documentation"><span class="header-section-number">3</span> Technical Documentation</a>
+  <ul class="collapse">
+  <li><a href="#verilog-source-code" id="toc-verilog-source-code" class="nav-link" data-scroll-target="#verilog-source-code"><span class="header-section-number">3.1</span> Verilog Source Code</a></li>
+  <li><a href="#pin-assignments" id="toc-pin-assignments" class="nav-link" data-scroll-target="#pin-assignments"><span class="header-section-number">3.2</span> Pin Assignments</a></li>
+  <li><a href="#block-diagram" id="toc-block-diagram" class="nav-link" data-scroll-target="#block-diagram"><span class="header-section-number">3.3</span> Block Diagram</a></li>
+  <li><a href="#hardware-schematic" id="toc-hardware-schematic" class="nav-link" data-scroll-target="#hardware-schematic"><span class="header-section-number">3.4</span> Hardware Schematic</a></li>
+  <li><a href="#current-calculations" id="toc-current-calculations" class="nav-link" data-scroll-target="#current-calculations"><span class="header-section-number">3.5</span> Current Calculations</a></li>
+  </ul></li>
+  <li><a href="#simulation-results" id="toc-simulation-results" class="nav-link" data-scroll-target="#simulation-results"><span class="header-section-number">4</span> Simulation Results</a>
+  <ul class="collapse">
+  <li><a href="#counter-test" id="toc-counter-test" class="nav-link" data-scroll-target="#counter-test"><span class="header-section-number">4.1</span> Counter Test</a></li>
+  <li><a href="#scanner-test" id="toc-scanner-test" class="nav-link" data-scroll-target="#scanner-test"><span class="header-section-number">4.2</span> Scanner Test</a></li>
+  <li><a href="#top-level-test" id="toc-top-level-test" class="nav-link" data-scroll-target="#top-level-test"><span class="header-section-number">4.3</span> Top-Level Test</a></li>
+  </ul></li>
+  <li><a href="#requirements-checklist" id="toc-requirements-checklist" class="nav-link" data-scroll-target="#requirements-checklist"><span class="header-section-number">5</span> Requirements Checklist</a></li>
+  <li><a href="#conclusion" id="toc-conclusion" class="nav-link" data-scroll-target="#conclusion"><span class="header-section-number">6</span> Conclusion</a></li>
+  <li><a href="#ai-prototype-and-reflection" id="toc-ai-prototype-and-reflection" class="nav-link" data-scroll-target="#ai-prototype-and-reflection"><span class="header-section-number">7</span> AI Prototype and Reflection</a>
+  <ul class="collapse">
+  <li><a href="#ai-prototype" id="toc-ai-prototype" class="nav-link" data-scroll-target="#ai-prototype"><span class="header-section-number">7.1</span> AI Prototype</a></li>
+  <li><a href="#reflection" id="toc-reflection" class="nav-link" data-scroll-target="#reflection"><span class="header-section-number">7.2</span> Reflection</a></li>
+  </ul></li>
+  </ul>
+</nav>
+</div>
+<main class="content" id="quarto-document-content">
+
+<header id="title-block-header" class="quarto-title-block default">
+<div class="quarto-title">
+<h1 class="title">HMC E155 — Lab 2: Multiplexed 7-Segment Display and Keypad Scanning</h1>
+</div>
+
+
+
+<div class="quarto-title-meta">
+
+    <div>
+    <div class="quarto-title-meta-heading">Author</div>
+    <div class="quarto-title-meta-contents">
+             <p>Cheyenne Trujillo </p>
+          </div>
+  </div>
+    
+    <div>
+    <div class="quarto-title-meta-heading">Published</div>
+    <div class="quarto-title-meta-contents">
+      <p class="date">November 4, 2026</p>
+    </div>
+  </div>
+  
+    
+  </div>
+  
+
+
+</header>
+
+
+<section id="introduction" class="level1" data-number="1">
+<h1 data-number="1"><span class="header-section-number">1</span> Introduction</h1>
+<p>In this lab, I used one seven segment decoder to drive both digits of a dual seven segment display by time multiplexing between them. Each digit’s common anode is turned on and off with a transistor, so only one digit is on at a time but it switches fast enough that you can’t tell. The left digit shows a 4-bit number from a DIP switch I put on the breadboard and the right digit shows a 4-bit number from the SW6 DIP switch on the dev board. I also scanned a 4x4 keypad and hooked columns 1-3 up to LEDs, so when you hold down a key in one of those columns the LED blinks when the scanner gets to that row.</p>
+</section>
+<section id="design-and-testing-methodology" class="level1" data-number="2">
+<h1 data-number="2"><span class="header-section-number">2</span> Design and Testing Methodology</h1>
+<section id="overall-design" class="level2" data-number="2.1">
+<h2 data-number="2.1" class="anchored" data-anchor-id="overall-design"><span class="header-section-number">2.1</span> Overall Design</h2>
+<p>I organized the design into a top level module, a counter, a scanner and the seven segment decoder from lab 1.</p>
+<ul>
+<li><a href="#lab02_ct-sv"><code>lab02_ct.sv</code></a>: top level module, connects everything and does the multiplexing and LED logic</li>
+<li><a href="#counter-sv"><code>counter.sv</code></a>: lab 1 counter, only change is that count is an output now</li>
+<li><a href="#scanner-sv"><code>scanner.sv</code></a>: keypad scanner, uses a counter to pick which row is on</li>
+<li><a href="#seven_segment-sv"><code>seven_segment.sv</code></a>: lab 1 decoder, didn’t change it</li>
+</ul>
+</section>
+<section id="time-multiplexing" class="level2" data-number="2.2">
+<h2 data-number="2.2" class="anchored" data-anchor-id="time-multiplexing"><span class="header-section-number">2.2</span> Time Multiplexing</h2>
+<p>The oscillator is 24 MHz, and I want each digit on for 1 ms. N = 24×10⁶ × 0.001 = 24,000 cycles. So mux_counter toggles digit_sel every 24,000 cycles. digit_sel picks what goes into the decoder (breadboard DIP switch or SW6) and which digit gets turned on with anode_en_n.&nbsp;Each digit is on 1 ms out of every 2 ms, so the refresh rate is 500 Hz and it doesn’t flicker.</p>
+<p>The breadboard DIP switch connects the pin to ground when it’s ON, so i invert it in the top level. SW6 reads 1 when it’s ON like in lab 1, so that one doesn’t get inverted.</p>
+</section>
+<section id="keypad-scanning" class="level2" data-number="2.3">
+<h2 data-number="2.3" class="anchored" data-anchor-id="keypad-scanning"><span class="header-section-number">2.3</span> Keypad Scanning</h2>
+<p>The scanner uses a counter to rotate which row is on: 1000, 0100, 0010, 0001. Each row is on for 0.25 s, so N = 24×10⁶ × 0.25 = 6,000,000 cycles per row, and each row bit toggles at 2 Hz. Each row goes to a TP2104 PMOS that pulls the keypad row up to 3.3 V when that row is on. If you press a key in the row that’s on, it pulls its column high, and the top level just copies columns 1-3 to LEDs D6-D8.</p>
+</section>
+<section id="testing-methodology" class="level2" data-number="2.4">
+<h2 data-number="2.4" class="anchored" data-anchor-id="testing-methodology"><span class="header-section-number">2.4</span> Testing Methodology</h2>
+<p>I didn’t change the decoder from lab 1 so I didn’t re-simulate it (<a href="../lab01/lab1.html#seven-segment-decoder-test">lab 1 simulation</a>). I made self-checking testbenches for the counter (since I changed it), the scanner and the top level.</p>
+</section>
+</section>
+<section id="technical-documentation" class="level1" data-number="3">
+<h1 data-number="3"><span class="header-section-number">3</span> Technical Documentation</h1>
+<section id="verilog-source-code" class="level2" data-number="3.1">
+<h2 data-number="3.1" class="anchored" data-anchor-id="verilog-source-code"><span class="header-section-number">3.1</span> Verilog Source Code</h2>
+<details id="lab02_ct-sv">
+<summary>
+lab02_ct.sv: top level
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb1"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb1-1"><a href="#cb1-1" aria-hidden="true" tabindex="-1"></a><span class="co">// lab02_ct: top level.</span></span>
+<span id="cb1-2"><a href="#cb1-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Time-multiplexes one seven-segment decoder across the two digits of an HDSP-521A</span></span>
+<span id="cb1-3"><a href="#cb1-3" aria-hidden="true" tabindex="-1"></a><span class="co">// (common-anode dual display), each anode switched high-side by a 2N3906 PNP:</span></span>
+<span id="cb1-4"><a href="#cb1-4" aria-hidden="true" tabindex="-1"></a><span class="co">//   digit 0 = breadboard DIP switch (4 bits), digit 1 = development board DIP switch SW6 (4 bits).</span></span>
+<span id="cb1-5"><a href="#cb1-5" aria-hidden="true" tabindex="-1"></a><span class="co">// Scans a 4x4 keypad (rows driven high through TP2104 PMOS, open-drain style, with pull-downs)</span></span>
+<span id="cb1-6"><a href="#cb1-6" aria-hidden="true" tabindex="-1"></a><span class="co">// and passes columns 1-3 to LEDs</span></span>
+<span id="cb1-7"><a href="#cb1-7" aria-hidden="true" tabindex="-1"></a><span class="co">// (column 4 has no LED: no FPGA pin was left to reach one).</span></span>
+<span id="cb1-8"><a href="#cb1-8" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> lab02_ct #(</span>
+<span id="cb1-9"><a href="#cb1-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">parameter</span> <span class="kw">int</span> <span class="kw">unsigned</span> MUX_TOGGLE_CYCLES   = <span class="dv">24</span>_000,    <span class="co">// 1 ms per digit at 24 MHz</span></span>
+<span id="cb1-10"><a href="#cb1-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">parameter</span> <span class="kw">int</span> <span class="kw">unsigned</span> SCAN_CYCLES_PER_ROW = <span class="dv">6</span>_000_000  <span class="co">// 0.25 s per row: each row bit toggles at 2 Hz</span></span>
+<span id="cb1-11"><a href="#cb1-11" aria-hidden="true" tabindex="-1"></a>)(</span>
+<span id="cb1-12"><a href="#cb1-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>       reset_n,     <span class="co">// active-low reset (internal pull-up keeps it high)</span></span>
+<span id="cb1-13"><a href="#cb1-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] switch_n,    <span class="co">// breadboard DIP switch to GND, ON = 0</span></span>
+<span id="cb1-14"><a href="#cb1-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] sw6,         <span class="co">// development board DIP switch SW6, ON = 1</span></span>
+<span id="cb1-15"><a href="#cb1-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] col,         <span class="co">// keypad columns, 1 = key pressed in the active row</span></span>
+<span id="cb1-16"><a href="#cb1-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] row_n,       <span class="co">// keypad row PMOS gates, 0 = row pulled high (active)</span></span>
+<span id="cb1-17"><a href="#cb1-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">2</span>:<span class="dv">0</span>] led,         <span class="co">// keypad columns 1-3 pass-through, 1 = on</span></span>
+<span id="cb1-18"><a href="#cb1-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">1</span>:<span class="dv">0</span>] anode_en_n,  <span class="co">// digit PNP bases, 0 = digit on</span></span>
+<span id="cb1-19"><a href="#cb1-19" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">6</span>:<span class="dv">0</span>] segment      <span class="co">// {g,f,e,d,c,b,a}, 0 = lit</span></span>
+<span id="cb1-20"><a href="#cb1-20" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb1-21"><a href="#cb1-21" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-22"><a href="#cb1-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>                                 int_osc;</span>
+<span id="cb1-23"><a href="#cb1-23" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>                                 digit_sel;</span>
+<span id="cb1-24"><a href="#cb1-24" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="kw">$clog2</span>(MUX_TOGGLE_CYCLES)-<span class="dv">1</span>:<span class="dv">0</span>] mux_count_unused;</span>
+<span id="cb1-25"><a href="#cb1-25" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>]                           digit_value;</span>
+<span id="cb1-26"><a href="#cb1-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>]                           row_active;</span>
+<span id="cb1-27"><a href="#cb1-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-28"><a href="#cb1-28" aria-hidden="true" tabindex="-1"></a>    <span class="co">// internal oscillator, 24 MHz</span></span>
+<span id="cb1-29"><a href="#cb1-29" aria-hidden="true" tabindex="-1"></a>    HSOSC #<span class="dt">(.CLKHF_DIV</span>(<span class="bn">2'b01</span>))</span>
+<span id="cb1-30"><a href="#cb1-30" aria-hidden="true" tabindex="-1"></a>        hf_osc (</span>
+<span id="cb1-31"><a href="#cb1-31" aria-hidden="true" tabindex="-1"></a>            .CLKHFPU(<span class="bn">1'b1</span>),</span>
+<span id="cb1-32"><a href="#cb1-32" aria-hidden="true" tabindex="-1"></a>            .CLKHFEN(<span class="bn">1'b1</span>),</span>
+<span id="cb1-33"><a href="#cb1-33" aria-hidden="true" tabindex="-1"></a>            .CLKHF(int_osc)</span>
+<span id="cb1-34"><a href="#cb1-34" aria-hidden="true" tabindex="-1"></a>        );</span>
+<span id="cb1-35"><a href="#cb1-35" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-36"><a href="#cb1-36" aria-hidden="true" tabindex="-1"></a>    <span class="co">// digit select: toggles every MUX_TOGGLE_CYCLES</span></span>
+<span id="cb1-37"><a href="#cb1-37" aria-hidden="true" tabindex="-1"></a>    counter #(</span>
+<span id="cb1-38"><a href="#cb1-38" aria-hidden="true" tabindex="-1"></a>        .MAX_COUNT(MUX_TOGGLE_CYCLES)</span>
+<span id="cb1-39"><a href="#cb1-39" aria-hidden="true" tabindex="-1"></a>    ) mux_counter (</span>
+<span id="cb1-40"><a href="#cb1-40" aria-hidden="true" tabindex="-1"></a>        .clk(int_osc),</span>
+<span id="cb1-41"><a href="#cb1-41" aria-hidden="true" tabindex="-1"></a>        .reset(reset_n),</span>
+<span id="cb1-42"><a href="#cb1-42" aria-hidden="true" tabindex="-1"></a>        .enable(<span class="bn">1'b1</span>),</span>
+<span id="cb1-43"><a href="#cb1-43" aria-hidden="true" tabindex="-1"></a>        .count(mux_count_unused),</span>
+<span id="cb1-44"><a href="#cb1-44" aria-hidden="true" tabindex="-1"></a>        .blink(digit_sel)</span>
+<span id="cb1-45"><a href="#cb1-45" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb1-46"><a href="#cb1-46" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-47"><a href="#cb1-47" aria-hidden="true" tabindex="-1"></a>    <span class="co">// keypad row scanner</span></span>
+<span id="cb1-48"><a href="#cb1-48" aria-hidden="true" tabindex="-1"></a>    scanner #(</span>
+<span id="cb1-49"><a href="#cb1-49" aria-hidden="true" tabindex="-1"></a>        .CYCLES_PER_ROW(SCAN_CYCLES_PER_ROW)</span>
+<span id="cb1-50"><a href="#cb1-50" aria-hidden="true" tabindex="-1"></a>    ) keypad_scanner (</span>
+<span id="cb1-51"><a href="#cb1-51" aria-hidden="true" tabindex="-1"></a>        .clk(int_osc),</span>
+<span id="cb1-52"><a href="#cb1-52" aria-hidden="true" tabindex="-1"></a>        .reset(reset_n),</span>
+<span id="cb1-53"><a href="#cb1-53" aria-hidden="true" tabindex="-1"></a>        .enable(<span class="bn">1'b1</span>),</span>
+<span id="cb1-54"><a href="#cb1-54" aria-hidden="true" tabindex="-1"></a>        .row(row_active)</span>
+<span id="cb1-55"><a href="#cb1-55" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb1-56"><a href="#cb1-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-57"><a href="#cb1-57" aria-hidden="true" tabindex="-1"></a>    <span class="co">// multiplexing</span></span>
+<span id="cb1-58"><a href="#cb1-58" aria-hidden="true" tabindex="-1"></a>    <span class="kw">assign</span> digit_value = digit_sel ? sw6 : ~switch_n;</span>
+<span id="cb1-59"><a href="#cb1-59" aria-hidden="true" tabindex="-1"></a>    <span class="kw">assign</span> anode_en_n = digit_sel ? <span class="bn">2'b01</span> : <span class="bn">2'b10</span>;</span>
+<span id="cb1-60"><a href="#cb1-60" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-61"><a href="#cb1-61" aria-hidden="true" tabindex="-1"></a>    <span class="co">// single decoder (lab 1, active-low segments: 0 = lit)</span></span>
+<span id="cb1-62"><a href="#cb1-62" aria-hidden="true" tabindex="-1"></a>    seven_segment display_decoder (</span>
+<span id="cb1-63"><a href="#cb1-63" aria-hidden="true" tabindex="-1"></a>        .<span class="kw">s</span>(digit_value),</span>
+<span id="cb1-64"><a href="#cb1-64" aria-hidden="true" tabindex="-1"></a>        .segment(segment)</span>
+<span id="cb1-65"><a href="#cb1-65" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb1-66"><a href="#cb1-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-67"><a href="#cb1-67" aria-hidden="true" tabindex="-1"></a>    <span class="co">// PMOS gates are active-low</span></span>
+<span id="cb1-68"><a href="#cb1-68" aria-hidden="true" tabindex="-1"></a>    <span class="kw">assign</span> row_n = ~row_active;</span>
+<span id="cb1-69"><a href="#cb1-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-70"><a href="#cb1-70" aria-hidden="true" tabindex="-1"></a>    <span class="co">// LED pass-through: LED on when its column is pulled high</span></span>
+<span id="cb1-71"><a href="#cb1-71" aria-hidden="true" tabindex="-1"></a>    <span class="kw">assign</span> led = col[<span class="dv">2</span>:<span class="dv">0</span>];</span>
+<span id="cb1-72"><a href="#cb1-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb1-73"><a href="#cb1-73" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="counter-sv">
+<summary>
+counter.sv: lab 1 counter with a count output
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb2"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb2-1"><a href="#cb2-1" aria-hidden="true" tabindex="-1"></a><span class="co">// counter: lab 1 counter, reused for lab 2.</span></span>
+<span id="cb2-2"><a href="#cb2-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Sequential, asynchronous active-low reset.</span></span>
+<span id="cb2-3"><a href="#cb2-3" aria-hidden="true" tabindex="-1"></a><span class="co">// While enable is high, count runs 0 .. MAX_COUNT-1 and wraps; blink toggles on every wrap.</span></span>
+<span id="cb2-4"><a href="#cb2-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Lab 2 change: count is now an output port so the scanner can decode it.</span></span>
+<span id="cb2-5"><a href="#cb2-5" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> counter #(</span>
+<span id="cb2-6"><a href="#cb2-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">parameter</span> <span class="kw">int</span> <span class="kw">unsigned</span> MAX_COUNT = <span class="dv">10</span>_000_000</span>
+<span id="cb2-7"><a href="#cb2-7" aria-hidden="true" tabindex="-1"></a>)(</span>
+<span id="cb2-8"><a href="#cb2-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>                         clk,</span>
+<span id="cb2-9"><a href="#cb2-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>                         reset,</span>
+<span id="cb2-10"><a href="#cb2-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>                         enable,</span>
+<span id="cb2-11"><a href="#cb2-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="kw">$clog2</span>(MAX_COUNT)-<span class="dv">1</span>:<span class="dv">0</span>] count,</span>
+<span id="cb2-12"><a href="#cb2-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span>                         blink</span>
+<span id="cb2-13"><a href="#cb2-13" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb2-14"><a href="#cb2-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-15"><a href="#cb2-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always_ff</span> @(<span class="kw">posedge</span> clk, <span class="kw">negedge</span> reset) <span class="kw">begin</span></span>
+<span id="cb2-16"><a href="#cb2-16" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (!reset) <span class="kw">begin</span></span>
+<span id="cb2-17"><a href="#cb2-17" aria-hidden="true" tabindex="-1"></a>            count &lt;= <span class="dv">0</span>;</span>
+<span id="cb2-18"><a href="#cb2-18" aria-hidden="true" tabindex="-1"></a>            blink &lt;= <span class="dv">0</span>;</span>
+<span id="cb2-19"><a href="#cb2-19" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb2-20"><a href="#cb2-20" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span> <span class="kw">if</span> (enable) <span class="kw">begin</span></span>
+<span id="cb2-21"><a href="#cb2-21" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> (count == MAX_COUNT - <span class="dv">1</span>) <span class="kw">begin</span></span>
+<span id="cb2-22"><a href="#cb2-22" aria-hidden="true" tabindex="-1"></a>                count &lt;= <span class="dv">0</span>;</span>
+<span id="cb2-23"><a href="#cb2-23" aria-hidden="true" tabindex="-1"></a>                blink &lt;= ~blink; <span class="co">// toggle on wrap</span></span>
+<span id="cb2-24"><a href="#cb2-24" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb2-25"><a href="#cb2-25" aria-hidden="true" tabindex="-1"></a>            <span class="kw">else</span> <span class="kw">begin</span></span>
+<span id="cb2-26"><a href="#cb2-26" aria-hidden="true" tabindex="-1"></a>                count &lt;= count + <span class="dv">1</span>;</span>
+<span id="cb2-27"><a href="#cb2-27" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb2-28"><a href="#cb2-28" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb2-29"><a href="#cb2-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb2-30"><a href="#cb2-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb2-31"><a href="#cb2-31" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="scanner-sv">
+<summary>
+scanner.sv: keypad row scanner
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb3"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb3-1"><a href="#cb3-1" aria-hidden="true" tabindex="-1"></a><span class="co">// scanner: keypad row scanner.</span></span>
+<span id="cb3-2"><a href="#cb3-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Sequential (counter state), asynchronous active-low reset, enable holds the current row.</span></span>
+<span id="cb3-3"><a href="#cb3-3" aria-hidden="true" tabindex="-1"></a><span class="co">// row rotates 1000 -&gt; 0100 -&gt; 0010 -&gt; 0001, spending CYCLES_PER_ROW clock cycles on each.</span></span>
+<span id="cb3-4"><a href="#cb3-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Non-canonical state machine: the counter is the state, the assign is the output logic.</span></span>
+<span id="cb3-5"><a href="#cb3-5" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> scanner #(</span>
+<span id="cb3-6"><a href="#cb3-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">parameter</span> <span class="kw">int</span> <span class="kw">unsigned</span> CYCLES_PER_ROW = <span class="dv">6</span>_000_000 <span class="co">// 0.25 s at 24 MHz</span></span>
+<span id="cb3-7"><a href="#cb3-7" aria-hidden="true" tabindex="-1"></a>)(</span>
+<span id="cb3-8"><a href="#cb3-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>       clk,</span>
+<span id="cb3-9"><a href="#cb3-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>       reset,</span>
+<span id="cb3-10"><a href="#cb3-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span>       enable,</span>
+<span id="cb3-11"><a href="#cb3-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] row</span>
+<span id="cb3-12"><a href="#cb3-12" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb3-13"><a href="#cb3-13" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-14"><a href="#cb3-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">localparam</span> <span class="kw">int</span> <span class="kw">unsigned</span> SCAN_PERIOD = <span class="dv">4</span> * CYCLES_PER_ROW;</span>
+<span id="cb3-15"><a href="#cb3-15" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-16"><a href="#cb3-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="kw">$clog2</span>(SCAN_PERIOD)-<span class="dv">1</span>:<span class="dv">0</span>] scan_count;</span>
+<span id="cb3-17"><a href="#cb3-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>                           scan_wrap_unused;</span>
+<span id="cb3-18"><a href="#cb3-18" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-19"><a href="#cb3-19" aria-hidden="true" tabindex="-1"></a>    counter #(</span>
+<span id="cb3-20"><a href="#cb3-20" aria-hidden="true" tabindex="-1"></a>        .MAX_COUNT(SCAN_PERIOD)</span>
+<span id="cb3-21"><a href="#cb3-21" aria-hidden="true" tabindex="-1"></a>    ) scan_counter (</span>
+<span id="cb3-22"><a href="#cb3-22" aria-hidden="true" tabindex="-1"></a>        .clk(clk),</span>
+<span id="cb3-23"><a href="#cb3-23" aria-hidden="true" tabindex="-1"></a>        .reset(reset),</span>
+<span id="cb3-24"><a href="#cb3-24" aria-hidden="true" tabindex="-1"></a>        .enable(enable),</span>
+<span id="cb3-25"><a href="#cb3-25" aria-hidden="true" tabindex="-1"></a>        .count(scan_count),</span>
+<span id="cb3-26"><a href="#cb3-26" aria-hidden="true" tabindex="-1"></a>        .blink(scan_wrap_unused)</span>
+<span id="cb3-27"><a href="#cb3-27" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb3-28"><a href="#cb3-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-29"><a href="#cb3-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">assign</span> row = (scan_count &lt; CYCLES_PER_ROW)     ? <span class="bn">4'b1000</span> :</span>
+<span id="cb3-30"><a href="#cb3-30" aria-hidden="true" tabindex="-1"></a>                 (scan_count &lt; <span class="dv">2</span> * CYCLES_PER_ROW) ? <span class="bn">4'b0100</span> :</span>
+<span id="cb3-31"><a href="#cb3-31" aria-hidden="true" tabindex="-1"></a>                 (scan_count &lt; <span class="dv">3</span> * CYCLES_PER_ROW) ? <span class="bn">4'b0010</span> :</span>
+<span id="cb3-32"><a href="#cb3-32" aria-hidden="true" tabindex="-1"></a>                                                     <span class="bn">4'b0001</span>;</span>
+<span id="cb3-33"><a href="#cb3-33" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb3-34"><a href="#cb3-34" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details id="seven_segment-sv">
+<summary>
+seven_segment.sv: lab 1 decoder (unchanged)
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb4"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb4-1"><a href="#cb4-1" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> seven_segment(</span>
+<span id="cb4-2"><a href="#cb4-2" aria-hidden="true" tabindex="-1"></a>    <span class="kw">input</span>  <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] <span class="kw">s</span>,</span>
+<span id="cb4-3"><a href="#cb4-3" aria-hidden="true" tabindex="-1"></a>    <span class="kw">output</span> <span class="kw">logic</span> [<span class="dv">6</span>:<span class="dv">0</span>] segment</span>
+<span id="cb4-4"><a href="#cb4-4" aria-hidden="true" tabindex="-1"></a>);</span>
+<span id="cb4-5"><a href="#cb4-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-6"><a href="#cb4-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always_comb</span> <span class="kw">begin</span></span>
+<span id="cb4-7"><a href="#cb4-7" aria-hidden="true" tabindex="-1"></a>        <span class="kw">case</span> (<span class="kw">s</span>)</span>
+<span id="cb4-8"><a href="#cb4-8" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h0</span>: segment = <span class="bn">7'b1000000</span>;</span>
+<span id="cb4-9"><a href="#cb4-9" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h1</span>: segment = <span class="bn">7'b1111001</span>;</span>
+<span id="cb4-10"><a href="#cb4-10" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h2</span>: segment = <span class="bn">7'b0100100</span>;</span>
+<span id="cb4-11"><a href="#cb4-11" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h3</span>: segment = <span class="bn">7'b0110000</span>;</span>
+<span id="cb4-12"><a href="#cb4-12" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h4</span>: segment = <span class="bn">7'b0011001</span>;</span>
+<span id="cb4-13"><a href="#cb4-13" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h5</span>: segment = <span class="bn">7'b0010010</span>;</span>
+<span id="cb4-14"><a href="#cb4-14" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h6</span>: segment = <span class="bn">7'b0000010</span>;</span>
+<span id="cb4-15"><a href="#cb4-15" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h7</span>: segment = <span class="bn">7'b1111000</span>;</span>
+<span id="cb4-16"><a href="#cb4-16" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h8</span>: segment = <span class="bn">7'b0000000</span>;</span>
+<span id="cb4-17"><a href="#cb4-17" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h9</span>: segment = <span class="bn">7'b0010000</span>;</span>
+<span id="cb4-18"><a href="#cb4-18" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hA</span>: segment = <span class="bn">7'b0001000</span>;</span>
+<span id="cb4-19"><a href="#cb4-19" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hB</span>: segment = <span class="bn">7'b0000011</span>;</span>
+<span id="cb4-20"><a href="#cb4-20" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hC</span>: segment = <span class="bn">7'b1000110</span>;</span>
+<span id="cb4-21"><a href="#cb4-21" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hD</span>: segment = <span class="bn">7'b0100001</span>;</span>
+<span id="cb4-22"><a href="#cb4-22" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hE</span>: segment = <span class="bn">7'b0000110</span>;</span>
+<span id="cb4-23"><a href="#cb4-23" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hF</span>: segment = <span class="bn">7'b0001110</span>;</span>
+<span id="cb4-24"><a href="#cb4-24" aria-hidden="true" tabindex="-1"></a>            <span class="kw">default</span>: segment = <span class="bn">7'b1111111</span>;</span>
+<span id="cb4-25"><a href="#cb4-25" aria-hidden="true" tabindex="-1"></a>        <span class="kw">endcase</span></span>
+<span id="cb4-26"><a href="#cb4-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb4-27"><a href="#cb4-27" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb4-28"><a href="#cb4-28" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details>
+<summary>
+counter_tb.sv
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb5"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb5-1"><a href="#cb5-1" aria-hidden="true" tabindex="-1"></a><span class="co">// counter_tb: automatic testbench for counter (re-verifies the lab 1 counter after adding the count output).</span></span>
+<span id="cb5-2"><a href="#cb5-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Checks: reset values, counting and wrap, blink toggling on wrap, enable hold, asynchronous reset.</span></span>
+<span id="cb5-3"><a href="#cb5-3" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> counter_tb();</span>
+<span id="cb5-4"><a href="#cb5-4" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-5"><a href="#cb5-5" aria-hidden="true" tabindex="-1"></a>    <span class="kw">localparam</span> <span class="kw">int</span> <span class="kw">unsigned</span> MAX_COUNT = <span class="dv">5</span>;</span>
+<span id="cb5-6"><a href="#cb5-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-7"><a href="#cb5-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>                         clk, reset, enable;</span>
+<span id="cb5-8"><a href="#cb5-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="kw">$clog2</span>(MAX_COUNT)-<span class="dv">1</span>:<span class="dv">0</span>] count;</span>
+<span id="cb5-9"><a href="#cb5-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>                         blink;</span>
+<span id="cb5-10"><a href="#cb5-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-11"><a href="#cb5-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">int</span>   errors;</span>
+<span id="cb5-12"><a href="#cb5-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">int</span>   expected_count;</span>
+<span id="cb5-13"><a href="#cb5-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> expected_blink;</span>
+<span id="cb5-14"><a href="#cb5-14" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-15"><a href="#cb5-15" aria-hidden="true" tabindex="-1"></a>    counter #(</span>
+<span id="cb5-16"><a href="#cb5-16" aria-hidden="true" tabindex="-1"></a>        .MAX_COUNT(MAX_COUNT)</span>
+<span id="cb5-17"><a href="#cb5-17" aria-hidden="true" tabindex="-1"></a>    ) dut (</span>
+<span id="cb5-18"><a href="#cb5-18" aria-hidden="true" tabindex="-1"></a>        .clk(clk),</span>
+<span id="cb5-19"><a href="#cb5-19" aria-hidden="true" tabindex="-1"></a>        .reset(reset),</span>
+<span id="cb5-20"><a href="#cb5-20" aria-hidden="true" tabindex="-1"></a>        .enable(enable),</span>
+<span id="cb5-21"><a href="#cb5-21" aria-hidden="true" tabindex="-1"></a>        .count(count),</span>
+<span id="cb5-22"><a href="#cb5-22" aria-hidden="true" tabindex="-1"></a>        .blink(blink)</span>
+<span id="cb5-23"><a href="#cb5-23" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb5-24"><a href="#cb5-24" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-25"><a href="#cb5-25" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 10 ns clock</span></span>
+<span id="cb5-26"><a href="#cb5-26" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always</span> <span class="kw">begin</span></span>
+<span id="cb5-27"><a href="#cb5-27" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">1</span>; <span class="bn">#5</span>;</span>
+<span id="cb5-28"><a href="#cb5-28" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">0</span>; <span class="bn">#5</span>;</span>
+<span id="cb5-29"><a href="#cb5-29" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb5-30"><a href="#cb5-30" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-31"><a href="#cb5-31" aria-hidden="true" tabindex="-1"></a>    <span class="kw">task</span> <span class="kw">automatic</span> check(<span class="kw">input</span> <span class="kw">string</span> label);</span>
+<span id="cb5-32"><a href="#cb5-32" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (count !== expected_count || blink !== expected_blink) <span class="kw">begin</span></span>
+<span id="cb5-33"><a href="#cb5-33" aria-hidden="true" tabindex="-1"></a>            <span class="kw">$display</span>(<span class="st">"ERROR (%s) t=%0t: count=%0d blink=%b, expected count=%0d blink=%b"</span>,</span>
+<span id="cb5-34"><a href="#cb5-34" aria-hidden="true" tabindex="-1"></a>                     label, <span class="kw">$time</span>, count, blink, expected_count, expected_blink);</span>
+<span id="cb5-35"><a href="#cb5-35" aria-hidden="true" tabindex="-1"></a>            errors++;</span>
+<span id="cb5-36"><a href="#cb5-36" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-37"><a href="#cb5-37" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endtask</span></span>
+<span id="cb5-38"><a href="#cb5-38" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-39"><a href="#cb5-39" aria-hidden="true" tabindex="-1"></a>    <span class="co">// advance the reference model by one enabled clock</span></span>
+<span id="cb5-40"><a href="#cb5-40" aria-hidden="true" tabindex="-1"></a>    <span class="kw">task</span> <span class="kw">automatic</span> step_expected();</span>
+<span id="cb5-41"><a href="#cb5-41" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (expected_count == MAX_COUNT - <span class="dv">1</span>) <span class="kw">begin</span></span>
+<span id="cb5-42"><a href="#cb5-42" aria-hidden="true" tabindex="-1"></a>            expected_count = <span class="dv">0</span>;</span>
+<span id="cb5-43"><a href="#cb5-43" aria-hidden="true" tabindex="-1"></a>            expected_blink = ~expected_blink;</span>
+<span id="cb5-44"><a href="#cb5-44" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-45"><a href="#cb5-45" aria-hidden="true" tabindex="-1"></a>        <span class="kw">else</span> <span class="kw">begin</span></span>
+<span id="cb5-46"><a href="#cb5-46" aria-hidden="true" tabindex="-1"></a>            expected_count++;</span>
+<span id="cb5-47"><a href="#cb5-47" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-48"><a href="#cb5-48" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endtask</span></span>
+<span id="cb5-49"><a href="#cb5-49" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-50"><a href="#cb5-50" aria-hidden="true" tabindex="-1"></a>    <span class="kw">initial</span> <span class="kw">begin</span></span>
+<span id="cb5-51"><a href="#cb5-51" aria-hidden="true" tabindex="-1"></a>        errors         = <span class="dv">0</span>;</span>
+<span id="cb5-52"><a href="#cb5-52" aria-hidden="true" tabindex="-1"></a>        expected_count = <span class="dv">0</span>;</span>
+<span id="cb5-53"><a href="#cb5-53" aria-hidden="true" tabindex="-1"></a>        expected_blink = <span class="dv">0</span>;</span>
+<span id="cb5-54"><a href="#cb5-54" aria-hidden="true" tabindex="-1"></a>        enable         = <span class="dv">0</span>;</span>
+<span id="cb5-55"><a href="#cb5-55" aria-hidden="true" tabindex="-1"></a>        reset          = <span class="dv">0</span>;</span>
+<span id="cb5-56"><a href="#cb5-56" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-57"><a href="#cb5-57" aria-hidden="true" tabindex="-1"></a>        <span class="co">// reset</span></span>
+<span id="cb5-58"><a href="#cb5-58" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#12</span>;</span>
+<span id="cb5-59"><a href="#cb5-59" aria-hidden="true" tabindex="-1"></a>        check(<span class="st">"reset"</span>);</span>
+<span id="cb5-60"><a href="#cb5-60" aria-hidden="true" tabindex="-1"></a>        reset  = <span class="dv">1</span>;</span>
+<span id="cb5-61"><a href="#cb5-61" aria-hidden="true" tabindex="-1"></a>        enable = <span class="dv">1</span>;</span>
+<span id="cb5-62"><a href="#cb5-62" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-63"><a href="#cb5-63" aria-hidden="true" tabindex="-1"></a>        <span class="co">// three full wraps: count 0..MAX_COUNT-1, blink toggles each wrap</span></span>
+<span id="cb5-64"><a href="#cb5-64" aria-hidden="true" tabindex="-1"></a>        <span class="kw">repeat</span> (<span class="dv">3</span> * MAX_COUNT) <span class="kw">begin</span></span>
+<span id="cb5-65"><a href="#cb5-65" aria-hidden="true" tabindex="-1"></a>            @(<span class="kw">posedge</span> clk); <span class="bn">#1</span>;</span>
+<span id="cb5-66"><a href="#cb5-66" aria-hidden="true" tabindex="-1"></a>            step_expected();</span>
+<span id="cb5-67"><a href="#cb5-67" aria-hidden="true" tabindex="-1"></a>            check(<span class="st">"count"</span>);</span>
+<span id="cb5-68"><a href="#cb5-68" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-69"><a href="#cb5-69" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-70"><a href="#cb5-70" aria-hidden="true" tabindex="-1"></a>        <span class="co">// enable low: hold</span></span>
+<span id="cb5-71"><a href="#cb5-71" aria-hidden="true" tabindex="-1"></a>        enable = <span class="dv">0</span>;</span>
+<span id="cb5-72"><a href="#cb5-72" aria-hidden="true" tabindex="-1"></a>        <span class="kw">repeat</span> (<span class="dv">4</span>) <span class="kw">begin</span></span>
+<span id="cb5-73"><a href="#cb5-73" aria-hidden="true" tabindex="-1"></a>            @(<span class="kw">posedge</span> clk); <span class="bn">#1</span>;</span>
+<span id="cb5-74"><a href="#cb5-74" aria-hidden="true" tabindex="-1"></a>            check(<span class="st">"enable hold"</span>);</span>
+<span id="cb5-75"><a href="#cb5-75" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-76"><a href="#cb5-76" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-77"><a href="#cb5-77" aria-hidden="true" tabindex="-1"></a>        <span class="co">// count a bit more, then assert reset between clock edges</span></span>
+<span id="cb5-78"><a href="#cb5-78" aria-hidden="true" tabindex="-1"></a>        enable = <span class="dv">1</span>;</span>
+<span id="cb5-79"><a href="#cb5-79" aria-hidden="true" tabindex="-1"></a>        <span class="kw">repeat</span> (<span class="dv">2</span>) <span class="kw">begin</span></span>
+<span id="cb5-80"><a href="#cb5-80" aria-hidden="true" tabindex="-1"></a>            @(<span class="kw">posedge</span> clk); <span class="bn">#1</span>;</span>
+<span id="cb5-81"><a href="#cb5-81" aria-hidden="true" tabindex="-1"></a>            step_expected();</span>
+<span id="cb5-82"><a href="#cb5-82" aria-hidden="true" tabindex="-1"></a>            check(<span class="st">"count"</span>);</span>
+<span id="cb5-83"><a href="#cb5-83" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb5-84"><a href="#cb5-84" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#2</span>;</span>
+<span id="cb5-85"><a href="#cb5-85" aria-hidden="true" tabindex="-1"></a>        reset = <span class="dv">0</span>;</span>
+<span id="cb5-86"><a href="#cb5-86" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#1</span>;</span>
+<span id="cb5-87"><a href="#cb5-87" aria-hidden="true" tabindex="-1"></a>        expected_count = <span class="dv">0</span>;</span>
+<span id="cb5-88"><a href="#cb5-88" aria-hidden="true" tabindex="-1"></a>        expected_blink = <span class="dv">0</span>;</span>
+<span id="cb5-89"><a href="#cb5-89" aria-hidden="true" tabindex="-1"></a>        check(<span class="st">"async reset"</span>);</span>
+<span id="cb5-90"><a href="#cb5-90" aria-hidden="true" tabindex="-1"></a>        @(<span class="kw">posedge</span> clk); <span class="bn">#1</span>;</span>
+<span id="cb5-91"><a href="#cb5-91" aria-hidden="true" tabindex="-1"></a>        check(<span class="st">"held in reset"</span>);</span>
+<span id="cb5-92"><a href="#cb5-92" aria-hidden="true" tabindex="-1"></a>        reset = <span class="dv">1</span>;</span>
+<span id="cb5-93"><a href="#cb5-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-94"><a href="#cb5-94" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$display</span>(<span class="st">"counter_tb: done with %0d errors"</span>, errors);</span>
+<span id="cb5-95"><a href="#cb5-95" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$stop</span>;</span>
+<span id="cb5-96"><a href="#cb5-96" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb5-97"><a href="#cb5-97" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb5-98"><a href="#cb5-98" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details>
+<summary>
+scanner_tb.sv
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb6"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb6-1"><a href="#cb6-1" aria-hidden="true" tabindex="-1"></a><span class="co">// scanner_tb: automatic testbench for scanner.</span></span>
+<span id="cb6-2"><a href="#cb6-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Checks: reset to 1000, all four transitions (1000-&gt;0100-&gt;0010-&gt;0001-&gt;1000),</span></span>
+<span id="cb6-3"><a href="#cb6-3" aria-hidden="true" tabindex="-1"></a><span class="co">// CYCLES_PER_ROW cycles per row, enable hold, asynchronous reset.</span></span>
+<span id="cb6-4"><a href="#cb6-4" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> scanner_tb();</span>
+<span id="cb6-5"><a href="#cb6-5" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-6"><a href="#cb6-6" aria-hidden="true" tabindex="-1"></a>    <span class="kw">localparam</span> <span class="kw">int</span> <span class="kw">unsigned</span> CYCLES_PER_ROW = <span class="dv">3</span>;</span>
+<span id="cb6-7"><a href="#cb6-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">localparam</span> <span class="kw">int</span> <span class="kw">unsigned</span> SCAN_PERIOD    = <span class="dv">4</span> * CYCLES_PER_ROW;</span>
+<span id="cb6-8"><a href="#cb6-8" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-9"><a href="#cb6-9" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>       clk, reset, enable;</span>
+<span id="cb6-10"><a href="#cb6-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] row;</span>
+<span id="cb6-11"><a href="#cb6-11" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-12"><a href="#cb6-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">int</span> errors;</span>
+<span id="cb6-13"><a href="#cb6-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">int</span> expected_count;     <span class="co">// reference model of the scan counter</span></span>
+<span id="cb6-14"><a href="#cb6-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">int</span> transitions_seen;</span>
+<span id="cb6-15"><a href="#cb6-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] previous_row;</span>
+<span id="cb6-16"><a href="#cb6-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-17"><a href="#cb6-17" aria-hidden="true" tabindex="-1"></a>    scanner #(</span>
+<span id="cb6-18"><a href="#cb6-18" aria-hidden="true" tabindex="-1"></a>        .CYCLES_PER_ROW(CYCLES_PER_ROW)</span>
+<span id="cb6-19"><a href="#cb6-19" aria-hidden="true" tabindex="-1"></a>    ) dut (</span>
+<span id="cb6-20"><a href="#cb6-20" aria-hidden="true" tabindex="-1"></a>        .clk(clk),</span>
+<span id="cb6-21"><a href="#cb6-21" aria-hidden="true" tabindex="-1"></a>        .reset(reset),</span>
+<span id="cb6-22"><a href="#cb6-22" aria-hidden="true" tabindex="-1"></a>        .enable(enable),</span>
+<span id="cb6-23"><a href="#cb6-23" aria-hidden="true" tabindex="-1"></a>        .row(row)</span>
+<span id="cb6-24"><a href="#cb6-24" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb6-25"><a href="#cb6-25" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-26"><a href="#cb6-26" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 10 ns clock</span></span>
+<span id="cb6-27"><a href="#cb6-27" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always</span> <span class="kw">begin</span></span>
+<span id="cb6-28"><a href="#cb6-28" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">1</span>; <span class="bn">#5</span>;</span>
+<span id="cb6-29"><a href="#cb6-29" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">0</span>; <span class="bn">#5</span>;</span>
+<span id="cb6-30"><a href="#cb6-30" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb6-31"><a href="#cb6-31" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-32"><a href="#cb6-32" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="kw">automatic</span> <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] expected_row(<span class="kw">input</span> <span class="kw">int</span> count);</span>
+<span id="cb6-33"><a href="#cb6-33" aria-hidden="true" tabindex="-1"></a>        <span class="kw">case</span> (count / CYCLES_PER_ROW)</span>
+<span id="cb6-34"><a href="#cb6-34" aria-hidden="true" tabindex="-1"></a>            <span class="dv">0</span>:       <span class="kw">return</span> <span class="bn">4'b1000</span>;</span>
+<span id="cb6-35"><a href="#cb6-35" aria-hidden="true" tabindex="-1"></a>            <span class="dv">1</span>:       <span class="kw">return</span> <span class="bn">4'b0100</span>;</span>
+<span id="cb6-36"><a href="#cb6-36" aria-hidden="true" tabindex="-1"></a>            <span class="dv">2</span>:       <span class="kw">return</span> <span class="bn">4'b0010</span>;</span>
+<span id="cb6-37"><a href="#cb6-37" aria-hidden="true" tabindex="-1"></a>            <span class="kw">default</span>: <span class="kw">return</span> <span class="bn">4'b0001</span>;</span>
+<span id="cb6-38"><a href="#cb6-38" aria-hidden="true" tabindex="-1"></a>        <span class="kw">endcase</span></span>
+<span id="cb6-39"><a href="#cb6-39" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endfunction</span></span>
+<span id="cb6-40"><a href="#cb6-40" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-41"><a href="#cb6-41" aria-hidden="true" tabindex="-1"></a>    <span class="kw">task</span> <span class="kw">automatic</span> check(<span class="kw">input</span> <span class="kw">string</span> label);</span>
+<span id="cb6-42"><a href="#cb6-42" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (row !== expected_row(expected_count)) <span class="kw">begin</span></span>
+<span id="cb6-43"><a href="#cb6-43" aria-hidden="true" tabindex="-1"></a>            <span class="kw">$display</span>(<span class="st">"ERROR (%s) t=%0t: row=%b, expected %b"</span>,</span>
+<span id="cb6-44"><a href="#cb6-44" aria-hidden="true" tabindex="-1"></a>                     label, <span class="kw">$time</span>, row, expected_row(expected_count));</span>
+<span id="cb6-45"><a href="#cb6-45" aria-hidden="true" tabindex="-1"></a>            errors++;</span>
+<span id="cb6-46"><a href="#cb6-46" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb6-47"><a href="#cb6-47" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endtask</span></span>
+<span id="cb6-48"><a href="#cb6-48" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-49"><a href="#cb6-49" aria-hidden="true" tabindex="-1"></a>    <span class="kw">task</span> <span class="kw">automatic</span> clock_and_check(<span class="kw">input</span> <span class="kw">string</span> label);</span>
+<span id="cb6-50"><a href="#cb6-50" aria-hidden="true" tabindex="-1"></a>        previous_row = row;</span>
+<span id="cb6-51"><a href="#cb6-51" aria-hidden="true" tabindex="-1"></a>        @(<span class="kw">posedge</span> clk); <span class="bn">#1</span>;</span>
+<span id="cb6-52"><a href="#cb6-52" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (enable) expected_count = (expected_count + <span class="dv">1</span>) % SCAN_PERIOD;</span>
+<span id="cb6-53"><a href="#cb6-53" aria-hidden="true" tabindex="-1"></a>        check(label);</span>
+<span id="cb6-54"><a href="#cb6-54" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (row !== previous_row) <span class="kw">begin</span></span>
+<span id="cb6-55"><a href="#cb6-55" aria-hidden="true" tabindex="-1"></a>            transitions_seen++;</span>
+<span id="cb6-56"><a href="#cb6-56" aria-hidden="true" tabindex="-1"></a>            <span class="kw">$display</span>(<span class="st">"t=%0t: row %b -&gt; %b"</span>, <span class="kw">$time</span>, previous_row, row);</span>
+<span id="cb6-57"><a href="#cb6-57" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb6-58"><a href="#cb6-58" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endtask</span></span>
+<span id="cb6-59"><a href="#cb6-59" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-60"><a href="#cb6-60" aria-hidden="true" tabindex="-1"></a>    <span class="kw">initial</span> <span class="kw">begin</span></span>
+<span id="cb6-61"><a href="#cb6-61" aria-hidden="true" tabindex="-1"></a>        errors           = <span class="dv">0</span>;</span>
+<span id="cb6-62"><a href="#cb6-62" aria-hidden="true" tabindex="-1"></a>        expected_count   = <span class="dv">0</span>;</span>
+<span id="cb6-63"><a href="#cb6-63" aria-hidden="true" tabindex="-1"></a>        transitions_seen = <span class="dv">0</span>;</span>
+<span id="cb6-64"><a href="#cb6-64" aria-hidden="true" tabindex="-1"></a>        enable           = <span class="dv">0</span>;</span>
+<span id="cb6-65"><a href="#cb6-65" aria-hidden="true" tabindex="-1"></a>        reset            = <span class="dv">0</span>;</span>
+<span id="cb6-66"><a href="#cb6-66" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-67"><a href="#cb6-67" aria-hidden="true" tabindex="-1"></a>        <span class="co">// reset</span></span>
+<span id="cb6-68"><a href="#cb6-68" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#12</span>;</span>
+<span id="cb6-69"><a href="#cb6-69" aria-hidden="true" tabindex="-1"></a>        check(<span class="st">"reset"</span>);</span>
+<span id="cb6-70"><a href="#cb6-70" aria-hidden="true" tabindex="-1"></a>        reset  = <span class="dv">1</span>;</span>
+<span id="cb6-71"><a href="#cb6-71" aria-hidden="true" tabindex="-1"></a>        enable = <span class="dv">1</span>;</span>
+<span id="cb6-72"><a href="#cb6-72" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-73"><a href="#cb6-73" aria-hidden="true" tabindex="-1"></a>        <span class="co">// two full rotations: 8 transitions</span></span>
+<span id="cb6-74"><a href="#cb6-74" aria-hidden="true" tabindex="-1"></a>        <span class="kw">repeat</span> (<span class="dv">2</span> * SCAN_PERIOD) clock_and_check(<span class="st">"scan"</span>);</span>
+<span id="cb6-75"><a href="#cb6-75" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (transitions_seen != <span class="dv">8</span>) <span class="kw">begin</span></span>
+<span id="cb6-76"><a href="#cb6-76" aria-hidden="true" tabindex="-1"></a>            <span class="kw">$display</span>(<span class="st">"ERROR: saw %0d row transitions, expected 8"</span>, transitions_seen);</span>
+<span id="cb6-77"><a href="#cb6-77" aria-hidden="true" tabindex="-1"></a>            errors++;</span>
+<span id="cb6-78"><a href="#cb6-78" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb6-79"><a href="#cb6-79" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-80"><a href="#cb6-80" aria-hidden="true" tabindex="-1"></a>        <span class="co">// move into the middle of row 0100, then disable: row must hold</span></span>
+<span id="cb6-81"><a href="#cb6-81" aria-hidden="true" tabindex="-1"></a>        <span class="kw">repeat</span> (CYCLES_PER_ROW + <span class="dv">1</span>) clock_and_check(<span class="st">"scan"</span>);</span>
+<span id="cb6-82"><a href="#cb6-82" aria-hidden="true" tabindex="-1"></a>        enable = <span class="dv">0</span>;</span>
+<span id="cb6-83"><a href="#cb6-83" aria-hidden="true" tabindex="-1"></a>        <span class="kw">repeat</span> (<span class="dv">2</span> * SCAN_PERIOD) clock_and_check(<span class="st">"enable hold"</span>);</span>
+<span id="cb6-84"><a href="#cb6-84" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-85"><a href="#cb6-85" aria-hidden="true" tabindex="-1"></a>        <span class="co">// re-enable, then reset between clock edges: back to 1000 immediately</span></span>
+<span id="cb6-86"><a href="#cb6-86" aria-hidden="true" tabindex="-1"></a>        enable = <span class="dv">1</span>;</span>
+<span id="cb6-87"><a href="#cb6-87" aria-hidden="true" tabindex="-1"></a>        <span class="kw">repeat</span> (CYCLES_PER_ROW) clock_and_check(<span class="st">"scan"</span>);</span>
+<span id="cb6-88"><a href="#cb6-88" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#2</span>;</span>
+<span id="cb6-89"><a href="#cb6-89" aria-hidden="true" tabindex="-1"></a>        reset = <span class="dv">0</span>;</span>
+<span id="cb6-90"><a href="#cb6-90" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#1</span>;</span>
+<span id="cb6-91"><a href="#cb6-91" aria-hidden="true" tabindex="-1"></a>        expected_count = <span class="dv">0</span>;</span>
+<span id="cb6-92"><a href="#cb6-92" aria-hidden="true" tabindex="-1"></a>        check(<span class="st">"async reset"</span>);</span>
+<span id="cb6-93"><a href="#cb6-93" aria-hidden="true" tabindex="-1"></a>        reset = <span class="dv">1</span>;</span>
+<span id="cb6-94"><a href="#cb6-94" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-95"><a href="#cb6-95" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$display</span>(<span class="st">"scanner_tb: done with %0d errors"</span>, errors);</span>
+<span id="cb6-96"><a href="#cb6-96" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$stop</span>;</span>
+<span id="cb6-97"><a href="#cb6-97" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb6-98"><a href="#cb6-98" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb6-99"><a href="#cb6-99" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+<details>
+<summary>
+lab02_ct_tb.sv
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb7"><pre class="sourceCode systemverilog code-with-copy"><code class="sourceCode systemverilog"><span id="cb7-1"><a href="#cb7-1" aria-hidden="true" tabindex="-1"></a><span class="co">// lab02_ct_tb: automatic testbench for the top level.</span></span>
+<span id="cb7-2"><a href="#cb7-2" aria-hidden="true" tabindex="-1"></a><span class="co">// Checks multiplexing (each digit shows the right number on the right anode_en_n, for every input),</span></span>
+<span id="cb7-3"><a href="#cb7-3" aria-hidden="true" tabindex="-1"></a><span class="co">// LED pass-through for every column pattern, and that the keypad row output is always one-hot.</span></span>
+<span id="cb7-4"><a href="#cb7-4" aria-hidden="true" tabindex="-1"></a><span class="co">// Needs the Radiant iCE40UP simulation library for HSOSC (vsim -L iCE40UP); the clock is forced from here.</span></span>
+<span id="cb7-5"><a href="#cb7-5" aria-hidden="true" tabindex="-1"></a><span class="kw">module</span> lab02_ct_tb();</span>
+<span id="cb7-6"><a href="#cb7-6" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-7"><a href="#cb7-7" aria-hidden="true" tabindex="-1"></a>    <span class="kw">localparam</span> <span class="kw">int</span> <span class="kw">unsigned</span> MUX_TOGGLE_CYCLES   = <span class="dv">2</span>;</span>
+<span id="cb7-8"><a href="#cb7-8" aria-hidden="true" tabindex="-1"></a>    <span class="kw">localparam</span> <span class="kw">int</span> <span class="kw">unsigned</span> SCAN_CYCLES_PER_ROW = <span class="dv">3</span>;</span>
+<span id="cb7-9"><a href="#cb7-9" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-10"><a href="#cb7-10" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>       clk;</span>
+<span id="cb7-11"><a href="#cb7-11" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span>       reset_n;</span>
+<span id="cb7-12"><a href="#cb7-12" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] switch_n;</span>
+<span id="cb7-13"><a href="#cb7-13" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] sw6;</span>
+<span id="cb7-14"><a href="#cb7-14" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] col;</span>
+<span id="cb7-15"><a href="#cb7-15" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] row_n;</span>
+<span id="cb7-16"><a href="#cb7-16" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">2</span>:<span class="dv">0</span>] led;</span>
+<span id="cb7-17"><a href="#cb7-17" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">1</span>:<span class="dv">0</span>] anode_en_n;</span>
+<span id="cb7-18"><a href="#cb7-18" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">6</span>:<span class="dv">0</span>] segment;</span>
+<span id="cb7-19"><a href="#cb7-19" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-20"><a href="#cb7-20" aria-hidden="true" tabindex="-1"></a>    <span class="kw">int</span> errors;</span>
+<span id="cb7-21"><a href="#cb7-21" aria-hidden="true" tabindex="-1"></a>    <span class="kw">int</span> digit0_checks, digit1_checks;</span>
+<span id="cb7-22"><a href="#cb7-22" aria-hidden="true" tabindex="-1"></a>    <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] rows_seen;</span>
+<span id="cb7-23"><a href="#cb7-23" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-24"><a href="#cb7-24" aria-hidden="true" tabindex="-1"></a>    lab02_ct #(</span>
+<span id="cb7-25"><a href="#cb7-25" aria-hidden="true" tabindex="-1"></a>        .MUX_TOGGLE_CYCLES(MUX_TOGGLE_CYCLES),</span>
+<span id="cb7-26"><a href="#cb7-26" aria-hidden="true" tabindex="-1"></a>        .SCAN_CYCLES_PER_ROW(SCAN_CYCLES_PER_ROW)</span>
+<span id="cb7-27"><a href="#cb7-27" aria-hidden="true" tabindex="-1"></a>    ) dut (</span>
+<span id="cb7-28"><a href="#cb7-28" aria-hidden="true" tabindex="-1"></a>        .reset_n(reset_n),</span>
+<span id="cb7-29"><a href="#cb7-29" aria-hidden="true" tabindex="-1"></a>        .switch_n(switch_n),</span>
+<span id="cb7-30"><a href="#cb7-30" aria-hidden="true" tabindex="-1"></a>        .sw6(sw6),</span>
+<span id="cb7-31"><a href="#cb7-31" aria-hidden="true" tabindex="-1"></a>        .col(col),</span>
+<span id="cb7-32"><a href="#cb7-32" aria-hidden="true" tabindex="-1"></a>        .row_n(row_n),</span>
+<span id="cb7-33"><a href="#cb7-33" aria-hidden="true" tabindex="-1"></a>        .led(led),</span>
+<span id="cb7-34"><a href="#cb7-34" aria-hidden="true" tabindex="-1"></a>        .anode_en_n(anode_en_n),</span>
+<span id="cb7-35"><a href="#cb7-35" aria-hidden="true" tabindex="-1"></a>        .segment(segment)</span>
+<span id="cb7-36"><a href="#cb7-36" aria-hidden="true" tabindex="-1"></a>    );</span>
+<span id="cb7-37"><a href="#cb7-37" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-38"><a href="#cb7-38" aria-hidden="true" tabindex="-1"></a>    <span class="co">// 10 ns clock replaces the HSOSC output</span></span>
+<span id="cb7-39"><a href="#cb7-39" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always</span> <span class="kw">begin</span></span>
+<span id="cb7-40"><a href="#cb7-40" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">1</span>; <span class="bn">#5</span>;</span>
+<span id="cb7-41"><a href="#cb7-41" aria-hidden="true" tabindex="-1"></a>        clk = <span class="dv">0</span>; <span class="bn">#5</span>;</span>
+<span id="cb7-42"><a href="#cb7-42" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb7-43"><a href="#cb7-43" aria-hidden="true" tabindex="-1"></a>    <span class="kw">initial</span> <span class="kw">force</span> dut.int_osc = clk;</span>
+<span id="cb7-44"><a href="#cb7-44" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-45"><a href="#cb7-45" aria-hidden="true" tabindex="-1"></a>    <span class="co">// expected lit segments {g,f,e,d,c,b,a}, 1 = lit (independent of the DUT's decoder);</span></span>
+<span id="cb7-46"><a href="#cb7-46" aria-hidden="true" tabindex="-1"></a>    <span class="co">// the DUT drives active-low, so outputs are compared against the inverse</span></span>
+<span id="cb7-47"><a href="#cb7-47" aria-hidden="true" tabindex="-1"></a>    <span class="kw">function</span> <span class="kw">automatic</span> <span class="kw">logic</span> [<span class="dv">6</span>:<span class="dv">0</span>] expected_segment(<span class="kw">input</span> <span class="kw">logic</span> [<span class="dv">3</span>:<span class="dv">0</span>] value);</span>
+<span id="cb7-48"><a href="#cb7-48" aria-hidden="true" tabindex="-1"></a>        <span class="kw">case</span> (value)</span>
+<span id="cb7-49"><a href="#cb7-49" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h0</span>: <span class="kw">return</span> <span class="bn">7'b0111111</span>;</span>
+<span id="cb7-50"><a href="#cb7-50" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h1</span>: <span class="kw">return</span> <span class="bn">7'b0000110</span>;</span>
+<span id="cb7-51"><a href="#cb7-51" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h2</span>: <span class="kw">return</span> <span class="bn">7'b1011011</span>;</span>
+<span id="cb7-52"><a href="#cb7-52" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h3</span>: <span class="kw">return</span> <span class="bn">7'b1001111</span>;</span>
+<span id="cb7-53"><a href="#cb7-53" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h4</span>: <span class="kw">return</span> <span class="bn">7'b1100110</span>;</span>
+<span id="cb7-54"><a href="#cb7-54" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h5</span>: <span class="kw">return</span> <span class="bn">7'b1101101</span>;</span>
+<span id="cb7-55"><a href="#cb7-55" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h6</span>: <span class="kw">return</span> <span class="bn">7'b1111101</span>;</span>
+<span id="cb7-56"><a href="#cb7-56" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h7</span>: <span class="kw">return</span> <span class="bn">7'b0000111</span>;</span>
+<span id="cb7-57"><a href="#cb7-57" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h8</span>: <span class="kw">return</span> <span class="bn">7'b1111111</span>;</span>
+<span id="cb7-58"><a href="#cb7-58" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'h9</span>: <span class="kw">return</span> <span class="bn">7'b1101111</span>;</span>
+<span id="cb7-59"><a href="#cb7-59" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hA</span>: <span class="kw">return</span> <span class="bn">7'b1110111</span>;</span>
+<span id="cb7-60"><a href="#cb7-60" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hB</span>: <span class="kw">return</span> <span class="bn">7'b1111100</span>;</span>
+<span id="cb7-61"><a href="#cb7-61" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hC</span>: <span class="kw">return</span> <span class="bn">7'b0111001</span>;</span>
+<span id="cb7-62"><a href="#cb7-62" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hD</span>: <span class="kw">return</span> <span class="bn">7'b1011110</span>;</span>
+<span id="cb7-63"><a href="#cb7-63" aria-hidden="true" tabindex="-1"></a>            <span class="bn">4'hE</span>: <span class="kw">return</span> <span class="bn">7'b1111001</span>;</span>
+<span id="cb7-64"><a href="#cb7-64" aria-hidden="true" tabindex="-1"></a>            <span class="kw">default</span>: <span class="kw">return</span> <span class="bn">7'b1110001</span>; <span class="co">// F</span></span>
+<span id="cb7-65"><a href="#cb7-65" aria-hidden="true" tabindex="-1"></a>        <span class="kw">endcase</span></span>
+<span id="cb7-66"><a href="#cb7-66" aria-hidden="true" tabindex="-1"></a>    <span class="kw">endfunction</span></span>
+<span id="cb7-67"><a href="#cb7-67" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-68"><a href="#cb7-68" aria-hidden="true" tabindex="-1"></a>    <span class="co">// check the display and keypad outputs on every falling edge</span></span>
+<span id="cb7-69"><a href="#cb7-69" aria-hidden="true" tabindex="-1"></a>    <span class="kw">always</span> @(<span class="kw">negedge</span> clk) <span class="kw">begin</span></span>
+<span id="cb7-70"><a href="#cb7-70" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (reset_n) <span class="kw">begin</span></span>
+<span id="cb7-71"><a href="#cb7-71" aria-hidden="true" tabindex="-1"></a>            <span class="kw">case</span> (anode_en_n)</span>
+<span id="cb7-72"><a href="#cb7-72" aria-hidden="true" tabindex="-1"></a>                <span class="bn">2'b10</span>: <span class="kw">begin</span></span>
+<span id="cb7-73"><a href="#cb7-73" aria-hidden="true" tabindex="-1"></a>                    digit0_checks++;</span>
+<span id="cb7-74"><a href="#cb7-74" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">if</span> (segment !== ~expected_segment(~switch_n)) <span class="kw">begin</span></span>
+<span id="cb7-75"><a href="#cb7-75" aria-hidden="true" tabindex="-1"></a>                        <span class="kw">$display</span>(<span class="st">"ERROR t=%0t: digit 0, switch_n=%b, segment=%b expected %b"</span>,</span>
+<span id="cb7-76"><a href="#cb7-76" aria-hidden="true" tabindex="-1"></a>                                 <span class="kw">$time</span>, switch_n, segment, ~expected_segment(~switch_n));</span>
+<span id="cb7-77"><a href="#cb7-77" aria-hidden="true" tabindex="-1"></a>                        errors++;</span>
+<span id="cb7-78"><a href="#cb7-78" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">end</span></span>
+<span id="cb7-79"><a href="#cb7-79" aria-hidden="true" tabindex="-1"></a>                <span class="kw">end</span></span>
+<span id="cb7-80"><a href="#cb7-80" aria-hidden="true" tabindex="-1"></a>                <span class="bn">2'b01</span>: <span class="kw">begin</span></span>
+<span id="cb7-81"><a href="#cb7-81" aria-hidden="true" tabindex="-1"></a>                    digit1_checks++;</span>
+<span id="cb7-82"><a href="#cb7-82" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">if</span> (segment !== ~expected_segment(sw6)) <span class="kw">begin</span></span>
+<span id="cb7-83"><a href="#cb7-83" aria-hidden="true" tabindex="-1"></a>                        <span class="kw">$display</span>(<span class="st">"ERROR t=%0t: digit 1, sw6=%b, segment=%b expected %b"</span>,</span>
+<span id="cb7-84"><a href="#cb7-84" aria-hidden="true" tabindex="-1"></a>                                 <span class="kw">$time</span>, sw6, segment, ~expected_segment(sw6));</span>
+<span id="cb7-85"><a href="#cb7-85" aria-hidden="true" tabindex="-1"></a>                        errors++;</span>
+<span id="cb7-86"><a href="#cb7-86" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">end</span></span>
+<span id="cb7-87"><a href="#cb7-87" aria-hidden="true" tabindex="-1"></a>                <span class="kw">end</span></span>
+<span id="cb7-88"><a href="#cb7-88" aria-hidden="true" tabindex="-1"></a>                <span class="kw">default</span>: <span class="kw">begin</span></span>
+<span id="cb7-89"><a href="#cb7-89" aria-hidden="true" tabindex="-1"></a>                    <span class="kw">$display</span>(<span class="st">"ERROR t=%0t: anode_en_n=%b does not enable exactly one digit"</span>, <span class="kw">$time</span>, anode_en_n);</span>
+<span id="cb7-90"><a href="#cb7-90" aria-hidden="true" tabindex="-1"></a>                    errors++;</span>
+<span id="cb7-91"><a href="#cb7-91" aria-hidden="true" tabindex="-1"></a>                <span class="kw">end</span></span>
+<span id="cb7-92"><a href="#cb7-92" aria-hidden="true" tabindex="-1"></a>            <span class="kw">endcase</span></span>
+<span id="cb7-93"><a href="#cb7-93" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-94"><a href="#cb7-94" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> (!<span class="kw">$onehot</span>(~row_n)) <span class="kw">begin</span></span>
+<span id="cb7-95"><a href="#cb7-95" aria-hidden="true" tabindex="-1"></a>                <span class="kw">$display</span>(<span class="st">"ERROR t=%0t: row_n=%b does not drive exactly one row"</span>, <span class="kw">$time</span>, row_n);</span>
+<span id="cb7-96"><a href="#cb7-96" aria-hidden="true" tabindex="-1"></a>                errors++;</span>
+<span id="cb7-97"><a href="#cb7-97" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb7-98"><a href="#cb7-98" aria-hidden="true" tabindex="-1"></a>            rows_seen |= ~row_n;</span>
+<span id="cb7-99"><a href="#cb7-99" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb7-100"><a href="#cb7-100" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb7-101"><a href="#cb7-101" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-102"><a href="#cb7-102" aria-hidden="true" tabindex="-1"></a>    <span class="kw">initial</span> <span class="kw">begin</span></span>
+<span id="cb7-103"><a href="#cb7-103" aria-hidden="true" tabindex="-1"></a>        errors        = <span class="dv">0</span>;</span>
+<span id="cb7-104"><a href="#cb7-104" aria-hidden="true" tabindex="-1"></a>        digit0_checks = <span class="dv">0</span>;</span>
+<span id="cb7-105"><a href="#cb7-105" aria-hidden="true" tabindex="-1"></a>        digit1_checks = <span class="dv">0</span>;</span>
+<span id="cb7-106"><a href="#cb7-106" aria-hidden="true" tabindex="-1"></a>        rows_seen     = <span class="bn">4'b0000</span>;</span>
+<span id="cb7-107"><a href="#cb7-107" aria-hidden="true" tabindex="-1"></a>        switch_n      = <span class="bn">4'b1111</span>;</span>
+<span id="cb7-108"><a href="#cb7-108" aria-hidden="true" tabindex="-1"></a>        sw6           = <span class="bn">4'b0000</span>;</span>
+<span id="cb7-109"><a href="#cb7-109" aria-hidden="true" tabindex="-1"></a>        col           = <span class="bn">4'b0000</span>;</span>
+<span id="cb7-110"><a href="#cb7-110" aria-hidden="true" tabindex="-1"></a>        reset_n       = <span class="dv">0</span>;</span>
+<span id="cb7-111"><a href="#cb7-111" aria-hidden="true" tabindex="-1"></a>        <span class="bn">#12</span>;</span>
+<span id="cb7-112"><a href="#cb7-112" aria-hidden="true" tabindex="-1"></a>        reset_n = <span class="dv">1</span>;</span>
+<span id="cb7-113"><a href="#cb7-113" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-114"><a href="#cb7-114" aria-hidden="true" tabindex="-1"></a>        <span class="co">// multiplexing: every breadboard switch value with every SW6 value, long enough to see both digits</span></span>
+<span id="cb7-115"><a href="#cb7-115" aria-hidden="true" tabindex="-1"></a>        <span class="kw">for</span> (<span class="kw">int</span> sw = <span class="dv">0</span>; sw &lt; <span class="dv">16</span>; sw++) <span class="kw">begin</span></span>
+<span id="cb7-116"><a href="#cb7-116" aria-hidden="true" tabindex="-1"></a>            <span class="kw">for</span> (<span class="kw">int</span> sw_b = <span class="dv">0</span>; sw_b &lt; <span class="dv">16</span>; sw_b++) <span class="kw">begin</span></span>
+<span id="cb7-117"><a href="#cb7-117" aria-hidden="true" tabindex="-1"></a>                switch_n = ~sw[<span class="dv">3</span>:<span class="dv">0</span>];</span>
+<span id="cb7-118"><a href="#cb7-118" aria-hidden="true" tabindex="-1"></a>                sw6      = sw_b[<span class="dv">3</span>:<span class="dv">0</span>];</span>
+<span id="cb7-119"><a href="#cb7-119" aria-hidden="true" tabindex="-1"></a>                <span class="kw">repeat</span> (<span class="dv">4</span> * MUX_TOGGLE_CYCLES) @(<span class="kw">posedge</span> clk);</span>
+<span id="cb7-120"><a href="#cb7-120" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb7-121"><a href="#cb7-121" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb7-122"><a href="#cb7-122" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-123"><a href="#cb7-123" aria-hidden="true" tabindex="-1"></a>        <span class="co">// LED pass-through: every column pattern</span></span>
+<span id="cb7-124"><a href="#cb7-124" aria-hidden="true" tabindex="-1"></a>        <span class="kw">for</span> (<span class="kw">int</span> col_value = <span class="dv">0</span>; col_value &lt; <span class="dv">16</span>; col_value++) <span class="kw">begin</span></span>
+<span id="cb7-125"><a href="#cb7-125" aria-hidden="true" tabindex="-1"></a>            col = col_value[<span class="dv">3</span>:<span class="dv">0</span>];</span>
+<span id="cb7-126"><a href="#cb7-126" aria-hidden="true" tabindex="-1"></a>            <span class="bn">#1</span>;</span>
+<span id="cb7-127"><a href="#cb7-127" aria-hidden="true" tabindex="-1"></a>            <span class="kw">if</span> (led !== col[<span class="dv">2</span>:<span class="dv">0</span>]) <span class="kw">begin</span></span>
+<span id="cb7-128"><a href="#cb7-128" aria-hidden="true" tabindex="-1"></a>                <span class="kw">$display</span>(<span class="st">"ERROR: col=%b, led=%b expected %b"</span>, col, led, col[<span class="dv">2</span>:<span class="dv">0</span>]);</span>
+<span id="cb7-129"><a href="#cb7-129" aria-hidden="true" tabindex="-1"></a>                errors++;</span>
+<span id="cb7-130"><a href="#cb7-130" aria-hidden="true" tabindex="-1"></a>            <span class="kw">end</span></span>
+<span id="cb7-131"><a href="#cb7-131" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb7-132"><a href="#cb7-132" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-133"><a href="#cb7-133" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (digit0_checks == <span class="dv">0</span> || digit1_checks == <span class="dv">0</span>) <span class="kw">begin</span></span>
+<span id="cb7-134"><a href="#cb7-134" aria-hidden="true" tabindex="-1"></a>            <span class="kw">$display</span>(<span class="st">"ERROR: a digit was never enabled (digit 0: %0d checks, digit 1: %0d checks)"</span>,</span>
+<span id="cb7-135"><a href="#cb7-135" aria-hidden="true" tabindex="-1"></a>                     digit0_checks, digit1_checks);</span>
+<span id="cb7-136"><a href="#cb7-136" aria-hidden="true" tabindex="-1"></a>            errors++;</span>
+<span id="cb7-137"><a href="#cb7-137" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb7-138"><a href="#cb7-138" aria-hidden="true" tabindex="-1"></a>        <span class="kw">if</span> (rows_seen !== <span class="bn">4'b1111</span>) <span class="kw">begin</span></span>
+<span id="cb7-139"><a href="#cb7-139" aria-hidden="true" tabindex="-1"></a>            <span class="kw">$display</span>(<span class="st">"ERROR: not every keypad row was driven (rows seen %b)"</span>, rows_seen);</span>
+<span id="cb7-140"><a href="#cb7-140" aria-hidden="true" tabindex="-1"></a>            errors++;</span>
+<span id="cb7-141"><a href="#cb7-141" aria-hidden="true" tabindex="-1"></a>        <span class="kw">end</span></span>
+<span id="cb7-142"><a href="#cb7-142" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-143"><a href="#cb7-143" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$display</span>(<span class="st">"lab02_ct_tb: digit 0 checked %0d times, digit 1 checked %0d times"</span>,</span>
+<span id="cb7-144"><a href="#cb7-144" aria-hidden="true" tabindex="-1"></a>                 digit0_checks, digit1_checks);</span>
+<span id="cb7-145"><a href="#cb7-145" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$display</span>(<span class="st">"lab02_ct_tb: done with %0d errors"</span>, errors);</span>
+<span id="cb7-146"><a href="#cb7-146" aria-hidden="true" tabindex="-1"></a>        <span class="kw">$stop</span>;</span>
+<span id="cb7-147"><a href="#cb7-147" aria-hidden="true" tabindex="-1"></a>    <span class="kw">end</span></span>
+<span id="cb7-148"><a href="#cb7-148" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb7-149"><a href="#cb7-149" aria-hidden="true" tabindex="-1"></a><span class="kw">endmodule</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</section>
+<section id="pin-assignments" class="level2" data-number="3.2">
+<h2 data-number="3.2" class="anchored" data-anchor-id="pin-assignments"><span class="header-section-number">3.2</span> Pin Assignments</h2>
+<details>
+<summary>
+pins.pdc
+</summary>
+<div class="code-copy-outer-scaffold"><div class="sourceCode" id="cb8"><pre class="sourceCode tcl code-with-copy"><code class="sourceCode tcl"><span id="cb8-1"><a href="#cb8-1" aria-hidden="true" tabindex="-1"></a><span class="co"># lab02 pin constraints (iCE40UP5K, SG48)</span></span>
+<span id="cb8-2"><a href="#cb8-2" aria-hidden="true" tabindex="-1"></a><span class="co"># Everything off the development board goes through the E155 breadboard adapter.</span></span>
+<span id="cb8-3"><a href="#cb8-3" aria-hidden="true" tabindex="-1"></a><span class="co"># Development board SW7 (MCU bridge DIP): switches 1, 3, 8 ON, switches 2, 4, 5, 6, 7 OFF.</span></span>
+<span id="cb8-4"><a href="#cb8-4" aria-hidden="true" tabindex="-1"></a><span class="co">#   ON:  #1 PA9 &lt;-&gt; P25 (row 2), #3 PA6 &lt;-&gt; P27 (row 1), #8 PA10 &lt;-&gt; P23 (row 4)</span></span>
+<span id="cb8-5"><a href="#cb8-5" aria-hidden="true" tabindex="-1"></a><span class="co">#   OFF: #4 P20, #5 P10, #6 P12, #7 P21 are wired directly; #2 keeps P26 (reset) unconnected</span></span>
+<span id="cb8-6"><a href="#cb8-6" aria-hidden="true" tabindex="-1"></a><span class="co"># The Nucleo must not drive PA6, PA9 or PA10.</span></span>
+<span id="cb8-7"><a href="#cb8-7" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-8"><a href="#cb8-8" aria-hidden="true" tabindex="-1"></a><span class="co"># reset on P26: not wired to anything (SW7 #2 OFF), internal pull-up holds it high</span></span>
+<span id="cb8-9"><a href="#cb8-9" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">26</span><span class="kw">}</span> <span class="kw">[</span>get_ports reset_n<span class="kw">]</span></span>
+<span id="cb8-10"><a href="#cb8-10" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-11"><a href="#cb8-11" aria-hidden="true" tabindex="-1"></a><span class="co"># breadboard DIP switch (pin -&gt; switch -&gt; GND, internal pull-ups); P21 = MSB</span></span>
+<span id="cb8-12"><a href="#cb8-12" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">21</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span>
+<span id="cb8-13"><a href="#cb8-13" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">19</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb8-14"><a href="#cb8-14" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">11</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-15"><a href="#cb8-15" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">6</span><span class="kw">}</span>  <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-16"><a href="#cb8-16" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-17"><a href="#cb8-17" aria-hidden="true" tabindex="-1"></a><span class="co"># development board DIP switch SW6 (same pins as lab 1), ON = 1; P37 = MSB</span></span>
+<span id="cb8-18"><a href="#cb8-18" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">37</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>sw6<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span>
+<span id="cb8-19"><a href="#cb8-19" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">31</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>sw6<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb8-20"><a href="#cb8-20" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">35</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>sw6<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-21"><a href="#cb8-21" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">32</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>sw6<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-22"><a href="#cb8-22" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-23"><a href="#cb8-23" aria-hidden="true" tabindex="-1"></a><span class="co"># keypad columns (inputs, external 10k pull-downs to GND; they overpower the internal 100k pull-ups)</span></span>
+<span id="cb8-24"><a href="#cb8-24" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">3</span><span class="kw">}</span>  <span class="kw">[</span>get_ports <span class="kw">{</span>col<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-25"><a href="#cb8-25" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">45</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>col<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-26"><a href="#cb8-26" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">46</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>col<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb8-27"><a href="#cb8-27" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">10</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>col<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span>
+<span id="cb8-28"><a href="#cb8-28" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-29"><a href="#cb8-29" aria-hidden="true" tabindex="-1"></a><span class="co"># keypad rows (to TP2104 PMOS gates, low = row active; rows 1, 2, 4 through SW7 and the adapter MCU pins, row 3 direct)</span></span>
+<span id="cb8-30"><a href="#cb8-30" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">27</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>row_n<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-31"><a href="#cb8-31" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">25</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>row_n<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-32"><a href="#cb8-32" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">47</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>row_n<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb8-33"><a href="#cb8-33" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">23</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>row_n<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span>
+<span id="cb8-34"><a href="#cb8-34" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-35"><a href="#cb8-35" aria-hidden="true" tabindex="-1"></a><span class="co"># column LEDs on the board: D6 = column 1, D7 = column 2, D8 = column 3 (column 4 has none)</span></span>
+<span id="cb8-36"><a href="#cb8-36" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">42</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>led<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-37"><a href="#cb8-37" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">38</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>led<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-38"><a href="#cb8-38" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">28</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>led<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb8-39"><a href="#cb8-39" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-40"><a href="#cb8-40" aria-hidden="true" tabindex="-1"></a><span class="co"># digit enables (to 2N3906 bases through 330 ohm, low = digit on)</span></span>
+<span id="cb8-41"><a href="#cb8-41" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">20</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>anode_en_n<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-42"><a href="#cb8-42" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">12</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>anode_en_n<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-43"><a href="#cb8-43" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-44"><a href="#cb8-44" aria-hidden="true" tabindex="-1"></a><span class="co"># segments a..g (active-low, HDSP-521A common anode; each line feeds both digits)</span></span>
+<span id="cb8-45"><a href="#cb8-45" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">2</span><span class="kw">}</span>  <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-46"><a href="#cb8-46" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">4</span><span class="kw">}</span>  <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-47"><a href="#cb8-47" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">44</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb8-48"><a href="#cb8-48" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">13</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span>
+<span id="cb8-49"><a href="#cb8-49" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">18</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">4</span><span class="kw">]}]</span></span>
+<span id="cb8-50"><a href="#cb8-50" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">48</span><span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">5</span><span class="kw">]}]</span></span>
+<span id="cb8-51"><a href="#cb8-51" aria-hidden="true" tabindex="-1"></a>ldc_set_location -site <span class="kw">{</span><span class="dv">9</span><span class="kw">}</span>  <span class="kw">[</span>get_ports <span class="kw">{</span>segment<span class="kw">[</span><span class="dv">6</span><span class="kw">]}]</span></span>
+<span id="cb8-52"><a href="#cb8-52" aria-hidden="true" tabindex="-1"></a></span>
+<span id="cb8-53"><a href="#cb8-53" aria-hidden="true" tabindex="-1"></a><span class="co"># internal 100k pull-ups on reset and the breadboard DIP switch</span></span>
+<span id="cb8-54"><a href="#cb8-54" aria-hidden="true" tabindex="-1"></a>ldc_set_port -iobuf <span class="kw">{</span>PULLMODE<span class="op">=</span><span class="dv">100</span>K<span class="kw">}</span> <span class="kw">[</span>get_ports reset_n<span class="kw">]</span></span>
+<span id="cb8-55"><a href="#cb8-55" aria-hidden="true" tabindex="-1"></a>ldc_set_port -iobuf <span class="kw">{</span>PULLMODE<span class="op">=</span><span class="dv">100</span>K<span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">0</span><span class="kw">]}]</span></span>
+<span id="cb8-56"><a href="#cb8-56" aria-hidden="true" tabindex="-1"></a>ldc_set_port -iobuf <span class="kw">{</span>PULLMODE<span class="op">=</span><span class="dv">100</span>K<span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">1</span><span class="kw">]}]</span></span>
+<span id="cb8-57"><a href="#cb8-57" aria-hidden="true" tabindex="-1"></a>ldc_set_port -iobuf <span class="kw">{</span>PULLMODE<span class="op">=</span><span class="dv">100</span>K<span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">2</span><span class="kw">]}]</span></span>
+<span id="cb8-58"><a href="#cb8-58" aria-hidden="true" tabindex="-1"></a>ldc_set_port -iobuf <span class="kw">{</span>PULLMODE<span class="op">=</span><span class="dv">100</span>K<span class="kw">}</span> <span class="kw">[</span>get_ports <span class="kw">{</span>switch_n<span class="kw">[</span><span class="dv">3</span><span class="kw">]}]</span></span></code></pre></div><button title="Copy to Clipboard" class="code-copy-button"><i class="bi"></i></button></div>
+</details>
+</section>
+<section id="block-diagram" class="level2" data-number="3.3">
+<h2 data-number="3.3" class="anchored" data-anchor-id="block-diagram"><span class="header-section-number">3.3</span> Block Diagram</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Lab2-17.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Block diagram of the lab 2 design</figcaption>
+</figure>
+</div>
+</section>
+<section id="hardware-schematic" class="level2" data-number="3.4">
+<h2 data-number="3.4" class="anchored" data-anchor-id="hardware-schematic"><span class="header-section-number">3.4</span> Hardware Schematic</h2>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="Lab2-16.jpg" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>Schematic of the off-board circuit</figcaption>
+</figure>
+</div>
+<p>SW6, LEDs D6-D8 and SW7 are on the dev board so I didn’t draw them, they’re in the <a href="https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf">development board schematic</a>. The breadboard DIP switch uses the FPGA’s internal pull-ups.</p>
+</section>
+<section id="current-calculations" class="level2" data-number="3.5">
+<h2 data-number="3.5" class="anchored" data-anchor-id="current-calculations"><span class="header-section-number">3.5</span> Current Calculations</h2>
+<p>FPGA max current per pin: 8 mA (iCE40UP5K datasheet, Table 4.13).</p>
+<p>Segment pins (HDSP-521A datasheet) Supply V_CC = 3.3 V. Datasheet forward voltage: V_F = 2.0 V typ at 20 mA. From Figure 2 it’s around 1.8 V at ~6 mA, so for worst case (most current) I used V_F = 1.7 V. PNP drop: V_EC(sat) = 0.2 V.</p>
+<p>I = (3.3 V − 0.2 V − 1.7 V) / 220 Ω ≈ 6.4 mA</p>
+<p>Under 8 mA and way under the display’s 20 mA max per segment!</p>
+<p>Digit enable pins (2N3906 base through 330 Ω) I = (3.3 V − 0.7 V) / 330 Ω ≈ 7.9 mA</p>
+<p>Keypad row pins These go to the TP2104 gates which basically don’t draw current. The dev board LEDs on PA6, PA9 and PA10 add (3.3 V − 2.0 V) / 1 kΩ ≈ 1.3 mA.</p>
+<p>LED pins (D6-D8, 1 kΩ on the board) I ≤ 3.3 V / 1 kΩ = 3.3 mA</p>
+<p>Input pins only have the internal pull-up current, which is ≤ 128 µA.</p>
+<p>All under 8 mA!</p>
+</section>
+</section>
+<section id="simulation-results" class="level1" data-number="4">
+<h1 data-number="4"><span class="header-section-number">4</span> Simulation Results</h1>
+<p>The seven segment decoder was already tested in lab 1: <a href="../lab01/lab1.html#seven-segment-decoder-test">lab 1 decoder simulation</a>.</p>
+<section id="counter-test" class="level2" data-number="4.1">
+<h2 data-number="4.1" class="anchored" data-anchor-id="counter-test"><span class="header-section-number">4.1</span> Counter Test</h2>
+<details>
+<summary>
+counter_tb waveform
+</summary>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="counter_tb.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>counter_tb: counts, wraps, holds while enable is low, resets; 0 errors</figcaption>
+</figure>
+</div>
+</details>
+</section>
+<section id="scanner-test" class="level2" data-number="4.2">
+<h2 data-number="4.2" class="anchored" data-anchor-id="scanner-test"><span class="header-section-number">4.2</span> Scanner Test</h2>
+<details>
+<summary>
+scanner_tb waveform
+</summary>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="scanner_tb.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>scanner_tb: rows rotate 1000 → 0100 → 0010 → 0001, hold while enable is low, reset to 1000; 0 errors</figcaption>
+</figure>
+</div>
+</details>
+</section>
+<section id="top-level-test" class="level2" data-number="4.3">
+<h2 data-number="4.3" class="anchored" data-anchor-id="top-level-test"><span class="header-section-number">4.3</span> Top-Level Test</h2>
+<details>
+<summary>
+lab02_ct_tb waveform
+</summary>
+<div class="quarto-figure quarto-figure-center">
+<figure class="figure">
+<p><img src="lab02_ct_tb.png" class="img-fluid figure-img" style="width:100.0%"></p>
+<figcaption>lab02_ct_tb: digits alternate, each shows its input, LEDs follow the columns; 0 errors</figcaption>
+</figure>
+</div>
+</details>
+</section>
+</section>
+<section id="requirements-checklist" class="level1" data-number="5">
+<h1 data-number="5"><span class="header-section-number">5</span> Requirements Checklist</h1>
+<p>This design meets all Proficiency specifications. The one thing that doesn’t work is the bottom row of the keypad (*, 0, #), it doesn’t light up the LEDs. Some other things I did differently from the lab handout:</p>
+<ul>
+<li>I used 2N3906 PNPs to switch the digits instead of TP2104 PMOS, and used TP2104 PMOS with pull-down resistors for the keypad rows instead of TN2106 NMOS.</li>
+<li>One 4-bit number comes from a DIP switch on the breadboard and the other one comes from SW6 on the dev board.</li>
+<li>Keypad column 4 (A-D) doesn’t have an LED because I ran out of FPGA pins on the breadboard adapter.</li>
+</ul>
+</section>
+<section id="conclusion" class="level1" data-number="6">
+<h1 data-number="6"><span class="header-section-number">6</span> Conclusion</h1>
+<p>Met all proficiency specifications. Spent ~21 hours on this lab.</p>
+</section>
+<section id="ai-prototype-and-reflection" class="level1" data-number="7">
+<h1 data-number="7"><span class="header-section-number">7</span> AI Prototype and Reflection</h1>
+<section id="ai-prototype" class="level2" data-number="7.1">
+<h2 data-number="7.1" class="anchored" data-anchor-id="ai-prototype"><span class="header-section-number">7.1</span> AI Prototype</h2>
+</section>
+<section id="reflection" class="level2" data-number="7.2">
+<h2 data-number="7.2" class="anchored" data-anchor-id="reflection"><span class="header-section-number">7.2</span> Reflection</h2>
+<p><strong>How would you rate the quality of the output and why?</strong></p>
+<p><strong>What SystemVerilog constructs/syntax did the LLM generate that were new to you?</strong></p>
+<p><strong>Did the LLM-generated code synthesize the first time around? If not, what were the issues? What error or warning messages did Radiant output?</strong></p>
+<p><strong>What would you do differently the next time you use an LLM in your workflow?</strong></p>
+</section>
+</section>
+
+</main>
+<!-- /main column -->
+<script id="quarto-html-after-body" type="application/javascript">
+  window.document.addEventListener("DOMContentLoaded", function (event) {
+    const icon = "";
+    const anchorJS = new window.AnchorJS();
+    anchorJS.options = {
+      placement: 'right',
+      icon: icon
+    };
+    anchorJS.add('.anchored');
+    const isCodeAnnotation = (el) => {
+      for (const clz of el.classList) {
+        if (clz.startsWith('code-annotation-')) {                     
+          return true;
+        }
+      }
+      return false;
+    }
+    const onCopySuccess = function(e) {
+      // button target
+      const button = e.trigger;
+      // don't keep focus
+      button.blur();
+      // flash "checked"
+      button.classList.add('code-copy-button-checked');
+      var currentTitle = button.getAttribute("title");
+      button.setAttribute("title", "Copied!");
+      let tooltip;
+      if (window.bootstrap) {
+        button.setAttribute("data-bs-toggle", "tooltip");
+        button.setAttribute("data-bs-placement", "left");
+        button.setAttribute("data-bs-title", "Copied!");
+        tooltip = new bootstrap.Tooltip(button, 
+          { trigger: "manual", 
+            customClass: "code-copy-button-tooltip",
+            offset: [0, -8]});
+        tooltip.show();    
+      }
+      setTimeout(function() {
+        if (tooltip) {
+          tooltip.hide();
+          button.removeAttribute("data-bs-title");
+          button.removeAttribute("data-bs-toggle");
+          button.removeAttribute("data-bs-placement");
+        }
+        button.setAttribute("title", currentTitle);
+        button.classList.remove('code-copy-button-checked');
+      }, 1000);
+      // clear code selection
+      e.clearSelection();
+    }
+    const getTextToCopy = function(trigger) {
+      const outerScaffold = trigger.parentElement.cloneNode(true);
+      const codeEl = outerScaffold.querySelector('code');
+      for (const childEl of codeEl.children) {
+        if (isCodeAnnotation(childEl)) {
+          childEl.remove();
+        }
+      }
+      return codeEl.innerText;
+    }
+    const clipboard = new window.ClipboardJS('.code-copy-button:not([data-in-quarto-modal])', {
+      text: getTextToCopy
+    });
+    clipboard.on('success', onCopySuccess);
+    if (window.document.getElementById('quarto-embedded-source-code-modal')) {
+      const clipboardModal = new window.ClipboardJS('.code-copy-button[data-in-quarto-modal]', {
+        text: getTextToCopy,
+        container: window.document.getElementById('quarto-embedded-source-code-modal')
+      });
+      clipboardModal.on('success', onCopySuccess);
+    }
+      var localhostRegex = new RegExp(/^(?:http|https):\/\/localhost\:?[0-9]*\//);
+      var mailtoRegex = new RegExp(/^mailto:/);
+        var filterRegex = new RegExp('/' + window.location.host + '/');
+      var isInternal = (href) => {
+          return filterRegex.test(href) || localhostRegex.test(href) || mailtoRegex.test(href);
+      }
+      // Inspect non-navigation links and adorn them if external
+     var links = window.document.querySelectorAll('a[href]:not(.nav-link):not(.navbar-brand):not(.toc-action):not(.sidebar-link):not(.sidebar-item-toggle):not(.pagination-link):not(.no-external):not([aria-hidden]):not(.dropdown-item):not(.quarto-navigation-tool):not(.about-link)');
+      for (var i=0; i<links.length; i++) {
+        const link = links[i];
+        if (!isInternal(link.href)) {
+          // undo the damage that might have been done by quarto-nav.js in the case of
+          // links that we want to consider external
+          if (link.dataset.originalHref !== undefined) {
+            link.href = link.dataset.originalHref;
+          }
+        }
+      }
+    function tippyHover(el, contentFn, onTriggerFn, onUntriggerFn) {
+      const config = {
+        allowHTML: true,
+        maxWidth: 500,
+        delay: 100,
+        arrow: false,
+        appendTo: function(el) {
+            return el.parentElement;
+        },
+        interactive: true,
+        interactiveBorder: 10,
+        theme: 'quarto',
+        placement: 'bottom-start',
+      };
+      if (contentFn) {
+        config.content = contentFn;
+      }
+      if (onTriggerFn) {
+        config.onTrigger = onTriggerFn;
+      }
+      if (onUntriggerFn) {
+        config.onUntrigger = onUntriggerFn;
+      }
+      window.tippy(el, config); 
+    }
+    const noterefs = window.document.querySelectorAll('a[role="doc-noteref"]');
+    for (var i=0; i<noterefs.length; i++) {
+      const ref = noterefs[i];
+      tippyHover(ref, function() {
+        // use id or data attribute instead here
+        let href = ref.getAttribute('data-footnote-href') || ref.getAttribute('href');
+        try { href = new URL(href).hash; } catch {}
+        const id = href.replace(/^#\/?/, "");
+        const note = window.document.getElementById(id);
+        if (note) {
+          return note.innerHTML;
+        } else {
+          return "";
+        }
+      });
+    }
+    const xrefs = window.document.querySelectorAll('a.quarto-xref');
+    const processXRef = (id, note) => {
+      // Strip column container classes
+      const stripColumnClz = (el) => {
+        el.classList.remove("page-full", "page-columns");
+        if (el.children) {
+          for (const child of el.children) {
+            stripColumnClz(child);
+          }
+        }
+      }
+      stripColumnClz(note)
+      if (id === null || id.startsWith('sec-')) {
+        // Special case sections, only their first couple elements
+        const container = document.createElement("div");
+        if (note.children && note.children.length > 2) {
+          container.appendChild(note.children[0].cloneNode(true));
+          for (let i = 1; i < note.children.length; i++) {
+            const child = note.children[i];
+            if (child.tagName === "P" && child.innerText === "") {
+              continue;
+            } else {
+              container.appendChild(child.cloneNode(true));
+              break;
+            }
+          }
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(container);
+          }
+          return container.innerHTML
+        } else {
+          if (window.Quarto?.typesetMath) {
+            window.Quarto.typesetMath(note);
+          }
+          return note.innerHTML;
+        }
+      } else {
+        // Remove any anchor links if they are present
+        const anchorLink = note.querySelector('a.anchorjs-link');
+        if (anchorLink) {
+          anchorLink.remove();
+        }
+        if (window.Quarto?.typesetMath) {
+          window.Quarto.typesetMath(note);
+        }
+        if (note.classList.contains("callout")) {
+          return note.outerHTML;
+        } else {
+          return note.innerHTML;
+        }
+      }
+    }
+    for (var i=0; i<xrefs.length; i++) {
+      const xref = xrefs[i];
+      tippyHover(xref, undefined, function(instance) {
+        instance.disable();
+        let url = xref.getAttribute('href');
+        let hash = undefined; 
+        if (url.startsWith('#')) {
+          hash = url;
+        } else {
+          try { hash = new URL(url).hash; } catch {}
+        }
+        if (hash) {
+          const id = hash.replace(/^#\/?/, "");
+          const note = window.document.getElementById(id);
+          if (note !== null) {
+            try {
+              const html = processXRef(id, note.cloneNode(true));
+              instance.setContent(html);
+            } finally {
+              instance.enable();
+              instance.show();
+            }
+          } else {
+            // See if we can fetch this
+            fetch(url.split('#')[0])
+            .then(res => res.text())
+            .then(html => {
+              const parser = new DOMParser();
+              const htmlDoc = parser.parseFromString(html, "text/html");
+              const note = htmlDoc.getElementById(id);
+              if (note !== null) {
+                const html = processXRef(id, note);
+                instance.setContent(html);
+              } 
+            }).finally(() => {
+              instance.enable();
+              instance.show();
+            });
+          }
+        } else {
+          // See if we can fetch a full url (with no hash to target)
+          // This is a special case and we should probably do some content thinning / targeting
+          fetch(url)
+          .then(res => res.text())
+          .then(html => {
+            const parser = new DOMParser();
+            const htmlDoc = parser.parseFromString(html, "text/html");
+            const note = htmlDoc.querySelector('main.content');
+            if (note !== null) {
+              // This should only happen for chapter cross references
+              // (since there is no id in the URL)
+              // remove the first header
+              if (note.children.length > 0 && note.children[0].tagName === "HEADER") {
+                note.children[0].remove();
+              }
+              const html = processXRef(null, note);
+              instance.setContent(html);
+            } 
+          }).finally(() => {
+            instance.enable();
+            instance.show();
+          });
+        }
+      }, function(instance) {
+      });
+    }
+        let selectedAnnoteEl;
+        const selectorForAnnotation = ( cell, annotation) => {
+          let cellAttr = 'data-code-cell="' + cell + '"';
+          let lineAttr = 'data-code-annotation="' +  annotation + '"';
+          const selector = 'span[' + cellAttr + '][' + lineAttr + ']';
+          return selector;
+        }
+        const selectCodeLines = (annoteEl) => {
+          const doc = window.document;
+          const targetCell = annoteEl.getAttribute("data-target-cell");
+          const targetAnnotation = annoteEl.getAttribute("data-target-annotation");
+          const annoteSpan = window.document.querySelector(selectorForAnnotation(targetCell, targetAnnotation));
+          const lines = annoteSpan.getAttribute("data-code-lines").split(",");
+          const lineIds = lines.map((line) => {
+            return targetCell + "-" + line;
+          })
+          let top = null;
+          let height = null;
+          let parent = null;
+          if (lineIds.length > 0) {
+              //compute the position of the single el (top and bottom and make a div)
+              const el = window.document.getElementById(lineIds[0]);
+              top = el.offsetTop;
+              height = el.offsetHeight;
+              parent = el.parentElement.parentElement;
+            if (lineIds.length > 1) {
+              const lastEl = window.document.getElementById(lineIds[lineIds.length - 1]);
+              const bottom = lastEl.offsetTop + lastEl.offsetHeight;
+              height = bottom - top;
+            }
+            if (top !== null && height !== null && parent !== null) {
+              // cook up a div (if necessary) and position it 
+              let div = window.document.getElementById("code-annotation-line-highlight");
+              if (div === null) {
+                div = window.document.createElement("div");
+                div.setAttribute("id", "code-annotation-line-highlight");
+                div.style.position = 'absolute';
+                parent.appendChild(div);
+              }
+              div.style.top = top - 2 + "px";
+              div.style.height = height + 4 + "px";
+              div.style.left = 0;
+              let gutterDiv = window.document.getElementById("code-annotation-line-highlight-gutter");
+              if (gutterDiv === null) {
+                gutterDiv = window.document.createElement("div");
+                gutterDiv.setAttribute("id", "code-annotation-line-highlight-gutter");
+                gutterDiv.style.position = 'absolute';
+                const codeCell = window.document.getElementById(targetCell);
+                const gutter = codeCell.querySelector('.code-annotation-gutter');
+                gutter.appendChild(gutterDiv);
+              }
+              gutterDiv.style.top = top - 2 + "px";
+              gutterDiv.style.height = height + 4 + "px";
+            }
+            selectedAnnoteEl = annoteEl;
+          }
+        };
+        const unselectCodeLines = () => {
+          const elementsIds = ["code-annotation-line-highlight", "code-annotation-line-highlight-gutter"];
+          elementsIds.forEach((elId) => {
+            const div = window.document.getElementById(elId);
+            if (div) {
+              div.remove();
+            }
+          });
+          selectedAnnoteEl = undefined;
+        };
+          // Handle positioning of the toggle
+      window.addEventListener(
+        "resize",
+        throttle(() => {
+          elRect = undefined;
+          if (selectedAnnoteEl) {
+            selectCodeLines(selectedAnnoteEl);
+          }
+        }, 10)
+      );
+      function throttle(fn, ms) {
+      let throttle = false;
+      let timer;
+        return (...args) => {
+          if(!throttle) { // first call gets through
+              fn.apply(this, args);
+              throttle = true;
+          } else { // all the others get throttled
+              if(timer) clearTimeout(timer); // cancel #2
+              timer = setTimeout(() => {
+                fn.apply(this, args);
+                timer = throttle = false;
+              }, ms);
+          }
+        };
+      }
+        // Attach click handler to the DT
+        const annoteDls = window.document.querySelectorAll('dt[data-target-cell]');
+        for (const annoteDlNode of annoteDls) {
+          annoteDlNode.addEventListener('click', (event) => {
+            const clickedEl = event.target;
+            if (clickedEl !== selectedAnnoteEl) {
+              unselectCodeLines();
+              const activeEl = window.document.querySelector('dt[data-target-cell].code-annotation-active');
+              if (activeEl) {
+                activeEl.classList.remove('code-annotation-active');
+              }
+              selectCodeLines(clickedEl);
+              clickedEl.classList.add('code-annotation-active');
+            } else {
+              // Unselect the line
+              unselectCodeLines();
+              clickedEl.classList.remove('code-annotation-active');
+            }
+          });
+        }
+    const findCites = (el) => {
+      const parentEl = el.parentElement;
+      if (parentEl) {
+        const cites = parentEl.dataset.cites;
+        if (cites) {
+          return {
+            el,
+            cites: cites.split(' ')
+          };
+        } else {
+          return findCites(el.parentElement)
+        }
+      } else {
+        return undefined;
+      }
+    };
+    var bibliorefs = window.document.querySelectorAll('a[role="doc-biblioref"]');
+    for (var i=0; i<bibliorefs.length; i++) {
+      const ref = bibliorefs[i];
+      const citeInfo = findCites(ref);
+      if (citeInfo) {
+        tippyHover(citeInfo.el, function() {
+          var popup = window.document.createElement('div');
+          citeInfo.cites.forEach(function(cite) {
+            var citeDiv = window.document.createElement('div');
+            citeDiv.classList.add('hanging-indent');
+            citeDiv.classList.add('csl-entry');
+            var biblioDiv = window.document.getElementById('ref-' + cite);
+            if (biblioDiv) {
+              citeDiv.innerHTML = biblioDiv.innerHTML;
+            }
+            popup.appendChild(citeDiv);
+          });
+          return popup.innerHTML;
+        });
+      }
+    }
+  });
+  </script>
+</div> <!-- /content -->
+
+
+
+
+</body></html>

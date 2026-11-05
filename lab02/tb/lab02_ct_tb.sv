@@ -10,7 +10,7 @@ module lab02_ct_tb();
     logic       clk;
     logic       reset_n;
     logic [3:0] switch_n;
-    logic [1:0] button_n;
+    logic [3:0] sw6;
     logic [3:0] col;
     logic [3:0] row_n;
     logic [2:0] led;
@@ -27,7 +27,7 @@ module lab02_ct_tb();
     ) dut (
         .reset_n(reset_n),
         .switch_n(switch_n),
-        .button_n(button_n),
+        .sw6(sw6),
         .col(col),
         .row_n(row_n),
         .led(led),
@@ -79,9 +79,9 @@ module lab02_ct_tb();
                 end
                 2'b01: begin
                     digit1_checks++;
-                    if (segment !== ~expected_segment({2'b00, ~button_n})) begin
-                        $display("ERROR t=%0t: digit 1, button_n=%b, segment=%b expected %b",
-                                 $time, button_n, segment, ~expected_segment({2'b00, ~button_n}));
+                    if (segment !== ~expected_segment(sw6)) begin
+                        $display("ERROR t=%0t: digit 1, sw6=%b, segment=%b expected %b",
+                                 $time, sw6, segment, ~expected_segment(sw6));
                         errors++;
                     end
                 end
@@ -105,17 +105,17 @@ module lab02_ct_tb();
         digit1_checks = 0;
         rows_seen     = 4'b0000;
         switch_n      = 4'b1111;
-        button_n      = 2'b11;
+        sw6           = 4'b0000;
         col           = 4'b0000;
         reset_n       = 0;
         #12;
         reset_n = 1;
 
-        // multiplexing: every switch value with every button value, long enough to see both digits
+        // multiplexing: every breadboard switch value with every SW6 value, long enough to see both digits
         for (int sw = 0; sw < 16; sw++) begin
-            for (int btn = 0; btn < 4; btn++) begin
+            for (int sw_b = 0; sw_b < 16; sw_b++) begin
                 switch_n = ~sw[3:0];
-                button_n = ~btn[1:0];
+                sw6      = sw_b[3:0];
                 repeat (4 * MUX_TOGGLE_CYCLES) @(posedge clk);
             end
         end
