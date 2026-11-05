@@ -14,9 +14,10 @@ ldc_set_location -site {19} [get_ports {switch_n[2]}]
 ldc_set_location -site {11} [get_ports {switch_n[1]}]
 ldc_set_location -site {6}  [get_ports {switch_n[0]}]
 
-# onboard pushbuttons (button to GND, internal pull-ups); SW1 = bit 1, SW0 = bit 0
-ldc_set_location -site {43} [get_ports {button_n[1]}]
-ldc_set_location -site {34} [get_ports {button_n[0]}]
+# onboard pushbuttons (button to GND, internal pull-ups); P34 = bit 1, P43 = bit 0
+# (schematic labels P34 as SW0, but on my board the button on P43 is the one that should be the LSB)
+ldc_set_location -site {34} [get_ports {button_n[1]}]
+ldc_set_location -site {43} [get_ports {button_n[0]}]
 
 # keypad columns (inputs, external 10k pull-downs to GND; they overpower the internal 100k pull-ups)
 ldc_set_location -site {3}  [get_ports {col[0]}]
