@@ -10,7 +10,7 @@ module lab02_ct_tb();
     logic       clk;
     logic       reset_n;
     logic [3:0] switch_n;
-    logic [3:0] sw6;
+    logic [3:0] onboard_switch_n;
     logic [3:0] col;
     logic [3:0] row_n;
     logic [2:0] led;
@@ -27,7 +27,7 @@ module lab02_ct_tb();
     ) dut (
         .reset_n(reset_n),
         .switch_n(switch_n),
-        .sw6(sw6),
+        .onboard_switch_n(onboard_switch_n),
         .col(col),
         .row_n(row_n),
         .led(led),
@@ -79,9 +79,9 @@ module lab02_ct_tb();
                 end
                 2'b01: begin
                     digit1_checks++;
-                    if (segment !== ~expected_segment(sw6)) begin
-                        $display("ERROR t=%0t: digit 1, sw6=%b, segment=%b expected %b",
-                                 $time, sw6, segment, ~expected_segment(sw6));
+                    if (segment !== ~expected_segment(~onboard_switch_n)) begin
+                        $display("ERROR t=%0t: digit 1, onboard_switch_n=%b, segment=%b expected %b",
+                                 $time, onboard_switch_n, segment, ~expected_segment(~onboard_switch_n));
                         errors++;
                     end
                 end
@@ -105,7 +105,7 @@ module lab02_ct_tb();
         digit1_checks = 0;
         rows_seen     = 4'b0000;
         switch_n      = 4'b1111;
-        sw6           = 4'b0000;
+        onboard_switch_n = 4'b1111;
         col           = 4'b0000;
         reset_n       = 0;
         #12;
@@ -115,7 +115,7 @@ module lab02_ct_tb();
         for (int sw = 0; sw < 16; sw++) begin
             for (int sw_b = 0; sw_b < 16; sw_b++) begin
                 switch_n = ~sw[3:0];
-                sw6      = sw_b[3:0];
+                onboard_switch_n = ~sw_b[3:0];
                 repeat (4 * MUX_TOGGLE_CYCLES) @(posedge clk);
             end
         end
