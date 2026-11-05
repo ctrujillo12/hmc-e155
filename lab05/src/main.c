@@ -22,8 +22,17 @@ static void printSpeed(int32_t urps) {
     const char *dir = (urps > 0) ? "CW" : (urps < 0) ? "CCW" : "stopped";
 
     // whole part . 4 decimal digits
-    printf("speed: %c%lu.%04lu rev/s  (%s)\n",
-           sign, (unsigned long)(mag / DECIMAL_SCALE), (unsigned long)(mag % DECIMAL_SCALE), dir);
+    // (this printf doesn't support %lu or %04, so zero-pad the decimals by hand)
+    unsigned int whole = (unsigned int)(mag / DECIMAL_SCALE);
+    unsigned int frac  = (unsigned int)(mag % DECIMAL_SCALE);
+    char fracStr[5];
+    for (int i = 3; i >= 0; i--) {
+        fracStr[i] = (char)('0' + frac % 10);
+        frac /= 10;
+    }
+    fracStr[4] = '\0';
+
+    printf("speed: %c%u.%s rev/s  (%s)\n", sign, whole, fracStr, dir);
 }
 // prints micro-rev/s as "+2.4571"
 
