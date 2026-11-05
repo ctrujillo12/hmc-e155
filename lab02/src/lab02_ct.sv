@@ -11,7 +11,7 @@ module lab02_ct #(
 )(
     input  logic       reset_n,     // active-low reset (internal pull-up keeps it high)
     input  logic [3:0] switch_n,    // breadboard DIP switch to GND, ON = 0
-    input  logic [3:0] onboard_switch,   // onboard DIP switch SW6, ON = 1 (same as lab 1)
+    input  logic [3:0] onboard_switch_n, // onboard DIP switch SW6, ON = 0
     input  logic [3:0] col,         // keypad columns, 1 = key pressed in the active row
     output logic [3:0] row_n,       // keypad row PMOS gates, 0 = row pulled high (active)
     output logic [2:0] led,         // keypad columns 1-3 pass-through, 1 = on
@@ -55,7 +55,7 @@ module lab02_ct #(
     );
 
     // multiplexing
-    assign digit_value = digit_sel ? onboard_switch : ~switch_n;
+    assign digit_value = digit_sel ? ~onboard_switch_n : ~switch_n;
     assign anode_en_n = digit_sel ? 2'b01 : 2'b10;
 
     // single decoder (lab 1, active-low segments: 0 = lit)
