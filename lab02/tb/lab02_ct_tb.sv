@@ -1,7 +1,4 @@
-// lab02_ct_tb: automatic testbench for the top level.
-// Checks multiplexing (each digit shows the right number on the right anode_en_n, for every input),
-// LED pass-through for every column pattern, and that the keypad row output is always one-hot.
-// Needs the Radiant iCE40UP simulation library for HSOSC (vsim -L iCE40UP); the clock is forced from here.
+// lab02_ct_tb: automatic testbench for the top level
 module lab02_ct_tb();
 
     localparam int unsigned MUX_TOGGLE_CYCLES   = 2;

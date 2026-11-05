@@ -1,6 +1,4 @@
-// scanner_tb: automatic testbench for scanner.
-// Checks: reset to 1000, all four transitions (1000->0100->0010->0001->1000),
-// CYCLES_PER_ROW cycles per row, enable hold, asynchronous reset.
+// scanner_tb: automatic testbench for scanner
 module scanner_tb();
 
     localparam int unsigned CYCLES_PER_ROW = 3;

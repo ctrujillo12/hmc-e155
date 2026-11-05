@@ -1,5 +1,4 @@
-// counter_tb: automatic testbench for counter (re-verifies the lab 1 counter after adding the count output).
-// Checks: reset values, counting and wrap, blink toggling on wrap, enable hold, asynchronous reset.
+// counter_tb: automatic testbench for counter (re-verifies the lab 1 counter after adding the count output)
 module counter_tb();
 
     localparam int unsigned MAX_COUNT = 5;
