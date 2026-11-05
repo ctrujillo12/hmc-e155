@@ -1,7 +1,4 @@
-// counter: lab 1 counter, reused for lab 2.
-// Sequential, asynchronous active-low reset.
-// While enable is high, count runs 0 .. MAX_COUNT-1 and wraps; blink toggles on every wrap.
-// Lab 2 change: count is now an output port so the scanner can decode it.
+// counter: counts 0 to MAX_COUNT-1 while enabled, blink toggles every wrap
 module counter #(
     parameter int unsigned MAX_COUNT = 10_000_000
 )(

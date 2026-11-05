@@ -11,7 +11,8 @@ module lab02_ct_tb();
     logic [3:0] col;
     logic [3:0] row_n;
     logic [2:0] led;
-    logic [1:0] anode_en_n;
+    logic       left_digit;
+    logic       right_digit;
     logic [6:0] segment;
 
     int errors;
@@ -28,7 +29,8 @@ module lab02_ct_tb();
         .col(col),
         .row_n(row_n),
         .led(led),
-        .anode_en_n(anode_en_n),
+        .left_digit(left_digit),
+        .right_digit(right_digit),
         .segment(segment)
     );
 
@@ -39,8 +41,7 @@ module lab02_ct_tb();
     end
     initial force dut.int_osc = clk;
 
-    // expected lit segments {g,f,e,d,c,b,a}, 1 = lit (independent of the DUT's decoder);
-    // the DUT drives active-low, so outputs are compared against the inverse
+    // expected segments {g,f,e,d,c,b,a}, 1 = lit
     function automatic logic [6:0] expected_segment(input logic [3:0] value);
         case (value)
             4'h0: return 7'b0111111;
@@ -62,10 +63,10 @@ module lab02_ct_tb();
         endcase
     endfunction
 
-    // check the display and keypad outputs on every falling edge
+    // check outputs on every falling edge
     always @(negedge clk) begin
         if (reset_n) begin
-            case (anode_en_n)
+            case ({left_digit, right_digit})
                 2'b10: begin
                     digit0_checks++;
                     if (segment !== ~expected_segment(~switch_n)) begin
@@ -83,7 +84,7 @@ module lab02_ct_tb();
                     end
                 end
                 default: begin
-                    $display("ERROR t=%0t: anode_en_n=%b does not enable exactly one digit", $time, anode_en_n);
+                    $display("ERROR t=%0t: left_digit=%b right_digit=%b, not exactly one digit on", $time, left_digit, right_digit);
                     errors++;
                 end
             endcase
@@ -108,7 +109,7 @@ module lab02_ct_tb();
         #12;
         reset_n = 1;
 
-        // multiplexing: every breadboard switch value with every button combination, long enough to see both digits
+        // every switch value with every button combination
         for (int sw = 0; sw < 16; sw++) begin
             for (int btn = 0; btn < 4; btn++) begin
                 switch_n = ~sw[3:0];
@@ -117,7 +118,7 @@ module lab02_ct_tb();
             end
         end
 
-        // LED pass-through: every column pattern
+        // every column pattern
         for (int col_value = 0; col_value < 16; col_value++) begin
             col = col_value[3:0];
             #1;

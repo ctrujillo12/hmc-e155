@@ -8,7 +8,7 @@ module scanner_tb();
     logic [3:0] row;
 
     int errors;
-    int expected_count;     // reference model of the scan counter
+    int expected_count;
     int transitions_seen;
     logic [3:0] previous_row;
 
@@ -75,12 +75,12 @@ module scanner_tb();
             errors++;
         end
 
-        // move into the middle of row 0100, then disable: row must hold
+        // disable: row holds
         repeat (CYCLES_PER_ROW + 1) clock_and_check("scan");
         enable = 0;
         repeat (2 * SCAN_PERIOD) clock_and_check("enable hold");
 
-        // re-enable, then reset between clock edges: back to 1000 immediately
+        // reset: back to 1000
         enable = 1;
         repeat (CYCLES_PER_ROW) clock_and_check("scan");
         #2;

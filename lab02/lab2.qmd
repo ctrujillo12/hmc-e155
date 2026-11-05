@@ -1,5 +1,5 @@
 ---
-title: "HMC E155 — Lab 2: Multiplexed 7-Segment Display and Keypad Scanning"
+title: "Lab 2: Multiplexed 7-Segment Display and Keypad Scanning"
 author: "Cheyenne Trujillo"
 date: "2026-11-04"
 
@@ -12,7 +12,7 @@ format:
 
 # Introduction
 
-In this lab, I used one seven segment decoder to drive both digits of a dual seven segment display by time multiplexing between them. Each digit's common anode is turned on and off with a transistor, so only one digit is on at a time but it switches fast enough that you can't tell. The right digit shows a 4-bit number from a DIP switch I put on the breadboard and the left digit shows a 2-bit number from pushbuttons SW1 and SW0 on the dev board (I originally used the SW6 DIP switch, but its switch 4 only made contact when I pressed on the board). I also scanned a 4x4 keypad and hooked columns 1-3 up to LEDs, so when you hold down a key in one of those columns the LED blinks when the scanner gets to that row.
+In this lab, I used one seven segment decoder to drive both digits of a dual seven segment display by time multiplexing between them. Each digit's common anode is turned on and off with a transistor, so only one digit is on at a time but it switches fast enough that you can't tell. The right digit shows a 4-bit number from a DIP switch I put on the breadboard and the left digit shows a 2-bit number from pushbuttons SW0 and SW1 on the dev board. I also scanned a 4x4 keypad and hooked columns 1-3 up to LEDs, so when you hold down a key in one of those columns the LED blinks when the scanner gets to that row.
 
 # Design and Testing Methodology
 
@@ -21,15 +21,15 @@ In this lab, I used one seven segment decoder to drive both digits of a dual sev
 I organized the design into a top level module, a counter, a scanner and the seven segment decoder from lab 1.
 
 - [`lab02_ct.sv`](#lab02_ct-sv): top level module, connects everything and does the multiplexing and LED logic
-- [`counter.sv`](#counter-sv): lab 1 counter, only change is that count is an output now
+- [`counter.sv`](#counter-sv): lab 1 counter, only edit is that count is an output now
 - [`scanner.sv`](#scanner-sv): keypad scanner, uses a counter to pick which row is on
 - [`seven_segment.sv`](#seven_segment-sv): lab 1 decoder, didn't change it
 
 ## Time Multiplexing
 
-The oscillator is 24 MHz, and I want each digit on for 1 ms. N = 24×10⁶ × 0.001 = 24,000 cycles. So mux_counter toggles digit_sel every 24,000 cycles. digit_sel picks what goes into the decoder (breadboard DIP switch or the pushbuttons) and which digit gets turned on with anode_en_n. Each digit is on 1 ms out of every 2 ms, so the refresh rate is 500 Hz and it doesn't flicker.
+The oscillator is 24 MHz, and I wanted each digit on for 1 ms. N = 24×10⁶ × 0.001 = 24,000 cycles. So mux_counter toggles digit_sel every 24,000 cycles. digit_sel picks what goes into the decoder (breadboard DIP switch or the pushbuttons) and which digit gets turned on with left_digit and right_digit (active-low, so 0 = on). Each digit is on 1 ms out of every 2 ms, so the refresh rate is 500 Hz and it doesn't flicker.
 
-The DIP switch and the pushbuttons both connect the pin to ground when they're ON/pressed, so i invert them in the top level. The pushbuttons are only 2 bits, so the top two bits of the left digit are always 0 and it shows 0-3.
+The DIP switch and the pushbuttons both connect the pin to ground when they're ON/pressed, so I invert them in the top level. The pushbuttons are only 2 bits, so the top two bits of the left digit are always 0 and it shows 0-3.
 
 ## Keypad Scanning
 
@@ -37,7 +37,13 @@ The scanner uses a counter to rotate which row is on: 1000, 0100, 0010, 0001. Ea
 
 ## Testing Methodology
 
-I didn't change the decoder from lab 1 so I didn't re-simulate it ([lab 1 simulation](../lab01/lab1.html#seven-segment-decoder-test)). I made self-checking testbenches for the counter (since I changed it), the scanner and the top level.
+I simulated the counter, the scanner and the top level in QuestaSim, each with a self-checking testbench that counts errors, and all three passed with 0 errors (waveforms in [Simulation Results](#simulation-results)).
+
+- **counter_tb:** I re-ran this since I changed the counter to output count. It checks that it counts, wraps, holds while enable is low and resets.
+- **scanner_tb:** checks all four row transitions (1000 → 0100 → 0010 → 0001), that the row holds while enable is low, and that reset goes back to 1000.
+- **lab02_ct_tb:** checks that only one digit is on at a time, that each digit shows the right segments for every DIP switch value and button combination, that every keypad row gets driven, and that the LEDs follow the columns.
+
+The seven segment decoder didn't change from lab 1, so I didn't re-simulate it ([lab 1 simulation](../lab01/lab1.html#seven-segment-decoder-test)).
 
 # Technical Documentation
 
@@ -109,7 +115,7 @@ I didn't change the decoder from lab 1 so I didn't re-simulate it ([lab 1 simula
 
 ![Schematic of the off-board circuit](Lab2-16.jpg){width=100%}
 
-The two FPGA pushbuttons (P34 and P43, with P43 as the LSB), LEDs D6-D8 and SW7 are on the dev board so I didn't draw them, they're in the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch and the pushbuttons use the FPGA's internal pull-ups.
+Pushbuttons SW0 (P34) and SW1 (P43), LEDs D6-D8 and SW7 are on the dev board so I didn't draw them, they're in the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch and the pushbuttons use the FPGA's internal pull-ups.
 
 ## Current Calculations
 
@@ -164,10 +170,10 @@ The seven segment decoder was already tested in lab 1: [lab 1 decoder simulation
 
 # Requirements Checklist
 
-This design meets all Proficiency specifications. The one thing that doesn't work is the bottom row of the keypad (\*, 0, #), it doesn't light up the LEDs. Some other things I did differently from the lab handout:
+This design meets all Proficiency specifications. Some things I did differently from the lab handout:
 
 - I used 2N3906 PNPs to switch the digits instead of TP2104 PMOS, and used TP2104 PMOS with pull-down resistors for the keypad rows instead of TN2106 NMOS.
-- The right digit's 4-bit number comes from a DIP switch on the breadboard. The left digit comes from the two FPGA pushbuttons on the dev board (P43 = LSB, P34 = MSB), so it's only 2 bits (0-3) instead of 4. I switched to the pushbuttons because SW6's switch 4 only made contact when I pressed on the board.
+- The right digit's 4-bit number comes from a DIP switch on the breadboard instead of SW6 on the dev board, because SW6's switch 4 only made contact when I pressed on the board. The left digit comes from pushbuttons SW0:SW1 like the handout says (SW1 is the LSB since it's on the right physically).
 - Keypad column 4 (A-D) doesn't have an LED because I ran out of FPGA pins on the breadboard adapter.
 
 # Conclusion

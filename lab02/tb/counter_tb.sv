@@ -1,4 +1,4 @@
-// counter_tb: automatic testbench for counter (re-verifies the lab 1 counter after adding the count output)
+// counter_tb: automatic testbench for counter
 module counter_tb();
 
     localparam int unsigned MAX_COUNT = 5;
@@ -35,7 +35,7 @@ module counter_tb();
         end
     endtask
 
-    // advance the reference model by one enabled clock
+    // expected count after one clock
     task automatic step_expected();
         if (expected_count == MAX_COUNT - 1) begin
             expected_count = 0;

@@ -1,7 +1,4 @@
-// scanner: keypad row scanner.
-// Sequential (counter state), asynchronous active-low reset, enable holds the current row.
-// row rotates 1000 -> 0100 -> 0010 -> 0001, spending CYCLES_PER_ROW clock cycles on each.
-// Non-canonical state machine: the counter is the state, the assign is the output logic.
+// scanner: rotates row 1000 -> 0100 -> 0010 -> 0001, CYCLES_PER_ROW cycles each
 module scanner #(
     parameter int unsigned CYCLES_PER_ROW = 6_000_000 // 0.25 s at 24 MHz
 )(

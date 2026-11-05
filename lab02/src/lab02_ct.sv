@@ -1,22 +1,18 @@
-// lab02_ct: top level.
-// Time-multiplexes one seven-segment decoder across the two digits of an HDSP-521A
-// (common-anode dual display), each anode switched high-side by a 2N3906 PNP:
-//   digit 0 (right, P20) = breadboard DIP switch (4 bits),
-//   digit 1 (left, P12)  = dev board pushbuttons {P34, P43} as a 2-bit value (shows 0-3), P43 = LSB.
-// Scans a 4x4 keypad (rows driven high through TP2104 PMOS, open-drain style, with pull-downs)
-// and passes columns 1-3 to LEDs
-// (column 4 has no LED: no FPGA pin was left to reach one).
+// lab02_ct: top level
+// multiplexes one decoder across both digits (right = DIP switch, left = SW0/SW1)
+// and scans the keypad rows, passing columns 1-3 to the LEDs
 module lab02_ct #(
     parameter int unsigned MUX_TOGGLE_CYCLES   = 24_000,    // 1 ms per digit at 24 MHz
-    parameter int unsigned SCAN_CYCLES_PER_ROW = 6_000_000  // 0.25 s per row: each row bit toggles at 2 Hz
+    parameter int unsigned SCAN_CYCLES_PER_ROW = 6_000_000  // 0.25 s per row
 )(
-    input  logic       reset_n,     // active-low reset (internal pull-up keeps it high)
-    input  logic [3:0] switch_n,    // breadboard DIP switch to GND, ON = 0
-    input  logic [1:0] button_n,    // dev board pushbuttons {P34, P43} to GND, pressed = 0
-    input  logic [3:0] col,         // keypad columns, 1 = key pressed in the active row
-    output logic [3:0] row_n,       // keypad row PMOS gates, 0 = row pulled high (active)
-    output logic [2:0] led,         // keypad columns 1-3 pass-through, 1 = on
-    output logic [1:0] anode_en_n,  // digit PNP bases, 0 = digit on
+    input  logic       reset_n,     // active-low reset
+    input  logic [3:0] switch_n,    // breadboard DIP switch, ON = 0
+    input  logic [1:0] button_n,    // {SW0, SW1}, pressed = 0
+    input  logic [3:0] col,         // keypad columns
+    output logic [3:0] row_n,       // keypad rows, 0 = active
+    output logic [2:0] led,         // column LEDs
+    output logic       left_digit,  // 0 = on
+    output logic       right_digit, // 0 = on
     output logic [6:0] segment      // {g,f,e,d,c,b,a}, 0 = lit
 );
 
@@ -57,9 +53,10 @@ module lab02_ct #(
 
     // multiplexing
     assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n;
-    assign anode_en_n = digit_sel ? 2'b01 : 2'b10;
+    assign left_digit  = ~digit_sel;
+    assign right_digit = digit_sel;
 
-    // single decoder (lab 1, active-low segments: 0 = lit)
+    // single decoder
     seven_segment display_decoder (
         .s(digit_value),
         .segment(segment)
@@ -68,7 +65,7 @@ module lab02_ct #(
     // PMOS gates are active-low
     assign row_n = ~row_active;
 
-    // LED pass-through: LED on when its column is pulled high
+    // LED pass-through
     assign led = col[2:0];
 
 endmodule

@@ -1,46 +1,41 @@
-# lab02 pin constraints (iCE40UP5K, SG48)
-# Everything off the development board goes through the E155 breadboard adapter.
-# Development board SW7 (MCU bridge DIP): switches 1, 3, 8 ON, switches 2, 4, 5, 6, 7 OFF.
-#   ON:  #1 PA9 <-> P25 (row 2), #3 PA6 <-> P27 (row 1), #8 PA10 <-> P23 (row 4)
-#   OFF: #4 P20, #5 P10, #6 P12, #7 P21 are wired directly; #2 keeps P26 (reset) unconnected
-# The Nucleo must not drive PA6, PA9 or PA10.
+# lab02 pin constraints
+# SW7: switches 1, 3, 8 ON, the rest OFF
 
-# reset on P26: not wired to anything (SW7 #2 OFF), internal pull-up holds it high
+# reset
 ldc_set_location -site {26} [get_ports reset_n]
 
-# breadboard DIP switch (pin -> switch -> GND, internal pull-ups); P21 = MSB
+# breadboard DIP switch
 ldc_set_location -site {21} [get_ports {switch_n[3]}]
 ldc_set_location -site {19} [get_ports {switch_n[2]}]
 ldc_set_location -site {11} [get_ports {switch_n[1]}]
 ldc_set_location -site {6}  [get_ports {switch_n[0]}]
 
-# onboard pushbuttons (button to GND, internal pull-ups); P34 = bit 1, P43 = bit 0
-# (schematic labels P34 as SW0, but on my board the button on P43 is the one that should be the LSB)
+# pushbuttons, SW1 = LSB
 ldc_set_location -site {34} [get_ports {button_n[1]}]
 ldc_set_location -site {43} [get_ports {button_n[0]}]
 
-# keypad columns (inputs, external 10k pull-downs to GND; they overpower the internal 100k pull-ups)
+# keypad columns
 ldc_set_location -site {3}  [get_ports {col[0]}]
 ldc_set_location -site {45} [get_ports {col[1]}]
 ldc_set_location -site {46} [get_ports {col[2]}]
 ldc_set_location -site {10} [get_ports {col[3]}]
 
-# keypad rows (to TP2104 PMOS gates, low = row active; rows 1, 2, 4 through SW7 and the adapter MCU pins, row 3 direct)
+# keypad rows
 ldc_set_location -site {27} [get_ports {row_n[0]}]
 ldc_set_location -site {25} [get_ports {row_n[1]}]
 ldc_set_location -site {47} [get_ports {row_n[2]}]
 ldc_set_location -site {23} [get_ports {row_n[3]}]
 
-# column LEDs on the board: D6 = column 1, D7 = column 2, D8 = column 3 (column 4 has none)
+# column LEDs D6-D8
 ldc_set_location -site {42} [get_ports {led[0]}]
 ldc_set_location -site {38} [get_ports {led[1]}]
 ldc_set_location -site {28} [get_ports {led[2]}]
 
-# digit enables (to 2N3906 bases through 330 ohm, low = digit on)
-ldc_set_location -site {20} [get_ports {anode_en_n[0]}]
-ldc_set_location -site {12} [get_ports {anode_en_n[1]}]
+# digit enables
+ldc_set_location -site {20} [get_ports right_digit]
+ldc_set_location -site {12} [get_ports left_digit]
 
-# segments a..g (active-low, HDSP-521A common anode; each line feeds both digits)
+# segments a-g
 ldc_set_location -site {2}  [get_ports {segment[0]}]
 ldc_set_location -site {4}  [get_ports {segment[1]}]
 ldc_set_location -site {44} [get_ports {segment[2]}]
@@ -49,7 +44,7 @@ ldc_set_location -site {18} [get_ports {segment[4]}]
 ldc_set_location -site {48} [get_ports {segment[5]}]
 ldc_set_location -site {9}  [get_ports {segment[6]}]
 
-# internal 100k pull-ups on reset, the DIP switch and the pushbuttons
+# internal pull-ups
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports reset_n]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[0]}]
 ldc_set_port -iobuf {PULLMODE=100K} [get_ports {switch_n[1]}]
