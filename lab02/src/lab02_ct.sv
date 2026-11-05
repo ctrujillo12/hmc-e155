@@ -11,8 +11,7 @@ module lab02_ct #(
     input  logic [3:0] col,         // keypad columns
     output logic [3:0] row_n,       // keypad rows, 0 = active
     output logic [2:0] led,         // column LEDs
-    output logic       left_digit,  // 0 = on
-    output logic       right_digit, // 0 = on
+    output logic [1:0] digits,      // [1] = left, [0] = right, 0 = on
     output logic [6:0] segment      // {g,f,e,d,c,b,a}, 0 = lit
 );
 
@@ -53,8 +52,7 @@ module lab02_ct #(
 
     // multiplexing
     assign digit_value = digit_sel ? {2'b00, ~button_n} : ~switch_n;
-    assign left_digit  = ~digit_sel;
-    assign right_digit = digit_sel;
+    assign digits = digit_sel ? 2'b01 : 2'b10;
 
     // single decoder
     seven_segment display_decoder (

@@ -11,8 +11,7 @@ module lab02_ct_tb();
     logic [3:0] col;
     logic [3:0] row_n;
     logic [2:0] led;
-    logic       left_digit;
-    logic       right_digit;
+    logic [1:0] digits;
     logic [6:0] segment;
 
     int errors;
@@ -29,8 +28,7 @@ module lab02_ct_tb();
         .col(col),
         .row_n(row_n),
         .led(led),
-        .left_digit(left_digit),
-        .right_digit(right_digit),
+        .digits(digits),
         .segment(segment)
     );
 
@@ -66,7 +64,7 @@ module lab02_ct_tb();
     // check outputs on every falling edge
     always @(negedge clk) begin
         if (reset_n) begin
-            case ({left_digit, right_digit})
+            case (digits)
                 2'b10: begin
                     digit0_checks++;
                     if (segment !== ~expected_segment(~switch_n)) begin
@@ -84,7 +82,7 @@ module lab02_ct_tb();
                     end
                 end
                 default: begin
-                    $display("ERROR t=%0t: left_digit=%b right_digit=%b, not exactly one digit on", $time, left_digit, right_digit);
+                    $display("ERROR t=%0t: digits=%b, not exactly one digit on", $time, digits);
                     errors++;
                 end
             endcase

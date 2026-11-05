@@ -27,7 +27,7 @@ I organized the design into a top level module, a counter, a scanner and the sev
 
 ## Time Multiplexing
 
-The oscillator is 24 MHz, and I wanted each digit on for 1 ms. N = 24×10⁶ × 0.001 = 24,000 cycles. So mux_counter toggles digit_sel every 24,000 cycles. digit_sel picks what goes into the decoder (breadboard DIP switch or the pushbuttons) and which digit gets turned on with left_digit and right_digit (active-low, so 0 = on). Each digit is on 1 ms out of every 2 ms, so the refresh rate is 500 Hz and it doesn't flicker.
+The oscillator is 24 MHz, and I wanted each digit on for 1 ms. N = 24×10⁶ × 0.001 = 24,000 cycles. So mux_counter toggles digit_sel every 24,000 cycles. digit_sel picks what goes into the decoder (breadboard DIP switch or the pushbuttons) and which digit gets turned on with digits[1:0] ([1] = left, [0] = right, 0 = on). Each digit is on 1 ms out of every 2 ms, so the refresh rate is 500 Hz and it doesn't flicker.
 
 The DIP switch and the pushbuttons both connect the pin to ground when they're ON/pressed, so I invert them in the top level. The pushbuttons are only 2 bits, so the top two bits of the left digit are always 0 and it shows 0-3.
 
