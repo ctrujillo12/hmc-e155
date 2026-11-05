@@ -13,14 +13,18 @@
 #include "main.h"
 #include <stdio.h>
 
+// Speed is kept in micro-rev/s and printed with 4 decimals (0.0001 rev/s)
+#define URPS_PER_LSB   100     // 1 printed LSB = 0.0001 rev/s = 100 micro-rev/s
+#define DECIMAL_SCALE  10000   // 10^4 -> 4 digits after the decimal point
+
 // Print an integer number of micro-rev/s as e.g. "+2.4571" (4 decimals) without float printf.
 static void printSpeed(int32_t urps) {
     char sign = (urps < 0) ? '-' : '+';
     uint32_t mag = (urps < 0) ? (uint32_t)(-urps) : (uint32_t)urps;
-    mag = (mag + 50) / 100;                       // round to 0.0001 rev/s
+    mag = (mag + URPS_PER_LSB / 2) / URPS_PER_LSB;   // round to 0.0001 rev/s
     const char *dir = (urps > 0) ? "CW" : (urps < 0) ? "CCW" : "stopped";
     printf("speed: %c%lu.%04lu rev/s  (%s)\n",
-           sign, (unsigned long)(mag / 10000), (unsigned long)(mag % 10000), dir);
+           sign, (unsigned long)(mag / DECIMAL_SCALE), (unsigned long)(mag % DECIMAL_SCALE), dir);
 }
 
 int main(void) {

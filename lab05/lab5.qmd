@@ -1,7 +1,7 @@
 ---
-title: "Lab 5: Interrupts"
+title: "E155 Lab 5: Interrupts"
 author: "Cheyenne Trujillo"
-date: "2026-11-01"
+date: "2026-11-04"
 
 format:
   html:
@@ -12,306 +12,335 @@ format:
 
 # Introduction
 
-In this lab I used the STM32L432KC to measure the speed and direction of a 25GA-370 brushed DC motor with a quadrature encoder. The encoder has two hall-effect sensors (A and B) that make square waves 90° out of phase. Both channels trigger an interrupt on every rising and falling edge. The interrupt decides whether the shaft moved one step forward or back, and once a second the main loop turns the count into revolutions per second and prints it with the direction.
+In this lab I used the STM32L432KC to measure how fast a 25GA-370 DC motor spins and which way it's going. The motor has a quadrature encoder on the back: a magnet disk on the motor shaft and two hall sensors (A and B) that switch on and off as the magnet spins past them. That gives two square waves that are 90° apart.
+
+Every rising and falling edge on A or B triggers an interrupt on the MCU. The interrupt checks A and B and figures out if the shaft moved one step forward or one step backward, and saves the time it happened. Once a second the main loop uses those counts and times to calculate the speed in rev/s and prints it with the direction (CW or CCW) in the SEGGER debug terminal.
 
 # Design
 
 ## Code
 
-- `main.c`: setup, then a 1 Hz loop that computes and prints the speed
-- `main.h`: gear ratio and timing settings
-- `encoder.c/.h`: GPIO + EXTI + NVIC setup, the interrupt handler, and the 1 MHz timestamp timer
-- `lib/`: course GPIO, RCC (80 MHz PLL) and FLASH drivers, same as Lab 6
+I split code into these files:
 
-## Quadrature decoding
+- `main.c` sets everything up, and then every 1 s calculates the speed and prints it.
+- `main.h` has the gear ratio and timing settings.
+- `encoder.c` / `encoder.h` set up the pins, the interrupts and a 1 MHz timer, and has the interrupt handler. Nothing in here depends on the motor, so the gear ratio gets passed in from `main`.
+- `lib/` is the course GPIO, RCC (80 MHz) and FLASH drivers, same as lab 6.
 
-Turning forward, the encoder goes through AB = 00 → 10 → 11 → 01 → 00 (A leads B). Backward is the same cycle in reverse. Every edge on either channel moves one step around the cycle, so with both edges on both channels I get **4 counts per encoder pulse** (x4 decoding).
+## Block Diagram
 
-The ISR reads A and B in one `GPIOA->IDR` read and looks up `(old AB, new AB)` in a 16-entry table:
+![Block diagram: encoder A/B → EXTI6/EXTI8 (both edges) → EXTI9_5_IRQHandler (read A,B → lookup table) → main every 1 s, with TIM2 at 1 MHz giving the edge times](Lab2-19.jpg){width=60%}
 
-| prev ↓ / new → | 00 | 01 | 10 | 11 |
+There are two parts that run separately:
+
+- **The interrupt** runs every time A or B changes. It only updates three shared variables: `position` (signed count of steps), `edgeTime` (when the last step happened) and `badEdges` (how many edges got missed).
+- **The main loop** reads those variables once a second and does all the math and printing.
+
+The shared variables are `volatile` bc the interrupt can change them at any time, and without `volatile` the compiler could keep an old copy in a register and `main` would never see the new value. Keeping the math in `main` means the interrupt is really short, so it's done before the next edge shows up.
+
+## How the Encoder Works
+
+If you only had channel A, you could count pulses to get the speed, but you wouldn't know which way the motor is turning. That's what B is for. B is shifted 90° from A, so:
+
+- Spinning one way, A changes first and then B follows.
+- Spinning the other way, B changes first and then A follows.
+
+Looking at both together, the encoder goes through 4 states. Forward is AB = 00 → 10 → 11 → 01 → 00, and backwards is the same loop in reverse. Each edge on either channel moves one step around the loop, so there are 4 edges per pulse. Counting all 4 instead of just the rising edges of A gives 4x the resolution.
+
+## Quadrature Decoding
+
+Every time the interrupt runs, it reads A and B and compares them to what they were last time. The table says which way it moved:
+
+| old ↓ / new → | 00 | 01 | 10 | 11 |
 |---|---|---|---|---|
-| **00** | 0 | −1 | +1 | ✗ |
-| **01** | +1 | 0 | ✗ | −1 |
-| **10** | −1 | ✗ | 0 | +1 |
-| **11** | ✗ | +1 | −1 | 0 |
+| **00** | 0 | -1 | +1 | ✗ |
+| **01** | +1 | 0 | ✗ | -1 |
+| **10** | -1 | ✗ | 0 | +1 |
+| **11** | ✗ | +1 | -1 | 0 |
 
-The result gets added to a signed `position`, so direction is just the sign. ✗ means both bits changed at once, which can only happen if an edge was missed. Those get counted in `badEdges` and printed as a warning, so I can tell if the interrupts ever fall behind.
+For example, if AB was 00 and A goes high, AB is now 10. Row 00, column 10 is +1, so that's one step forward. If B had gone high instead (00 → 01), it's -1, one step backward.
 
-## Interrupt setup
+The result gets added to `position`. Going forward it counts up and going backward it counts down, so the direction is just the sign of the change.
 
-1. `RCC->APB2ENR` turns on SYSCFG
-2. `SYSCFG->EXTICR` routes port A to EXTI6 and EXTI8
-3. `EXTI->RTSR1` and `FTSR1` trigger on both edges, and `IMR1` unmasks the lines
-4. `NVIC_EnableIRQ(EXTI9_5_IRQn)`, since lines 5–9 share one interrupt vector
-5. `__enable_irq()`
+Some details:
 
-In the handler I clear the pending bits with `EXTI->PR1 = pending` (not `|=`). PR1 is write-1-to-clear, so `|=` would also clear any other EXTI line that happened to be pending. I clear the flag **before** reading the pins: if a new edge lands right after the read, it sets the flag again and the handler runs again, so no edge gets lost.
+- I read A and B in one read of `GPIOA->IDR` (both are on port A). If I read them separately, one could change in between and I'd get a state that never really happened.
+- ✗ means both A and B changed at the same time. That can't happen with a real encoder, since they're 90° apart. It only shows up if the MCU missed an edge in between. Those get counted in `badEdges` and `main` prints a warning, so I'd know if the interrupts ever couldn't keep up.
+- The table is stored as an array of 16 numbers, indexed by (old AB × 4) + new AB, so the interrupt doesn't need any `if` statements to figure out the direction.
+
+## Interrupts
+
+I used interrupts instead of checking the pins in a loop (polling). With polling, the CPU would have to keep reading the pins nonstop, and anything else it does, like printing, takes time where it isn't looking at the pins and could miss an edge. With interrupts, the hardware notices the edge by itself and stops whatever the CPU is doing to run the handler, so no edge gets skipped even while `main` is printing.
+
+How I set it up:
+
+1. **Turn on SYSCFG** in `RCC->APB2ENR`. SYSCFG is the part that decides which port each EXTI line listens to, so its clock has to be on.
+2. **Route the pins** with `SYSCFG->EXTICR`. EXTI line 6 can come from PA6, PB6, PC6..., so I set it to port A. Same for line 8 → PA8.
+3. **Pick the edges** with `EXTI->RTSR1` (rising) and `EXTI->FTSR1` (falling). I set both for both lines, bc I want all 4 edges.
+4. **Unmask** lines 6 and 8 in `EXTI->IMR1` so they're actually allowed to cause an interrupt.
+5. **Turn on the interrupt in the NVIC** with `NVIC_EnableIRQ(EXTI9_5_IRQn)`. Lines 5-9 all share one interrupt, so both A and B go to the same handler, `EXTI9_5_IRQHandler`.
+6. **Enable interrupts globally** with `__enable_irq()`.
+
+Before turning anything on, I also read A and B once to set the starting state, so the first edge gets compared against the right thing.
+
+What the handler does every edge:
+
+1. Checks which of lines 6/8 are pending in `EXTI->PR1`.
+2. Clears them with `EXTI->PR1 = pending`. PR1 clears whatever bits you write a 1 to, so using `|=` would read all the pending bits and write them all back, which clears every other pending line too.
+3. Saves the time from TIM2.
+4. Reads A and B, looks up the step in the table, and adds it to `position` (or adds 1 to `badEdges`).
+
+I clear the flag before reading the pins on purpose. If another edge happens right after I read the pins, it sets the flag again and the handler just runs one more time, so that edge doesn't get lost.
 
 ## Speed
 
-TIM2 runs free at 1 MHz (PSC = 80 − 1, ARR = 0xFFFFFFFF), so it works as a 1 µs clock that wraps every ~71 minutes. Every edge saves the current TIM2 count as `edgeTime`.
+To know when each edge happened I use TIM2 as a clock. It counts at 1 MHz (PSC = 80 - 1 from the 80 MHz clock, ARR = 0xFFFFFFFF), so each count is 1 µs. It's a 32-bit timer so it only wraps around every ~71 min, and subtracting two times with unsigned math still works when it wraps. Every edge saves the TIM2 count as `edgeTime`.
 
-Once a second `main()` takes a snapshot of `position` and `edgeTime` (with interrupts briefly off, so the two always come from the same edge) and computes
+Once a second, `main`:
 
-$$v = \frac{\Delta \text{edges}}{\Delta t_{\text{edges}} \cdot \text{edges/rev}}$$
+1. Turns off interrupts for a moment, copies `position`, `edgeTime` and `badEdges`, and turns them back on. This makes sure `position` and `edgeTime` come from the same edge. Otherwise an interrupt could happen in between copying the two and they wouldn't match.
+2. Calculates how many edges happened since last time, and how much time passed between the last edge last time and the last edge now.
+3. Divides to get the speed:
 
-where Δt is the time between the last edge of the previous snapshot and the last edge of this one. This is better than "count edges in a 1 s window": a fixed window is always off by up to ±1 edge, and at low speed one edge is a big fraction of the count. Measuring between two actual edges removes that error, and leaves only the 1 µs timer resolution.
+speed (rev/s) = edges / (time × edges per rev)
 
-- **Low speed:** if a second goes by with no new edge, the last speed stays on screen. After 3 s with no edge, it shows `0 (stopped)`. When the motor starts again, the first reading is measured from the previous snapshot, because the last edge before the stop is too old to use.
-- **High speed:** the ISR is short (one register read, a table lookup, an add), so the limit is far above what the motor can do (see calculations).
+For example, if 3,400 edges came in and the time between the two edges was 1,000,500 µs:
 
-The speed is kept as a signed integer in micro-rev/s and printed with 4 decimal places, so `printf` doesn't need float support turned on in SEGGER.
+3,400 / (1.0005 s × 1632) = 2.0823 rev/s
+
+I used the time between actual edges instead of just counting edges in each 1 s bc counting in a fixed window can be off by 1 edge depending on where the window starts and ends. At my slowest speed (0.0472 rev/s) there are only 0.0472 × 1632 = 77 edges per second, so being off by 1 edge would make the speed jump around by 1.3%. Measuring from edge to edge doesn't have that problem.
+
+Special cases:
+
+- **Really slow:** if a whole second goes by with no new edge, it keeps showing the last speed instead of jumping to 0. After 3 s with no edges it prints `0 (stopped)`.
+- **Starting up:** when the motor starts again, the last edge from before it stopped is too old to use, so the first speed is measured from the last time `main` checked instead.
+- **Divide by zero:** if the time is 0, the speed function returns 0 instead of dividing.
+
+The speed is stored as a whole number in micro-rev/s (millionths of a rev/s) and printed with 4 decimals. That way printf doesn't need float support turned on in SEGGER.
 
 # Calculations
 
 ## Edges per revolution
 
-The lab page gives 12 pulses per motor revolution per channel. With x4 decoding:
+The lab page says the encoder makes 12 pulses per motor revolution on each channel. My motor is the -34 one (34:1 gearbox):
 
-- My motor has a 34:1 gearbox, so one output revolution is 12 × 34 = 408 pulses per channel
-- edges/rev = 4 × 408 = **1632 edges/rev** → 0.22° per edge
+- 12 × 34 = 408 pulses per output shaft revolution per channel
+- Both edges of both channels: 4 × 408 = 1632 edges/rev
+- 360° / 1632 = 0.22° per edge
 
-`GEAR_RATIO` is set to 34 in `main.h`.
+## Update rate
 
-## Slowest measurable speed
+`main` prints every 1,000,000 µs on TIM2 = 1 Hz, which meets the 1 Hz requirement. It adds 1 s to the last print time instead of using "now", so the prints don't drift.
 
-The motor is called stopped after 3 s with no edge, so the slowest speed it can report is one edge every 3 s:
+## Slowest speed
 
-1 / (3 × 1632) = **0.0002 rev/s**
+The motor counts as stopped after 3 s with no edge, so the slowest speed that still shows up is 1 edge every 3 s:
 
-## Fastest measurable speed
+1 / (3 × 1632) = 0.0002 rev/s
 
-Each edge costs one interrupt. Cortex-M4 entry + exit is about 24 cycles and the handler body is roughly 40–60 more, call it ~100 cycles ≈ 1.25 µs at 80 MHz. To avoid missing an edge, the next one has to arrive after the handler finishes, so the edge rate has to stay under ~800,000 edges/s:
+The slowest I actually got the motor to spin was 0.0472 rev/s (turning the supply down to ~0.25 V). Below that the motor just stalls, so the code can go way slower than the motor can.
 
-800,000 / 1632 ≈ **490 rev/s** at the output shaft
+## Fastest speed
 
-The 25GA-370 output shaft is only in the single or low double digits of rev/s at 12 V, so the margin is huge. At 10 rev/s the edge rate is 16,320/s, about one edge every 61 µs, which keeps the CPU in the ISR only ~2% of the time. <!-- TODO: replace with the actual max speed I measured -->
+Every edge is one interrupt. Getting in and out of an interrupt on the Cortex-M4 is about 24 cycles and my handler is maybe 40-60 more, so call it ~100 cycles = 1.25 µs at 80 MHz. The next edge has to come after the handler is done, so the max is about:
 
-## Accuracy
+1 / 1.25 µs = 800,000 edges/s → 800,000 / 1632 ≈ 490 rev/s
 
-- Timer: 1 µs resolution over a ~1 s measurement → about 1 ppm
-- Clock: the MSI-based PLL is only good to ~1%, which is the real limit (same thing I saw in Lab 4, where the scope read 0.8% off)
+The fastest I measured on the scope was 845.5 Hz on each channel (scope_71), which is:
+
+845.5 / 408 = 2.07 rev/s → 4 × 845.5 = 3,382 edges/s, one edge every ~296 µs
+
+So the motor is ~240x slower than the limit, and the CPU is only in the interrupt about 1.25 / 296 = 0.4% of the time. The missed edge warning never printed in any of my runs.
+
+## Resolution and accuracy
+
+- Position: 1 edge = 1/1632 rev = 0.22°
+- Printed speed: 0.0001 rev/s
+- Timer: 1 µs over ~1 s → about 0.0001%
+- Clock: the internal clock is only good to about 1%, so that's the real limit (in lab 4 the scope read 0.83% off)
 
 # Hardware
 
-## Pin assignments
+## Pin Assignments
 
 | Signal | MCU pin | Notes |
 |---|---|---|
-| Encoder A | PA6 | 5 V tolerant (FT), EXTI6 |
-| Encoder B | PA8 | 5 V tolerant (FT), EXTI8 |
+| Encoder A | PA6 | 5 V tolerant, EXTI6 |
+| Encoder B | PA8 | 5 V tolerant, EXTI8 |
 | Encoder VCC | 5 V | |
 | Encoder GND | GND | |
-| Motor + / − | 12 V bench supply | not connected to the MCU |
+| Motor + / - | 12 V bench supply | not connected to the MCU |
 
-The encoder outputs 5 V logic but the MCU runs at 3.3 V. PA6 and PA8 are 5 V tolerant pins (datasheet Table 14), so they can connect directly. The internal pull-up and pull-down are turned **off**: the datasheet says a FT pin can only go above V~DD~ + 0.3 V with its pull resistors disabled.
-
-<!-- TODO: double check PA6/PA8 are marked FT in Table 14 on my datasheet revision -->
-
+The encoder puts out 5 V but the MCU runs at 3.3 V, so A and B go to pins that are 5 V tolerant (STM32L432KC datasheet Table 14). I turned the internal pull-up and pull-down off on those pins bc the datasheet says a 5 V tolerant pin can only go above V~DD~ + 0.3 V when its pull resistors are off.
 ## Schematic
 
-<!-- TODO: schematic.jpeg -->
+![Schematic: 25GA-370 motor encoder to the STM32L432KC, motor powered by the bench supply](schematic.jpeg){width=100%}
+
+The MCU is on the E155 dev board, see the [E155 Development Board Schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The encoder and motor wiring above is what I added.
 
 ## Testing
 
-<!-- TODO:
-- scope capture of A and B showing the 90° phase shift (and which one leads in each direction)
-- spin forward and back, check the sign flips and CW/CCW matches the real direction
-  (if it's backwards, swap the A/B wires or swap ENCODER_A/ENCODER_B)
-- check against an independent measurement: scope frequency f of channel A → v = f / 408
-- run at several supply voltages (low → 12 V) and record printed speed vs scope speed
-- confirm "missed edges" never prints at full speed
--->
+I checked the printed speed against the scope. The frequency of an encoder channel on the scope is pulses per second, so the real speed is f / 408. I used the average of the two channels' frequencies.
 
-| Supply (V) | Printed speed (rev/s) | Scope A freq (Hz) | Scope speed (rev/s) | Error |
+| Scope capture | Scope freq (Hz) | Scope speed (rev/s) | Printed speed (rev/s) | Error |
 |---|---|---|---|---|
-| | | | | |
+| scope_70 | 271.1 | 0.6646 | 0.6636 | -0.14% |
+| scope_69 | 556.4 | 1.3637 | 1.3723 | +0.63% |
+| scope_71 | 845.5 | 2.0724 | 2.0860 | +0.65% |
 
-# Results
+The printed speed is the average of the steady readings at that speed. All three are within 1%. The printed speed comes out a little high, which makes sense if the MCU clock runs a bit slow: TIM2 counts fewer µs than really went by, so the speed looks faster. In lab 4 the clock was also off by about 0.8% in the same direction.
 
-<!-- TODO -->
-
-# Requirements Checklist
-
-- [ ] Uses interrupts to detect encoder pulses → EXTI on both edges of A and B
-- [ ] Computes direction → sign of the quadrature count
-- [ ] Displays speed in rev/s with direction at ≥ 1 Hz → printed every 1 s
-- [ ] Works at very low speeds → edge-timestamp method, down to ~0.0002 rev/s
-- [ ] Works at very high speeds → short ISR, missed edges are detected and reported
-- [ ] Tested with the lab motor <!-- TODO -->
-
-# AI Prototype and Reflection
-
-<!-- TODO -->
-
-# Hours Spent
-
-<!-- TODO -->
-
-# Technical Documentation
-
-## Code
+In the captures you can see the two channels are offset by about a quarter of a period (90°), which is what makes the direction work.
 
 <details>
-<summary>main.h</summary>
+<summary>Scope captures</summary>
 
-```c
-// main.h
-// Lab 5: Interrupts — quadrature encoder motor speed
-// Cheyenne Trujillo
+![scope_70: 269.77 Hz / 272.52 Hz → ~0.66 rev/s](scope_70.png){width=100%}
 
-#ifndef MAIN_H
-#define MAIN_H
+![scope_69: 556.69 Hz / 556.05 Hz → ~1.36 rev/s](scope_69.png){width=100%}
 
-#include "STM32L432KC.h"
-#include "encoder.h"
+![scope_71: 842.3 Hz / 848.8 Hz → ~2.07 rev/s, fastest](scope_71.png){width=100%}
 
-// ---------------------------------------------------------------
-// Motor settings: 25GA-370 with a 34:1 gearbox
-// ---------------------------------------------------------------
-#define GEAR_RATIO       34
-#define PULSES_PER_MOTOR_REV 12   // per channel, on the motor shaft (from lab page)
+</details>
 
-// We count every rising AND falling edge of both A and B ("x4 decoding"),
-// so each output-shaft revolution is 4 * 12 * gear ratio edges.
-#define EDGES_PER_REV    (4 * PULSES_PER_MOTOR_REV * GEAR_RATIO)
+I also did a run going up in steps and one going down from 1 V to 0.25 V.
 
-// How often the speed is printed (spec: at least 1 Hz)
-#define REPORT_PERIOD_US 1000000u
+- It says `0 (stopped)` when the motor is off.
+- The first reading after a speed change is in between (like 0.4169 or 1.2140) bc that second has some of the old speed and some of the new speed, then it settles.
+- At the slowest it still showed 0.0472 rev/s before the motor stalled.
+- When I cut the power it kept showing the last speed (1.8775) for 3 s before it switched to 0, bc that's the stop timeout.
+- No missed edge warnings in either run.
 
-// If no edge shows up for this long, call the motor stopped.
-// Slowest speed we can report = 1 edge / STOP_TIMEOUT_US.
-#define STOP_TIMEOUT_US  3000000u
+<details>
+<summary>Run 1: speeding up</summary>
 
-#endif // MAIN_H
+```
+Lab 5 encoder: 1632 edges per output rev (gear 34:1)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.4169 rev/s  (CW)
+speed: +0.6638 rev/s  (CW)
+speed: +0.6634 rev/s  (CW)
+speed: +0.6639 rev/s  (CW)
+speed: +0.6633 rev/s  (CW)
+speed: +0.6637 rev/s  (CW)
+speed: +1.2140 rev/s  (CW)
+speed: +1.3713 rev/s  (CW)
+speed: +1.3731 rev/s  (CW)
+speed: +1.3721 rev/s  (CW)
+speed: +1.3727 rev/s  (CW)
+speed: +1.5630 rev/s  (CW)
+speed: +2.0849 rev/s  (CW)
+speed: +2.0856 rev/s  (CW)
+speed: +2.0857 rev/s  (CW)
+speed: +2.0860 rev/s  (CW)
+speed: +2.0878 rev/s  (CW)
+speed: +2.2530 rev/s  (CW)
+speed: +2.8028 rev/s  (CW)
+speed: +2.8025 rev/s  (CW)
+speed: +2.8013 rev/s  (CW)
+speed: +2.8031 rev/s  (CW)
+speed: +2.8034 rev/s  (CW)
+speed: +2.8046 rev/s  (CW)
+speed: +1.8775 rev/s  (CW)
+speed: +1.8775 rev/s  (CW)
+speed: +1.8775 rev/s  (CW)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
 ```
 
 </details>
+
+<details>
+<summary>Run 2: slowing down from 1 V to 0.25 V</summary>
+
+```
+Lab 5 encoder: 1632 edges per output rev (gear 34:1)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.1634 rev/s  (CW)
+speed: +0.1971 rev/s  (CW)
+speed: +0.1965 rev/s  (CW)
+speed: +0.1960 rev/s  (CW)
+speed: +0.1958 rev/s  (CW)
+speed: +0.1956 rev/s  (CW)
+speed: +0.1175 rev/s  (CW)
+speed: +0.0755 rev/s  (CW)
+speed: +0.0760 rev/s  (CW)
+speed: +0.0758 rev/s  (CW)
+speed: +0.0754 rev/s  (CW)
+speed: +0.0760 rev/s  (CW)
+speed: +0.0760 rev/s  (CW)
+speed: +0.0759 rev/s  (CW)
+speed: +0.0472 rev/s  (CW)
+speed: +0.0472 rev/s  (CW)
+speed: +0.0472 rev/s  (CW)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+speed: +0.0000 rev/s  (stopped)
+```
+
+</details>
+
+<!-- TODO: spin it backwards (swap the motor leads) and check it says CCW -->
+
+# Results
+
+My design meets the proficiency requirements! The speed matches the scope within 1%, it never missed an edge, and it goes all the way down to 0.0472 rev/s and back to 0 when stopped. The one thing is that when the motor stops it can take up to 3 s for the display to say 0.
+
+# Requirements Checklist
+
+- Uses interrupts to detect encoder pulses: EXTI on both edges of A and B
+- Direction and speed in rev/s printed every 1 s
+- Says 0 when the motor isn't spinning (after 3 s with no edges)
+- Doesn't miss pulses: the missed edge warning never printed
+- Encoder only connected to 5 V tolerant pins (PA6, PA8)
+- Measured speed matches the scope within 1%
+
+# AI Prototype
+
+I prompted Claude:
+
+> Write me interrupt handlers to interface with a quadrature encoder. I'm using the STM32L432KC, what pins should I connect the encoder to in order to allow it to easily trigger the interrupts?
+
+It picked PA0 (EXTI0) and PA1 (EXTI1) and wrote an x4 decoder with a lookup table, which is basically the same idea as mine. But it was written for the STM32 HAL library (`stm32l4xx_hal.h`, `HAL_GPIO_Init`, `HAL_GPIO_EXTI_Callback`), which isn't in my project since I use the course `lib/` drivers. So it wasn't usable without adding a whole new library, and I didn't swap it in. It also said to power the encoder from 3.3 V, but mine needs 5 V. It did point out that TIM2 has a hardware encoder mode, which I didn't know.
+
+**Reflection:**
+
+The decoding logic was right, but the code depended on a library I wasn't using, so I couldn't just drop it in. Next time I'd tell it to use registers directly or my own drivers.
+
+# Hours
+
+Spent like 7 hours on this lab.
+
+# Code
 
 <details>
 <summary>main.c</summary>
 
 ```c
-// main.c
-// Lab 5: Interrupts — measure a DC motor's speed and direction with a quadrature encoder.
-// Cheyenne Trujillo
-//
-// Every REPORT_PERIOD_US (1 s) this prints something like
-//     speed: +2.4571 rev/s  (CW)
-// to the SEGGER debug terminal through printf (course printf tutorial).
-//
-// Speed = (edges counted) / (time between the first and last of those edges).
-// Using the edge timestamps instead of "edges in the last 1 s" removes the
-// +/- 1 edge rounding error, which matters a lot at low speeds.
-
-#include "main.h"
-#include <stdio.h>
-
-// Print an integer number of micro-rev/s as e.g. "+2.4571" (4 decimals) without float printf.
-static void printSpeed(int32_t urps) {
-    char sign = (urps < 0) ? '-' : '+';
-    uint32_t mag = (urps < 0) ? (uint32_t)(-urps) : (uint32_t)urps;
-    mag = (mag + 50) / 100;                       // round to 0.0001 rev/s
-    const char *dir = (urps > 0) ? "CW" : (urps < 0) ? "CCW" : "stopped";
-    printf("speed: %c%lu.%04lu rev/s  (%s)\n",
-           sign, (unsigned long)(mag / 10000), (unsigned long)(mag % 10000), dir);
-}
-
-int main(void) {
-    configureFlash();
-    configureClock();   // 80 MHz from the PLL
-    initEncoder();
-
-    encoder_snapshot_t ref = encoderSnapshot();  // last edge used for the previous speed
-    uint32_t lastReport    = micros();
-    uint32_t lastSnapTime  = lastReport;         // when the previous snapshot was taken
-    uint32_t lastBadEdges  = 0;
-    int32_t  speed_urps    = 0;                  // micro-rev/s, signed
-    int      stopped       = 1;
-
-    printf("Lab 5 encoder: %d edges per output rev (gear %d:1)\n", EDGES_PER_REV, GEAR_RATIO);
-
-    while (1) {
-        uint32_t now = micros();
-        if ((uint32_t)(now - lastReport) < REPORT_PERIOD_US) continue;
-        lastReport += REPORT_PERIOD_US;   // fixed 1 Hz cadence, no drift
-
-        encoder_snapshot_t s = encoderSnapshot();
-        uint32_t prevSnapTime = lastSnapTime;
-        lastSnapTime = now;
-        int32_t  dEdges = s.position - ref.position;
-
-        if (dEdges != 0) {
-            if (stopped) {
-                // Just started moving. The old reference edge is from before the
-                // stop, so measure from the previous snapshot instead.
-                speed_urps = velocityMicroRevPerSec(dEdges, s.edgeTime - prevSnapTime, EDGES_PER_REV);
-                stopped = 0;
-            } else {
-                speed_urps = velocityMicroRevPerSec(dEdges, s.edgeTime - ref.edgeTime, EDGES_PER_REV);
-            }
-            ref = s;
-        } else if ((uint32_t)(now - ref.edgeTime) > STOP_TIMEOUT_US) {
-            // No edge in a long time -> stopped
-            speed_urps = 0;
-            stopped = 1;
-            ref = s;
-        }
-        // else: very slow, no edge this second -> keep showing the last speed
-
-        printSpeed(speed_urps);
-
-        if (s.badEdges != lastBadEdges) {
-            printf("  warning: %lu missed edges so far\n", (unsigned long)s.badEdges);
-            lastBadEdges = s.badEdges;
-        }
-    }
-}
+{{< include src/main.c >}}
 ```
 
 </details>
 
 <details>
-<summary>encoder.h</summary>
+<summary>main.h</summary>
 
 ```c
-// encoder.h
-// Quadrature encoder driver: EXTI interrupts on both channels + a 1 MHz timestamp timer.
-
-#ifndef ENCODER_H
-#define ENCODER_H
-
-#include <stdint.h>
-#include "STM32L432KC.h"
-
-// Encoder pins. Both are 5 V tolerant (FT) on the STM32L432KC
-// (datasheet Table 14), and both land on the same EXTI9_5 interrupt line.
-#define ENCODER_A      PA6
-#define ENCODER_B      PA8
-#define ENCODER_A_NUM  6
-#define ENCODER_B_NUM  8
-
-// 32-bit TIM2 runs free at 1 MHz -> 1 count = 1 us, wraps every ~71 min.
-// Unsigned subtraction (later - earlier) handles the wrap.
-#define TIMESTAMP_TIM  TIM2
-
-// A consistent copy of what the ISR has counted so far.
-typedef struct {
-    int32_t  position;   // signed edge count (+ = CW, - = CCW)
-    uint32_t edgeTime;   // TIM2 time of the most recent edge (us)
-    uint32_t badEdges;   // transitions where A and B both changed (missed edge)
-} encoder_snapshot_t;
-
-void     initEncoder(void);
-uint32_t micros(void);
-encoder_snapshot_t encoderSnapshot(void);
-
-// Pure helpers (no hardware) so they can be checked on a laptop
-int8_t   quadStep(uint8_t prevAB, uint8_t newAB);
-int32_t  velocityMicroRevPerSec(int32_t dEdges, uint32_t dTimeUs, uint32_t edgesPerRev);
-
-#endif // ENCODER_H
+{{< include src/main.h >}}
 ```
 
 </details>
@@ -320,140 +349,16 @@ int32_t  velocityMicroRevPerSec(int32_t dEdges, uint32_t dTimeUs, uint32_t edges
 <summary>encoder.c</summary>
 
 ```c
-// encoder.c
-// Quadrature encoder driver for Lab 5.
-//
-// How it works:
-//   - PA6 (A) and PA8 (B) fire an EXTI interrupt on every rising and falling edge.
-//   - The ISR reads A and B together, and a lookup table turns (old AB, new AB)
-//     into +1, -1 or 0. Adding that to `position` gives a signed count, so
-//     direction falls out of the sign; no separate direction flag needed.
-//   - The ISR also stamps the time of the edge from a 1 MHz free-running TIM2.
-//     main() divides edges by the time between the first and last edge it saw,
-//     which keeps the speed accurate at very low speeds (see report).
-
-#include "encoder.h"
-
-// Shared with the ISR -> volatile
-static volatile int32_t  position  = 0;
-static volatile uint32_t edgeTime  = 0;
-static volatile uint32_t badEdges  = 0;
-static volatile uint8_t  lastAB    = 0;
-
-// Quadrature lookup table, indexed by (prevAB << 2) | newAB.
-// Forward (CW) sequence is AB = 00 -> 10 -> 11 -> 01 -> 00 (A leads B).
-//   +1 = one step CW, -1 = one step CCW, 0 = no change,
-//    2 = illegal (both bits flipped: we missed an edge)
-static const int8_t QUAD_TABLE[16] = {
-//  new: 00  01  10  11      prev
-         0, -1, +1,  2,   // 00
-        +1,  0,  2, -1,   // 01
-        -1,  2,  0, +1,   // 10
-         2, +1, -1,  0    // 11
-};
-
-int8_t quadStep(uint8_t prevAB, uint8_t newAB) {
-    return QUAD_TABLE[((prevAB & 3) << 2) | (newAB & 3)];
-}
-
-// Speed in millionths of a rev/s (integer, so printf doesn't need float support).
-// 64-bit math: dEdges * 1e12 is ~1e17 at full speed, still fits in int64.
-int32_t velocityMicroRevPerSec(int32_t dEdges, uint32_t dTimeUs, uint32_t edgesPerRev) {
-    if (dTimeUs == 0 || edgesPerRev == 0) return 0;
-    int64_t num = (int64_t)dEdges * 1000000000000LL;   // edges * (us/s) * (micro)
-    int64_t den = (int64_t)dTimeUs * (int64_t)edgesPerRev;
-    // round to nearest instead of truncating
-    if (num >= 0) return (int32_t)((num + den / 2) / den);
-    else          return (int32_t)((num - den / 2) / den);
-}
-
-static uint8_t readAB(void) {
-    uint32_t idr = GPIOA->IDR;   // read both pins in ONE register read
-    return (uint8_t)((((idr >> ENCODER_A_NUM) & 1) << 1) | ((idr >> ENCODER_B_NUM) & 1));
-}
-
-uint32_t micros(void) {
-    return TIMESTAMP_TIM->CNT;
-}
-
-static void initTimestampTimer(void) {
-    RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
-    TIMESTAMP_TIM->PSC = (SystemCoreClock / 1000000u) - 1;  // 80 MHz / 80 = 1 MHz
-    TIMESTAMP_TIM->ARR = 0xFFFFFFFF;                        // use all 32 bits
-    TIMESTAMP_TIM->EGR = TIM_EGR_UG;                        // load the prescaler now
-    TIMESTAMP_TIM->SR  = 0;
-    TIMESTAMP_TIM->CNT = 0;
-    TIMESTAMP_TIM->CR1 |= TIM_CR1_CEN;
-}
-
-void initEncoder(void) {
-    // GPIO: A and B are plain inputs.
-    gpioEnable(GPIO_PORT_A);
-    pinMode(ENCODER_A, GPIO_INPUT);
-    pinMode(ENCODER_B, GPIO_INPUT);
-
-    // No internal pull-up/pull-down: the encoder drives 5 V, and the datasheet
-    // says a FT pin can only take > VDD + 0.3 V with its pull resistors OFF.
-    GPIOA->PUPDR &= ~(GPIO_PUPDR_PUPD6 | GPIO_PUPDR_PUPD8);
-
-    initTimestampTimer();
-
-    // SYSCFG: route port A to EXTI6 and EXTI8 (0b000 = port A)
-    RCC->APB2ENR |= RCC_APB2ENR_SYSCFGEN;
-    SYSCFG->EXTICR[1] &= ~SYSCFG_EXTICR2_EXTI6;   // EXTICR2 holds EXTI4..7
-    SYSCFG->EXTICR[2] &= ~SYSCFG_EXTICR3_EXTI8;   // EXTICR3 holds EXTI8..11
-
-    // EXTI: unmask, and trigger on both edges
-    uint32_t mask = (1u << ENCODER_A_NUM) | (1u << ENCODER_B_NUM);
-    EXTI->RTSR1 |= mask;
-    EXTI->FTSR1 |= mask;
-    EXTI->PR1    = mask;      // clear anything stale (write-1-to-clear)
-    EXTI->IMR1  |= mask;
-
-    lastAB = readAB();        // start the state machine from where the shaft is now
-
-    // NVIC: EXTI lines 5..9 share one interrupt
-    NVIC_EnableIRQ(EXTI9_5_IRQn);
-    __enable_irq();
-}
-
-// Copy the ISR's variables with interrupts off for a moment, so position and
-// edgeTime always belong to the same edge.
-encoder_snapshot_t encoderSnapshot(void) {
-    encoder_snapshot_t s;
-    __disable_irq();
-    s.position = position;
-    s.edgeTime = edgeTime;
-    s.badEdges = badEdges;
-    __enable_irq();
-    return s;
-}
-
-// Runs on every edge of A or B.
-void EXTI9_5_IRQHandler(void) {
-    uint32_t mask = (1u << ENCODER_A_NUM) | (1u << ENCODER_B_NUM);
-    uint32_t pending = EXTI->PR1 & mask;
-    if (!pending) return;
-
-    // Clear FIRST, then read the pins. If another edge lands after this read,
-    // it sets the flag again and we come right back in, so nothing is lost.
-    // Note: plain "=" not "|=". PR1 is write-1-to-clear, so "|=" would also
-    // clear every other pending EXTI line.
-    EXTI->PR1 = pending;
-
-    uint32_t now = TIMESTAMP_TIM->CNT;
-    uint8_t  ab  = readAB();
-    int8_t   step = quadStep(lastAB, ab);
-
-    if (step == 2) {
-        badEdges++;            // both changed: an edge was missed, direction unknown
-    } else if (step != 0) {
-        position += step;
-        edgeTime  = now;
-    }
-    lastAB = ab;
-}
+{{< include src/encoder.c >}}
 ```
 
 </details>
 
+<details>
+<summary>encoder.h</summary>
+
+```c
+{{< include src/encoder.h >}}
+```
+
+</details>

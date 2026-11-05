@@ -17,6 +17,7 @@
 // 32-bit TIM2 runs free at 1 MHz -> 1 count = 1 us, wraps every ~71 min.
 // Unsigned subtraction (later - earlier) handles the wrap.
 #define TIMESTAMP_TIM  TIM2
+#define TIMESTAMP_HZ   1000000u   // 1 count = 1 us
 
 // A consistent copy of what the ISR has counted so far.
 typedef struct {

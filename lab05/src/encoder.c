@@ -12,6 +12,12 @@
 
 #include "encoder.h"
 
+// QUAD_TABLE value for an illegal transition (A and B both changed -> missed edge)
+#define QUAD_ILLEGAL 2
+
+// edges/us -> micro-rev/s needs a factor of (1e6 us/s) * (1e6 micro-rev/rev)
+#define URPS_SCALE 1000000000000LL
+
 // Shared with the ISR -> volatile
 static volatile int32_t  position  = 0;
 static volatile uint32_t edgeTime  = 0;
@@ -21,13 +27,13 @@ static volatile uint8_t  lastAB    = 0;
 // Quadrature lookup table, indexed by (prevAB << 2) | newAB.
 // Forward (CW) sequence is AB = 00 -> 10 -> 11 -> 01 -> 00 (A leads B).
 //   +1 = one step CW, -1 = one step CCW, 0 = no change,
-//    2 = illegal (both bits flipped: we missed an edge)
+//    QUAD_ILLEGAL = both bits flipped: we missed an edge
 static const int8_t QUAD_TABLE[16] = {
 //  new: 00  01  10  11      prev
-         0, -1, +1,  2,   // 00
-        +1,  0,  2, -1,   // 01
-        -1,  2,  0, +1,   // 10
-         2, +1, -1,  0    // 11
+         0,           -1,           +1,            QUAD_ILLEGAL,   // 00
+        +1,            0,            QUAD_ILLEGAL, -1,             // 01
+        -1,            QUAD_ILLEGAL,  0,           +1,             // 10
+         QUAD_ILLEGAL, +1,           -1,            0              // 11
 };
 
 int8_t quadStep(uint8_t prevAB, uint8_t newAB) {
@@ -38,7 +44,7 @@ int8_t quadStep(uint8_t prevAB, uint8_t newAB) {
 // 64-bit math: dEdges * 1e12 is ~1e17 at full speed, still fits in int64.
 int32_t velocityMicroRevPerSec(int32_t dEdges, uint32_t dTimeUs, uint32_t edgesPerRev) {
     if (dTimeUs == 0 || edgesPerRev == 0) return 0;
-    int64_t num = (int64_t)dEdges * 1000000000000LL;   // edges * (us/s) * (micro)
+    int64_t num = (int64_t)dEdges * URPS_SCALE;
     int64_t den = (int64_t)dTimeUs * (int64_t)edgesPerRev;
     // round to nearest instead of truncating
     if (num >= 0) return (int32_t)((num + den / 2) / den);
@@ -56,7 +62,7 @@ uint32_t micros(void) {
 
 static void initTimestampTimer(void) {
     RCC->APB1ENR1 |= RCC_APB1ENR1_TIM2EN;
-    TIMESTAMP_TIM->PSC = (SystemCoreClock / 1000000u) - 1;  // 80 MHz / 80 = 1 MHz
+    TIMESTAMP_TIM->PSC = (SystemCoreClock / TIMESTAMP_HZ) - 1;  // 80 MHz / 80 = 1 MHz
     TIMESTAMP_TIM->ARR = 0xFFFFFFFF;                        // use all 32 bits
     TIMESTAMP_TIM->EGR = TIM_EGR_UG;                        // load the prescaler now
     TIMESTAMP_TIM->SR  = 0;
@@ -123,7 +129,7 @@ void EXTI9_5_IRQHandler(void) {
     uint8_t  ab  = readAB();
     int8_t   step = quadStep(lastAB, ab);
 
-    if (step == 2) {
+    if (step == QUAD_ILLEGAL) {
         badEdges++;            // both changed: an edge was missed, direction unknown
     } else if (step != 0) {
         position += step;
