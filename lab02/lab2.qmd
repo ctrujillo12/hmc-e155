@@ -37,13 +37,29 @@ The scanner uses a counter to rotate which row is on: 1000, 0100, 0010, 0001. Ea
 
 ## Testing Methodology
 
-I simulated the counter, the scanner and the top level in QuestaSim, each with a self-checking testbench that counts errors, and all three passed with 0 errors (waveforms in [Simulation Results](#simulation-results)).
+I simulated the counter, the scanner and the top level in QuestaSim, each with a self-checking testbench that counts errors, and all three passed with 0 errors.
 
 - **counter_tb:** I re-ran this since I changed the counter to output count. It checks that it counts, wraps, holds while enable is low and resets.
+
+<details>
+<summary>counter_tb waveform</summary>
+![counter_tb: counts, wraps, holds while enable is low, resets; 0 errors](counter_tb.png){width=100%}
+</details>
+
 - **scanner_tb:** checks all four row transitions (1000 → 0100 → 0010 → 0001), that the row holds while enable is low, and that reset goes back to 1000.
+
+<details>
+<summary>scanner_tb waveform</summary>
+![scanner_tb: rows rotate 1000 → 0100 → 0010 → 0001, hold while enable is low, reset to 1000; 0 errors](scanner_tb.png){width=100%}
+</details>
+
 - **lab02_ct_tb:** checks that only one digit is on at a time, that each digit shows the right segments for every DIP switch value and button combination, that every keypad row gets driven, and that the LEDs follow the columns.
 
-The seven segment decoder didn't change from lab 1, so I didn't re-simulate it ([lab 1 simulation](../lab01/lab1.html#seven-segment-decoder-test)).
+<details>
+<summary>lab02_ct_tb waveform</summary>
+![lab02_ct_tb: digits alternate, each shows its input, LEDs follow the columns; 0 errors](lab02_ct_tb.png){width=100%}
+</details>
+
 
 # Technical Documentation
 
@@ -115,7 +131,7 @@ The seven segment decoder didn't change from lab 1, so I didn't re-simulate it (
 
 ![Schematic of the off-board circuit](Lab2-16.jpg){width=100%}
 
-Pushbuttons SW0 (P34) and SW1 (P43), LEDs D6-D8 and SW7 are on the dev board so I didn't draw them, they're in the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The DIP switch and the pushbuttons use the FPGA's internal pull-ups.
+Pushbuttons SW0 (P34) and SW1 (P43), LEDs D6-D8 and SW7 are on the dev board so I didn't draw them.
 
 ## Current Calculations
 
@@ -143,38 +159,13 @@ Input pins only have the internal pull-up current, which is ≤ 128 µA.
 
 All under 8 mA!
 
-# Simulation Results
-
-The seven segment decoder was already tested in lab 1: [lab 1 decoder simulation](../lab01/lab1.html#seven-segment-decoder-test).
-
-## Counter Test
-
-<details>
-<summary>counter_tb waveform</summary>
-![counter_tb: counts, wraps, holds while enable is low, resets; 0 errors](counter_tb.png){width=100%}
-</details>
-
-## Scanner Test
-
-<details>
-<summary>scanner_tb waveform</summary>
-![scanner_tb: rows rotate 1000 → 0100 → 0010 → 0001, hold while enable is low, reset to 1000; 0 errors](scanner_tb.png){width=100%}
-</details>
-
-## Top-Level Test
-
-<details>
-<summary>lab02_ct_tb waveform</summary>
-![lab02_ct_tb: digits alternate, each shows its input, LEDs follow the columns; 0 errors](lab02_ct_tb.png){width=100%}
-</details>
-
-# Requirements Checklist
+# Requirements
 
 This design meets all Proficiency specifications. Some things I did differently from the lab handout:
 
-- I used 2N3906 PNPs to switch the digits instead of TP2104 PMOS, and used TP2104 PMOS with pull-down resistors for the keypad rows instead of TN2106 NMOS.
-- The right digit's 4-bit number comes from a DIP switch on the breadboard instead of SW6 on the dev board, because SW6's switch 4 only made contact when I pressed on the board. The left digit comes from pushbuttons SW0:SW1 like the handout says (SW1 is the LSB since it's on the right physically).
-- Keypad column 4 (A-D) doesn't have an LED because I ran out of FPGA pins on the breadboard adapter.
+- Used 2N3906 PNPs instead of TP2104 PMOS to switch the digits, and used TP2104 PMOS with pull-down resistors for the keypad rows instead of TN2106 NMOS
+- The right digit's 4-bit number comes from a DIP switch on the breadboard instead of SW6 on the dev board, because my SW6's switch 4 was very finnicky. The left digit comes from pushbuttons SW0 and SW1 instead
+- Keypad column 4 (A-D) doesn't have an LED because I ran out of FPGA pins on the breadboard adapter and called it a day
 
 # Conclusion
 
