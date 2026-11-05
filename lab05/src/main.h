@@ -12,7 +12,7 @@
 #define GEAR_RATIO       34
 #define PULSES_PER_MOTOR_REV 12   // per channel, motor shaft
 
-// every edge of A and B is counted (x4)
+// count every edge of A and B 
 #define EDGES_PER_REV    (4 * PULSES_PER_MOTOR_REV * GEAR_RATIO)
 
 // print once a second

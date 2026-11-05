@@ -14,21 +14,23 @@
 #define ENCODER_A_NUM  6
 #define ENCODER_B_NUM  8
 
-// free-running 1 MHz timer for edge timestamps
+// 1 MHz timer for edge timestamps
 #define TIMESTAMP_TIM  TIM2
 #define TIMESTAMP_HZ   1000000u
 
 typedef struct {
     int32_t  position;   // signed edge count (+ = CW, - = CCW)
     uint32_t edgeTime;   // TIM2 time of the most recent edge (us)
-    uint32_t badEdges;   // missed edges
 } encoder_snapshot_t;
 
 void     initEncoder(void);
-uint32_t micros(void);
-encoder_snapshot_t encoderSnapshot(void);
 
-int8_t   quadStep(uint8_t prevAB, uint8_t newAB);
-int32_t  velocityMicroRevPerSec(int32_t dEdges, uint32_t dTimeUs, uint32_t edgesPerRev);
+// counts microseconds since the timer started 
+uint32_t micros(void); 
+
+// makes sure interrupts don't change the values while copying
+encoder_snapshot_t encoderSnapshot(void); 
+
+int32_t  velocityMicroRevPerSec(int32_t dEdges, uint32_t dTimeUs, uint32_t edgesPerRev); // calc speed in micro-rev/s 
 
 #endif // ENCODER_H

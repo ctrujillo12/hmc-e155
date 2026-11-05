@@ -4,30 +4,22 @@
 
 #include "encoder.h"
 
-// both A and B changed: missed edge
-#define QUAD_ILLEGAL 2
-
 // edges/us -> micro-rev/s
 #define URPS_SCALE 1000000000000LL
 
 // shared with the ISR
 static volatile int32_t  position  = 0;
 static volatile uint32_t edgeTime  = 0;
-static volatile uint32_t badEdges  = 0;
 static volatile uint8_t  lastAB    = 0;
 
-// indexed by (prevAB << 2) | newAB, CW = 00 -> 10 -> 11 -> 01
+// step for each (old AB, new AB): +1 = CW, -1 = CCW, 0 = no move
 static const int8_t QUAD_TABLE[16] = {
-//  new: 00  01  10  11      prev
-         0,           -1,           +1,            QUAD_ILLEGAL,   // 00
-        +1,            0,            QUAD_ILLEGAL, -1,             // 01
-        -1,            QUAD_ILLEGAL,  0,           +1,             // 10
-         QUAD_ILLEGAL, +1,           -1,            0              // 11
+//  new: 00  01  10  11     old
+          0, -1, +1,  0,    // 00
+         +1,  0,  0, -1,    // 01
+         -1,  0,  0, +1,    // 10
+          0, +1, -1,  0     // 11
 };
-
-int8_t quadStep(uint8_t prevAB, uint8_t newAB) {
-    return QUAD_TABLE[((prevAB & 3) << 2) | (newAB & 3)];
-}
 
 // speed in micro-rev/s
 int32_t velocityMicroRevPerSec(int32_t dEdges, uint32_t dTimeUs, uint32_t edgesPerRev) {
@@ -93,27 +85,24 @@ encoder_snapshot_t encoderSnapshot(void) {
     __disable_irq();
     s.position = position;
     s.edgeTime = edgeTime;
-    s.badEdges = badEdges;
     __enable_irq();
     return s;
 }
 
 // runs on every edge of A or B
 void EXTI9_5_IRQHandler(void) {
-    uint32_t mask = (1u << ENCODER_A_NUM) | (1u << ENCODER_B_NUM);
-    uint32_t pending = EXTI->PR1 & mask;
-    if (!pending) return;
 
+    uint32_t mask = (1u << ENCODER_A_NUM) | (1u << ENCODER_B_NUM);
+    uint32_t pending = EXTI->PR1 & mask; // clear PR1 by writing 1s to A and B
+    if (!pending) return;
     // clear before reading the pins so a new edge re-triggers the interrupt
     EXTI->PR1 = pending;
 
     uint32_t now = TIMESTAMP_TIM->CNT;
     uint8_t  ab  = readAB();
-    int8_t   step = quadStep(lastAB, ab);
+    int8_t   step = QUAD_TABLE[(lastAB << 2) | ab];
 
-    if (step == QUAD_ILLEGAL) {
-        badEdges++;
-    } else if (step != 0) {
+    if (step != 0) {
         position += step;
         edgeTime  = now;
     }
