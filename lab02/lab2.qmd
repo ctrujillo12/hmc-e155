@@ -109,7 +109,7 @@ The seven segment decoder didn't change from lab 1, so I didn't re-simulate it (
 
 ## Block Diagram
 
-![Block diagram of the lab 2 design](Lab2-17.jpg){width=100%}
+![Block diagram of the lab 2 design](Lab2-18.jpg){width=100%}
 
 ## Hardware Schematic
 
