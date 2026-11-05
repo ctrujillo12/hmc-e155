@@ -29,7 +29,7 @@ I organized the design into a top level module, a counter, a scanner and the sev
 
 The oscillator is 24 MHz, and I want each digit on for 1 ms. N = 24×10⁶ × 0.001 = 24,000 cycles. So mux_counter toggles digit_sel every 24,000 cycles. digit_sel picks what goes into the decoder (breadboard DIP switch or SW6) and which digit gets turned on with anode_en_n. Each digit is on 1 ms out of every 2 ms, so the refresh rate is 500 Hz and it doesn't flicker.
 
-Both DIP switches connect the pin to ground when they're ON, so i invert them in the top level.
+The breadboard DIP switch connects the pin to ground when it's ON, so i invert it in the top level. SW6 reads 1 when it's ON (same as lab 1), so that one doesn't get inverted.
 
 ## Keypad Scanning
 
@@ -109,7 +109,7 @@ I didn't change the decoder from lab 1 so I didn't re-simulate it ([lab 1 simula
 
 ![Schematic of the off-board circuit](Lab2-16.jpg){width=100%}
 
-SW6, LEDs D6-D8 and SW7 are on the dev board so I didn't draw them, they're in the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). Both DIP switches use the FPGA's internal pull-ups.
+SW6, LEDs D6-D8 and SW7 are on the dev board so I didn't draw them, they're in the [development board schematic](https://hmc-e155.github.io/assets/doc/E155%20FA22%20Development%20Board%20Schematic.pdf). The breadboard DIP switch uses the FPGA's internal pull-ups.
 
 ## Current Calculations
 
